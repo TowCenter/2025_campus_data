@@ -4,16 +4,10 @@ A collection of Svelte components for journalism projects, developed by the Tow 
 
 ## Installation
 
-### From GitHub (Recommended)
+### From GitHub
 
 ```bash
 npm install github:TowCenter/tow-design-system
-```
-
-### From npm (when published)
-
-```bash
-npm install @tow/design-system
 ```
 
 ## Usage
