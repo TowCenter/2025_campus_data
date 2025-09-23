@@ -637,7 +637,22 @@ input[type="search"]:focus {
 }   
     
 
+#footer {
+	background: #000;
+	color: #fff;
+	padding-top: 68px;
+	padding-bottom: 68px;
+	margin-top: 68px;
+	overflow: hidden;
+}
 
+#footer div.logo p {
+	font-family: "Lyon Text Web", serif;
+	font-style: italic;
+	font-size: 16px;
+	line-height: 32px;
+	padding-top: 10px; 
+}
 /*********************/
 /**  main content  **/
 /*********************/
@@ -757,7 +772,6 @@ h1.main-title {
 	width: 100%;
     margin: 0px 0px 0px 0px;
 	padding: 0px 0px 28px 20px;
-	border-left: 2px solid #ec502e;
 }
 
 
@@ -2746,11 +2760,9 @@ p.grey-box-photo-credit {
 
 
 h1.main-title {color: #254c6f;}
-.entry-content > p {border-left: 2px solid #68d2ff;}
 .entry-content > p a {border-bottom: 1px dotted #68d2ff !important;}
 .entry-content > p a:hover {color: #68d2ff;}
 .entry-content > p:first-of-type strong:first-of-type {color: #254c6f;}
-.entry-content ul {border-left: 2px solid #68d2ff;}
 .entry-content li a {border-bottom: 1px dotted #68d2ff;}
 .entry-content li a:hover {color: #68d2ff;}
 .entry-content > h2 {color: #254c6f;border-left: 2px solid #68d2ff;}
@@ -2758,7 +2770,6 @@ h1.main-title {color: #254c6f;}
 .entry-content > h2 a:hover {color: #68d2ff;border-bottom: 2px dotted #68d2ff;}
 .entry-content > h2.dark {color: #222222;}
 .entry-content > h3 {color: #254c6f;border-left: 2px solid #68d2ff;}
-.entry-content ol {border-left: 2px solid #68d2ff;}  
 /* .code-block-1 {border-left: 2px solid #68d2ff;} */
 .entry-content > blockquote {border-left: 2px solid #68d2ff;}
 
@@ -3383,7 +3394,6 @@ a > p {
     width: 100%;
     margin: 0px 0px 0px 0px;
     padding: 0px 0px 28px 20px;
-    border-left: 2px solid #ec502e;
 }
 
 .pullquoteright, .pullquoteleft {
