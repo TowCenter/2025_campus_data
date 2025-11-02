@@ -91,7 +91,7 @@ Test it in your browser - you should see the JSON data.
 Open `DataExplorer.svelte` and update line 5:
 
 ```javascript
-const S3_BUCKET_URL = 'https://tow-campus-data.s3.us-east-2.amazonaws.com/20251102.json';
+const S3_BUCKET_URL = 'https://tow-campus-data.s3.us-east-2.amazonaws.com/data.json';
 ```
 
 Replace with your actual URL.

@@ -1,0 +1,3338 @@
+[{
+  "_id": {
+    "$oid": "6836056120d5aff22358e239"
+  },
+  "name": "State University of New York Rockland",
+  "color": "#003c24",
+  "scrapers": [
+    {
+      "name": "other announcements",
+      "path": "scrapers.state_university_of_new_york_rockland.scraper",
+      "url": "https://sunyrockland.edu/media/news/",
+      "last_run": {
+        "$date": "2025-11-02T15:07:41.706Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:07:41.787Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68364c5b20d5aff22376fe24"
+  },
+  "name": "University of Virginia",
+  "color": "#232D4B",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.university_of_virginia.scraper",
+      "url": "https://news.virginia.edu/content/jim-ryan",
+      "last_run": {
+        "$date": "2025-11-02T15:07:45.367Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "University announcements",
+      "path": "scrapers.university_of_virginia.scraper2",
+      "url": "https://news.virginia.edu/news-topic/university-news",
+      "last_run": {
+        "$date": "2025-11-02T15:08:00.897Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:08:00.966Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "687286e2be788623d3fc0e52"
+  },
+  "name": "University of Massachusetts",
+  "color": "#7E1C1E",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.university_of_massachusetts.scraper",
+      "url": "https://www.umass.edu/provost/news",
+      "last_run": {
+        "$date": "2025-11-02T15:08:04.959Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:08:05.039Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93d2"
+  },
+  "name": "Northwestern University",
+  "color": "#4E2A84",
+  "scrapers": [
+    {
+      "name": "general announcements",
+      "path": "scrapers.northwestern_university.scraper",
+      "url": "https://www.northwestern.edu/leadership-notes/",
+      "last_run": {
+        "$date": "2025-11-02T15:08:08.750Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:08:08.818Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68360c5d20d5aff2235bdfed"
+  },
+  "name": "Whitman College",
+  "color": "#002868",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.whitman_college.scraper",
+      "url": "https://www.whitman.edu/president/presidential-communications",
+      "last_run": {
+        "$date": "2025-11-02T15:08:13.558Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:08:13.626Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "6859934bd548ce0974a67cb7"
+  },
+  "name": "Union College",
+  "color": "#842733",
+  "scrapers": [
+    {
+      "name": "other announcements",
+      "path": "scrapers.union_college.scraper",
+      "url": "https://www.union.edu/news/stories",
+      "last_run": {
+        "$date": "2025-11-02T15:08:17.611Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:08:17.697Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "687802f7be788623d35328e8"
+  },
+  "name": "Indiana University",
+  "color": "#990000",
+  "scrapers": [
+    {
+      "name": "other announcements",
+      "path": "scrapers.indiana_university.scraper",
+      "url": "https://news.iu.edu/news/",
+      "last_run": {
+        "$date": "2025-11-02T15:08:21.121Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:08:21.190Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93da"
+  },
+  "name": "Santa Monica College",
+  "color": "#004C98",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.santa_monica_college.scraper",
+      "url": "https://www.smc.edu/news/presidents-messages/",
+      "last_run": {
+        "$date": "2025-11-02T15:08:24.389Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.santa_monica_college.scraper2",
+      "url": "https://www.smc.edu/news/announcements/",
+      "last_run": {
+        "$date": "2025-11-02T15:08:31.150Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:08:31.219Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "6830096e20d5aff223cb54c2"
+  },
+  "name": "The New School",
+  "color": "#E82E21",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.the_new_school.scraper",
+      "url": "https://blogs.newschool.edu/community-messages/category/provost/",
+      "last_run": {
+        "$date": "2025-11-02T15:08:37.074Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.the_new_school.scraper2",
+      "url": "https://www.newschool.edu/about/university-leadership/president/messages-to-the-community/",
+      "last_run": {
+        "$date": "2025-11-02T15:08:42.030Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.the_new_school.scraper3",
+      "url": "https://blogs.newschool.edu/pressroom/",
+      "last_run": {
+        "$date": "2025-11-02T15:09:02.655Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:09:02.724Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "684f4de7c96d296041dacc93"
+  },
+  "name": "University of Tennessee",
+  "color": "#FF8200",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.university_of_tennessee.scraper",
+      "url": "https://provost.utk.edu/category/announcement/",
+      "last_run": {
+        "$date": "2025-11-02T15:09:04.457Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.university_of_tennessee.scraper2",
+      "url": "https://tennessee.edu/about/leadership/president/presidents-news/",
+      "last_run": {
+        "$date": "2025-11-02T15:09:08.347Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.university_of_tennessee.scraper3",
+      "url": "https://news.utk.edu/category/campus-news/",
+      "last_run": {
+        "$date": "2025-11-02T15:09:11.839Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:09:11.908Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93db"
+  },
+  "name": "Johns Hopkins University",
+  "color": "#002D72",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.johns_hopkins_university.scraper",
+      "url": "https://president.jhu.edu/messages/",
+      "last_run": {
+        "$date": "2025-11-02T15:09:15.632Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.johns_hopkins_university.scraper2",
+      "url": "https://hub.jhu.edu/tags/president-ron-daniels/articles/",
+      "last_run": {
+        "$date": "2025-11-02T15:09:20.319Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:09:20.389Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "687286e2be788623d3fc0e4f"
+  },
+  "name": "George Mason University",
+  "color": "#10573F",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.george_mason_university.scraper",
+      "url": "https://president.gmu.edu/statements",
+      "last_run": {
+        "$date": "2025-11-02T15:09:26.100Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "provost announcements",
+      "path": "scrapers.george_mason_university.scraper2",
+      "url": "https://provost.gmu.edu/about/meet-provost",
+      "last_run": {
+        "$date": "2025-11-02T15:09:32.940Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.george_mason_university.scraper3",
+      "url": "https://www.gmu.edu/news/federal-compliance-updates",
+      "last_run": {
+        "$date": "2025-11-02T15:09:37.638Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:09:37.706Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68addb3a4e9951b438725699"
+  },
+  "name": "University of North Carolina",
+  "color": "#0E4876",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_north_carolina.scraper",
+      "url": "https://www.northcarolina.edu/news-archive/",
+      "last_run": {
+        "$date": "2025-11-02T15:09:40.902Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:09:40.985Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93d8"
+  },
+  "name": "University of Pennsylvania",
+  "color": "#011F5B",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.university_of_pennsylvania.scraper",
+      "url": "https://president.upenn.edu/meet-president/announcements",
+      "last_run": {
+        "$date": "2025-11-02T15:09:44.911Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:09:44.980Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93dc"
+  },
+  "name": "Lafayette College",
+  "color": "#822433",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.lafayette_college.scraper",
+      "url": "https://news.lafayette.edu/category/presidential-news/",
+      "last_run": {
+        "$date": "2025-11-02T15:09:48.684Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.lafayette_college.scraper2",
+      "url": "https://news.lafayette.edu/news-and-features/",
+      "last_run": {
+        "$date": "2025-11-02T15:09:51.103Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:09:51.172Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "6836020820d5aff223577cc7"
+  },
+  "name": "Wellesley College",
+  "color": "#93032e",
+  "modules": [
+    {
+      "name": "general annoucncements",
+      "path": "scrapers.wellesley_college.scraper",
+      "url": "https://www.wellesley.edu/news?search=&type%5B%5D=announcement&category%5B%5D=&year%5B%5D="
+    }
+  ],
+  "scrapers": [
+    {
+      "name": "general announcements",
+      "path": "scrapers.wellesley_college.scraper",
+      "url": "https://www.wellesley.edu/news?search=&type%5B%5D=announcement&category%5B%5D=&year%5B%5D=",
+      "last_run": {
+        "$date": "2025-11-02T15:09:55.759Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:09:55.828Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "682fe88520d5aff223bd5f0a"
+  },
+  "name": "Sarah Lawrence College",
+  "color": "#024D36",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.sarah_lawrence_college.scraper",
+      "url": "https://www.sarahlawrence.edu/about/leadership/president/messages.html",
+      "last_run": {
+        "$date": "2025-11-02T15:10:11.584Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.sarah_lawrence_college.scraper2",
+      "url": "https://www.sarahlawrence.edu/news-events/news/",
+      "last_run": {
+        "$date": "2025-11-02T15:10:41.894Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:10:41.963Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68364a6a20d5aff2237631f3"
+  },
+  "name": "University of Cincinnati",
+  "color": "#E0011A",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.university_of_cincinnati.scraper",
+      "url": "https://www.uc.edu/about/president/communications/news.html",
+      "last_run": {
+        "$date": "2025-11-02T15:10:47.083Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.university_of_cincinnati.scraper2",
+      "url": "https://www.uc.edu/news.html",
+      "last_run": {
+        "$date": "2025-11-02T15:10:53.086Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:10:53.161Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "683f605620d5aff223562333"
+  },
+  "name": "University of Minnesota, Twin Cities",
+  "color": "#7A0019",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.university_of_minnesota_twin_cities.scraper",
+      "url": "https://provost.umn.edu/about-evpp/communications/",
+      "last_run": {
+        "$date": "2025-11-02T15:10:59.624Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.university_of_minnesota_twin_cities.scraper2",
+      "url": "https://president.umn.edu/communications",
+      "last_run": {
+        "$date": "2025-11-02T15:11:03.032Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:11:03.100Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "687286e2be788623d3fc0e54"
+  },
+  "name": "Portland State University",
+  "color": "#6d8d24",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.portland_state_university.scraper",
+      "url": "https://www.pdx.edu/president/presidential-communications",
+      "last_run": {
+        "$date": "2025-11-02T15:11:08.234Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "trustees announcements",
+      "path": "scrapers.portland_state_university.scraper2",
+      "url": "https://www.pdx.edu/board/board-communications",
+      "last_run": {
+        "$date": "2025-11-02T15:11:12.002Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:11:12.071Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68b84d344e9951b438e74210"
+  },
+  "name": "University of California Berkeley",
+  "color": "#002676",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.university_of_california_berkeley.scraper",
+      "url": "https://evcp.berkeley.edu/news-archive?field_openberkeley_news_type_tid_op=or&",
+      "last_run": {
+        "$date": "2025-11-02T15:11:20.037Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "chancellor announcements",
+      "path": "scrapers.university_of_california_berkeley.scraper2",
+      "url": "https://chancellor.berkeley.edu/",
+      "last_run": {
+        "$date": "2025-11-02T15:11:21.629Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.university_of_california_berkeley.scraper3",
+      "url": "https://federal-updates.berkeley.edu/",
+      "last_run": {
+        "$date": "2025-11-02T15:11:33.068Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:11:33.141Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68364fd920d5aff223789689"
+  },
+  "name": "Temple University",
+  "color": "#9D2235",
+  "scrapers": [
+    {
+      "name": "other announcements",
+      "path": "scrapers.temple_university.scraper",
+      "url": "https://news.temple.edu/announcements/",
+      "last_run": {
+        "$date": "2025-11-02T15:11:36.244Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.temple_university.scraper2",
+      "url": "https://president.temple.edu/communications",
+      "last_run": {
+        "$date": "2025-11-02T15:11:46.790Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "provost announcements",
+      "path": "scrapers.temple_university.scraper3",
+      "url": "https://provost.temple.edu/",
+      "last_run": {
+        "$date": "2025-11-02T15:11:59.439Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "trustees announcements",
+      "path": "scrapers.temple_university.scraper4",
+      "url": "https://www.temple.edu/about/president/board-trustees-updates",
+      "last_run": {
+        "$date": "2025-11-02T15:12:07.623Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:12:07.691Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68431f5420d5aff223eea0f3"
+  },
+  "name": "Eastern Washington University",
+  "color": "#a80424",
+  "scrapers": [
+    {
+      "name": "other announcements",
+      "path": "scrapers.eastern_washington_university.scraper",
+      "url": "https://inside.ewu.edu/category/news/announcements/",
+      "last_run": {
+        "$date": "2025-11-02T15:12:11.995Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.eastern_washington_university.scraper2",
+      "url": "https://www.ewu.edu/news/tag/campus-messages/",
+      "last_run": {
+        "$date": "2025-11-02T15:12:15.881Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:12:15.949Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68503a0fc96d2960413fc34a"
+  },
+  "name": "University of Southern California",
+  "color": "#990000",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.university_of_southern_california.scraper",
+      "url": "https://www.provost.usc.edu/category/news-and-announcements/announcements/",
+      "last_run": {
+        "$date": "2025-11-02T15:12:18.307Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.university_of_southern_california.scraper2",
+      "url": "https://www.president.usc.edu/from-the-president/messages/",
+      "last_run": {
+        "$date": "2025-11-02T15:12:19.244Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "trustees announcements",
+      "path": "scrapers.university_of_southern_california.scraper3",
+      "url": "https://boardoftrustees.usc.edu/updates/",
+      "last_run": {
+        "$date": "2025-11-02T15:12:21.952Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:12:22.021Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "6859934ad548ce0974a67cb6"
+  },
+  "name": "University of Wisconsin Madison",
+  "color": "#C5050C",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.university_of_wisconsin_madison.scraper",
+      "url": "https://news.wisc.edu/syndication/provost-wisc-edu/",
+      "last_run": {
+        "$date": "2025-11-02T15:12:25.835Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.university_of_wisconsin_madison.scraper2",
+      "url": "https://news.wisc.edu/category/leadership-statements/",
+      "last_run": {
+        "$date": "2025-11-02T15:12:39.031Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "seed_data_present": true,
+  "last_run": {
+    "$date": "2025-11-02T15:12:39.100Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "687286e2be788623d3fc0e4e"
+  },
+  "name": "Pacific Lutheran University",
+  "color": "#FDBA2C",
+  "scrapers": [
+    {
+      "name": "other announcements",
+      "path": "scrapers.pacific_lutheran_university.scraper",
+      "url": "https://www.plu.edu/iss/announcements/",
+      "last_run": {
+        "$date": "2025-11-02T15:12:41.362Z"
+      },
+      "last_run_count": 2
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:12:41.431Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6875ae5abe788623d35484de"
+  },
+  "name": "Arizona State University",
+  "color": "#8C1D40",
+  "scrapers": [
+    {
+      "name": "other announcements",
+      "path": "scrapers.arizona_state_university.scraper",
+      "url": "https://news.asu.edu/announcements/announcements",
+      "last_run": {
+        "$date": "2025-11-02T15:12:49.912Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.arizona_state_university.scraper2",
+      "url": "https://president.asu.edu/updates",
+      "last_run": {
+        "$date": "2025-11-02T15:12:58.480Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:12:58.557Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93d5"
+  },
+  "name": "Princeton University",
+  "color": "#E77500",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.princeton_university.scraper",
+      "url": "https://president.princeton.edu/speeches-writings/statements",
+      "last_run": {
+        "$date": "2025-11-02T15:13:05.107Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.princeton_university.scraper2",
+      "url": "https://www.princeton.edu/news",
+      "last_run": {
+        "$date": "2025-11-02T15:13:11.146Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:13:11.226Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93d6"
+  },
+  "name": "Columbia University",
+  "color": "#C4D8E2",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.columbia_university.scraper",
+      "url": "https://president.columbia.edu/announcements",
+      "last_run": {
+        "$date": "2025-11-02T15:13:15.420Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:13:15.489Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "6830096e20d5aff223cb54c1"
+  },
+  "name": "The Ohio State University",
+  "color": "#ba0c2f",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.the_ohio_state_university.scraper",
+      "url": "https://president.osu.edu/communications/messages",
+      "last_run": {
+        "$date": "2025-11-02T15:13:17.781Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.the_ohio_state_university.scraper2",
+      "url": "https://oaa.osu.edu/news?tid=20",
+      "last_run": {
+        "$date": "2025-11-02T15:13:20.546Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:13:20.614Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "687286e2be788623d3fc0e51"
+  },
+  "name": "Tulane University",
+  "color": "#0F7F12",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.tulane_university.scraper",
+      "url": "https://president.tulane.edu/writings-speeches",
+      "last_run": {
+        "$date": "2025-11-02T15:13:27.359Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.tulane_university.scraper2",
+      "url": "https://news.tulane.edu/pr",
+      "last_run": {
+        "$date": "2025-11-02T15:13:30.193Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:13:30.274Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "683006cf20d5aff223ca227b"
+  },
+  "name": "Boston University",
+  "color": "#CC0000",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.boston_university.scraper",
+      "url": "https://www.bu.edu/provost/about/updates-from-the-provost/",
+      "last_run": {
+        "$date": "2025-11-02T15:13:33.973Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.boston_university.scraper2",
+      "url": "https://www.bu.edu/president/updates/from-the-presidents-desk/",
+      "last_run": {
+        "$date": "2025-11-02T15:13:38.962Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.boston_university.scraper3",
+      "url": "https://www.bu.edu/usc/news7/",
+      "last_run": {
+        "$date": "2025-11-02T15:13:43.190Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:13:43.263Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "6859a23ed548ce0974acde4d"
+  },
+  "name": "University of California Davis",
+  "color": "#022851",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.university_of_california_davis.scraper",
+      "url": "https://leadership.ucdavis.edu/news/messages",
+      "last_run": {
+        "$date": "2025-11-02T15:13:45.285Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.university_of_california_davis.scraper2",
+      "url": "https://www.ucdavis.edu/news/university",
+      "last_run": {
+        "$date": "2025-11-02T15:13:48.978Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:13:49.048Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "6830096e20d5aff223cb54c3"
+  },
+  "name": "Tufts University",
+  "color": "#3172AE",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.tufts_university.scraper",
+      "url": "https://provost.tufts.edu/news/",
+      "last_run": {
+        "$date": "2025-11-02T15:13:54.526Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.tufts_university.scraper2",
+      "url": "https://www.tufts.edu/president/speeches-and-messages",
+      "last_run": {
+        "$date": "2025-11-02T15:14:04.852Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.tufts_university.scraper3",
+      "url": "https://provost.tufts.edu/blog/news/category/news/general-announcements/",
+      "last_run": {
+        "$date": "2025-11-02T15:14:06.322Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:14:06.391Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "684c4fd6c96d29604195e32c"
+  },
+  "name": "Emerson College",
+  "color": "#62259D",
+  "scrapers": [
+    {
+      "name": "other announcements",
+      "path": "scrapers.emerson_college.scraper",
+      "url": "https://today.emerson.edu/category/announcements/",
+      "last_run": {
+        "$date": "2025-11-02T15:14:09.292Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.emerson_college.scraper2",
+      "url": "https://today.emerson.edu/tag/presidents-office/",
+      "last_run": {
+        "$date": "2025-11-02T15:14:14.118Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:14:14.186Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "6875ae59be788623d35484db"
+  },
+  "name": "Illinois Wesleyan University",
+  "color": "#006747",
+  "scrapers": [
+    {
+      "name": "other announcements",
+      "path": "scrapers.illinois_wesleyan_university.scraper",
+      "url": "https://www.iwu.edu/news/",
+      "last_run": {
+        "$date": "2025-11-02T15:14:17.666Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:14:17.734Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6875ae5abe788623d35484dc"
+  },
+  "name": "California State University Sacramento",
+  "color": "#043927",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.california_state_university_sacramento.scraper",
+      "url": "https://www.csus.edu/president/presidential-communications/archive/spring-2025-messages.html",
+      "last_run": {
+        "$date": "2025-11-02T15:14:22.902Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:14:22.971Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93d4"
+  },
+  "name": "Cornell University",
+  "color": "#B31B1B",
+  "scrapers": [
+    {
+      "name": "general announcements",
+      "path": "scrapers.cornell_university.scraper",
+      "url": "https://statements.cornell.edu/",
+      "last_run": {
+        "$date": "2025-11-02T15:15:08.132Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-11-02T15:15:08.214Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93e0"
+  },
+  "name": "Yale University",
+  "color": "#00356b",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.yale_university.scraper",
+      "url": "https://provost.yale.edu/news"
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.yale_university.scraper2",
+      "url": "https://president.yale.edu/from-president-mcinnis/statements"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:12:29.580Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68360d3620d5aff2235c4623"
+  },
+  "name": "University of Washington",
+  "color": "#39275B",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.university_of_washington.scraper",
+      "url": "https://www.washington.edu/president/blog/"
+    },
+    {
+      "name": "provost announcements",
+      "path": "scrapers.university_of_washington.scraper2",
+      "url": "https://www.washington.edu/provost/blog/"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:20:39.834Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "687286e2be788623d3fc0e53"
+  },
+  "name": "University of Hawaii at Manoa",
+  "color": "#004530",
+  "scrapers": [
+    {
+      "name": "other announcements",
+      "path": "scrapers.university_of_hawaii_at_manoa.scraper",
+      "url": "https://www.hawaii.edu/news/"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:24:26.641Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "683645c220d5aff223743360"
+  },
+  "name": "Drexel University",
+  "color": "#1a3768",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.drexel_university.scraper",
+      "url": "https://drexel.edu/provost/news-events/announcements?q&sortBy=date&page=1"
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.drexel_university.scraper2",
+      "url": "https://drexel.edu/president/communications/message?q&sortBy=date&page=1"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:24:34.967Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93df"
+  },
+  "name": "Muhlenberg College",
+  "color": "#A41D36",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.muhlenberg_college.scraper",
+      "url": "https://www.muhlenberg.edu/president/communications/"
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.muhlenberg_college.scraper3",
+      "url": "https://www.muhlenberg.edu/news/2025/"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:24:42.322Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "6836034d20d5aff2235815f3"
+  },
+  "name": "Rutgers University",
+  "color": "#C80032",
+  "scrapers": [
+    {
+      "name": "other announcements",
+      "path": "scrapers.rutgers_university.scraper",
+      "url": "https://www.rutgers.edu/president/messages-to-the-rutgers-community"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:24:44.023Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93dd"
+  },
+  "name": "Pomona College",
+  "color": "#0057b8",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.pomona_college.scraper",
+      "url": "https://www.pomona.edu/administration/president/statements"
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.pomona_college.scraper2",
+      "url": "https://www.pomona.edu/news"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:25:44.826Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93de"
+  },
+  "name": "Lehigh University",
+  "color": "#653600",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.lehigh_university.scraper",
+      "url": "https://www2.lehigh.edu/president/presidential-news-communications"
+    },
+    {
+      "name": "provost announcements",
+      "path": "scrapers.lehigh_university.scraper2",
+      "url": "https://provost.lehigh.edu/provost-communications"
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.lehigh_university.scraper3",
+      "url": "https://news.lehigh.edu/all-stories"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:40:38.208Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "6875ae59be788623d35484d9"
+  },
+  "name": "American University",
+  "color": "#004FA2",
+  "scrapers": [
+    {
+      "name": "other announcements",
+      "path": "scrapers.american_university.scraper",
+      "url": "https://www.american.edu/media/news/"
+    },
+    {
+      "name": "provost announcements",
+      "path": "scrapers.american_university.scraper2",
+      "url": "https://www.american.edu/provost/communications/"
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.american_university.scraper3",
+      "url": "https://www.american.edu/president/announcements/"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:41:53.986Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93d3"
+  },
+  "name": "Harvard University",
+  "color": "#A41034",
+  "scrapers": [
+    {
+      "name": "president announcements",
+      "path": "scrapers.harvard_university.scraper",
+      "url": "https://www.harvard.edu/president/category/news/"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:42:01.930Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93d7"
+  },
+  "name": "Brown University",
+  "color": "#4E3629",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.brown_university.scraper",
+      "url": "https://www.brown.edu/about/administration/provost/communications"
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.brown_university.scraper2",
+      "url": "https://president.brown.edu/from-the-president"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:42:09.749Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "68207fb3a21d85a348da93d9"
+  },
+  "name": "Middlebury College",
+  "color": "#37538C",
+  "scrapers": [
+    {
+      "name": "general announcements",
+      "path": "scrapers.middlebury_college.scraper",
+      "url": "https://www.middlebury.edu/announcements/announcements"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:42:30.251Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "684f50c9c96d296041dc0141"
+  },
+  "name": "University of Tampa",
+  "color": "#c8102e",
+  "scrapers": [
+    {
+      "name": "other announcements",
+      "path": "scrapers.university_of_tampa.scraper",
+      "url": "https://www.ut.edu/news-and-ut-life"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:43:31.700Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "684f6940c96d296041e65f5e"
+  },
+  "name": "University of California Santa Barbara",
+  "color": "#FEBC11",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.university_of_california_santa_barbara.scraper",
+      "url": "https://evc.ucsb.edu/communications/memos/from-the-evc"
+    },
+    {
+      "name": "president announcements",
+      "path": "scrapers.university_of_california_santa_barbara.scraper2",
+      "url": "https://chancellor.ucsb.edu/memos"
+    },
+    {
+      "name": "other announcements",
+      "path": "scrapers.university_of_california_santa_barbara.scraper3",
+      "url": "https://news.ucsb.edu/all-news"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:51:32.349Z"
+  },
+  "seed_data_present": true
+},
+{
+  "_id": {
+    "$oid": "6875ae5abe788623d35484dd"
+  },
+  "name": "Chapman University",
+  "color": "#A50034",
+  "scrapers": [
+    {
+      "name": "other announcements",
+      "path": "scrapers.chapman_university.scraper",
+      "url": "https://news.chapman.edu/press-releases/"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:57:03.459Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68b84d354e9951b438e74212"
+  },
+  "name": "Stanford University",
+  "color": "#8C1515",
+  "scrapers": [
+    {
+      "name": "provost announcements",
+      "path": "scrapers.stanford_university.scraper",
+      "url": "https://provost.stanford.edu/news/"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T20:59:05.243Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68cd7c0181d5ca2eb47ca085"
+  },
+  "name": "swarthmore",
+  "color": "#B43135",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.swarthmore.scraper",
+      "url": "https://www.swarthmore.edu/news-events/stories-swarthmore"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:00:39.943Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68cd7c0181d5ca2eb47ca086"
+  },
+  "name": "West Michigan University",
+  "color": "#532F20",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.west_michigan_university.scraper",
+      "url": "https://wmich.edu/news/latest"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:00:43.026Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68cd7c0181d5ca2eb47ca087"
+  },
+  "name": "Binghamton University",
+  "color": "#004333",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.binghamton_university.scraper",
+      "url": "https://www.binghamton.edu/news/home"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:00:46.436Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68cd7c0281d5ca2eb47ca088"
+  },
+  "name": "Purchase College",
+  "color": "#4C237D",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.purchase_college.scraper",
+      "url": "https://www.purchase.edu/news/"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:01:59.351Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68cd7c0381d5ca2eb47ca089"
+  },
+  "name": "University of Southern Florida",
+  "color": "#006748",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_southern_florida.scraper",
+      "url": "https://www.usf.edu/news/listing.aspx"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:02:49.880Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68cd7c0381d5ca2eb47ca08a"
+  },
+  "name": "UNC Chapel Hill",
+  "color": "#4B9CD3",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.unc_chapel_hill.scraper",
+      "url": "https://uncnews.unc.edu/posts/"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:04:48.892Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68d44cdb82f14d273bebe773"
+  },
+  "name": "Western Carolina University",
+  "color": "#3F1362",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.western_carolina_university.scraper",
+      "url": "https://www.wcu.edu/stories/posts/index.aspx?tags=News"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:07:21.194Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68d44cdd82f14d273bebe774"
+  },
+  "name": "Western Michigan University",
+  "color": "#F1C501",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.western_michigan_university.scraper",
+      "url": "https://wmich.edu/news/latest"
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.western_michigan_university.scraper2",
+      "url": "https://wmich.edu/news/archive"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:07:46.877Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68d458fe82f14d273bebf4b1"
+  },
+  "name": "Washington University in St Louis",
+  "color": "#BA2030",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.washington_university_in_st_louis.scraper",
+      "url": "https://source.washu.edu/channels/announcements/",
+      "last_run": {
+        "$date": "2025-10-30T21:11:00.980Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.washington_university_in_st_louis.scraper2",
+      "url": "https://provost.washu.edu/category/news/",
+      "last_run": {
+        "$date": "2025-10-30T21:11:03.750Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.washington_university_in_st_louis.scraper3",
+      "url": "https://source.washu.edu/news/",
+      "last_run": {
+        "$date": "2025-10-30T21:11:06.844Z"
+      },
+      "last_run_count": 2
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.washington_university_in_st_louis.scraper4",
+      "url": "https://andrewdmartin.washu.edu/statements/",
+      "last_run": {
+        "$date": "2025-10-30T21:13:13.955Z"
+      },
+      "last_run_count": 88
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:13:13.968Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68d6d1cf82f14d273bee499c"
+  },
+  "name": "Vanderbilt University",
+  "color": "#936E25",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.vanderbilt_university.scraper",
+      "url": "https://news.vanderbilt.edu/2025/",
+      "last_run": {
+        "$date": "2025-10-30T21:26:22.180Z"
+      },
+      "last_run_count": 7
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.vanderbilt_university.scraper2",
+      "url": "https://news.vanderbilt.edu/tag/international-student/",
+      "last_run": {
+        "$date": "2025-10-30T21:26:28.947Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "trustees articles",
+      "path": "scrapers.vanderbilt_university.scraper3",
+      "url": "https://news.vanderbilt.edu/tag/board-of-trust/",
+      "last_run": {
+        "$date": "2025-10-30T21:26:52.255Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.vanderbilt_university.scraper4",
+      "url": "https://news.vanderbilt.edu/tag/office-of-the-provost/",
+      "last_run": {
+        "$date": "2025-10-30T21:27:57.850Z"
+      },
+      "last_run_count": 201
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:27:57.863Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68d6fbec82f14d273bee6ef1"
+  },
+  "name": "Wagner College",
+  "color": "#BEA76A",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.wagner_college.scraper",
+      "url": "https://wagner.edu/newsroom/",
+      "last_run": {
+        "$date": "2025-10-30T21:28:15.521Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.wagner_college.scraper2",
+      "url": "https://wagner.edu/newsroom/category/presidents-office/",
+      "last_run": {
+        "$date": "2025-10-30T21:31:16.261Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.wagner_college.scraper3",
+      "url": "https://wagner.edu/newsroom/category/academic-news/provost/",
+      "last_run": {
+        "$date": "2025-10-30T21:31:23.110Z"
+      },
+      "last_run_count": 10
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:31:23.123Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dbe66982f14d273bf1f73f"
+  },
+  "name": "University of Wyoming",
+  "color": "#492F24",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_wyoming.scraper",
+      "url": "https://www.uwyo.edu/news/index.html",
+      "last_run": {
+        "$date": "2025-10-30T21:31:38.545Z"
+      },
+      "last_run_count": 1
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_wyoming.scraper2",
+      "url": "https://www.uwyo.edu/news/2025/index.html",
+      "last_run": {
+        "$date": "2025-10-30T21:32:01.887Z"
+      },
+      "last_run_count": 3
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.university_of_wyoming.scraper3",
+      "url": "https://www.uwyo.edu/acadaffairs/about-us/provost.html",
+      "last_run": {
+        "$date": "2025-10-30T21:32:07.444Z"
+      },
+      "last_run_count": 19
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:32:07.476Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dbed8982f14d273bf20057"
+  },
+  "name": "University of Utah",
+  "color": "#BE0000",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_utah.scraper",
+      "url": "https://attheu.utah.edu/category/news-releases/",
+      "last_run": {
+        "$date": "2025-10-30T21:35:06.506Z"
+      },
+      "last_run_count": 1
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_utah.scraper2",
+      "url": "https://isss.utah.edu/news/",
+      "last_run": {
+        "$date": "2025-10-30T21:36:33.068Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.university_of_utah.scraper3",
+      "url": "https://academic-affairs.utah.edu/provost-perspectives-archive/",
+      "last_run": {
+        "$date": "2025-10-30T21:36:37.268Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.university_of_utah.scraper4",
+      "url": "https://president.utah.edu/statements-announcements/",
+      "last_run": {
+        "$date": "2025-10-30T21:36:41.324Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "trustees articles",
+      "path": "scrapers.university_of_utah.scraper5",
+      "url": "https://attheu.utah.edu/tag/board-of-trustees/",
+      "last_run": {
+        "$date": "2025-10-30T21:37:03.137Z"
+      },
+      "last_run_count": 25
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:37:03.151Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dbf31382f14d273bf204c0"
+  },
+  "name": "Georgia Institute of Technology",
+  "color": "#AD9B63",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.georgia_institute_of_technology.scraper",
+      "url": "https://news.gatech.edu/features",
+      "last_run": {
+        "$date": "2025-10-30T21:38:11.964Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.georgia_institute_of_technology.scraper2",
+      "url": "https://provost.gatech.edu/hg/news",
+      "last_run": {
+        "$date": "2025-10-30T21:40:49.396Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.georgia_institute_of_technology.scraper3",
+      "url": "https://president.gatech.edu/publications-speeches/newsletter",
+      "last_run": {
+        "$date": "2025-10-30T21:40:53.142Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:40:53.169Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dc059e82f14d273bf21221"
+  },
+  "name": "Scripps College",
+  "color": "#306E5A",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.scripps_college.scraper",
+      "url": "https://www.scrippscollege.edu/news/tag/newsroom",
+      "last_run": {
+        "$date": "2025-10-30T21:42:48.463Z"
+      },
+      "last_run_count": 18
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.scripps_college.scraper2",
+      "url": "https://www.scrippscollege.edu/news/tag/trustee-news",
+      "last_run": {
+        "$date": "2025-10-30T21:42:52.888Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:42:52.902Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dc0a0f82f14d273bf21a29"
+  },
+  "name": "University of Texas Arlington",
+  "color": "#C35416",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_texas_arlington.scraper",
+      "url": "https://www.uta.edu/news/news-releases",
+      "last_run": {
+        "$date": "2025-10-30T21:42:57.338Z"
+      },
+      "last_run_count": 1
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:42:57.352Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dc0db182f14d273bf21b00"
+  },
+  "name": "University of Denver",
+  "color": "#BA0D2F",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_denver.scraper",
+      "url": "https://www.du.edu/news/category/university-news",
+      "last_run": {
+        "$date": "2025-10-30T21:44:41.256Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:44:41.270Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dc124082f14d273bf21d71"
+  },
+  "name": "Fashion Institute of Technology",
+  "color": "#0036F9",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.fashion_institute_of_technology.scraper",
+      "url": "https://news.fitnyc.edu/category/faculty-staff/",
+      "last_run": {
+        "$date": "2025-10-30T21:49:30.100Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.fashion_institute_of_technology.scraper2",
+      "url": "https://news.fitnyc.edu/category/college-campus/",
+      "last_run": {
+        "$date": "2025-10-30T21:54:30.677Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:54:30.691Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dc41fc82f14d273bf2508a"
+  },
+  "name": "Haverford College",
+  "color": "#8B0000",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.haverford_college.scraper",
+      "url": "https://www.haverford.edu/headlines",
+      "last_run": {
+        "$date": "2025-10-30T21:59:26.011Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.haverford_college.scraper2",
+      "url": "https://www.haverford.edu/provost",
+      "last_run": {
+        "$date": "2025-10-30T21:59:26.744Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T21:59:26.759Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dc4dd982f14d273bf257fb"
+  },
+  "name": "Boise State University",
+  "color": "#FA6139",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.boise_state_university.scraper",
+      "url": "https://www.boisestate.edu/news/posts/",
+      "last_run": {
+        "$date": "2025-10-30T22:06:24.125Z"
+      },
+      "last_run_count": 5
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.boise_state_university.scraper2",
+      "url": "https://www.boisestate.edu/presidentialsearch/announcements/",
+      "last_run": {
+        "$date": "2025-10-30T22:06:29.001Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.boise_state_university.scraper3",
+      "url": "https://www.boisestate.edu/academics/provost-news/",
+      "last_run": {
+        "$date": "2025-10-30T22:06:47.075Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:06:47.089Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dd5fa482f14d273bf3216a"
+  },
+  "name": "University of Rhode Island",
+  "color": "#002147",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_rhode_island.scraper",
+      "url": "https://www.uri.edu/announcement/",
+      "last_run": {
+        "$date": "2025-10-30T22:08:02.900Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_rhode_island.scraper2",
+      "url": "https://www.uri.edu/news/community-message/federal-actions-messages/",
+      "last_run": {
+        "$date": "2025-10-30T22:08:07.447Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:08:07.461Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dd64e782f14d273bf3286a"
+  },
+  "name": "Cal Poly Humboldt",
+  "color": "#02856A",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.cal_poly_humboldt.scraper",
+      "url": "https://pmc.humboldt.edu/announcements/all%20campus",
+      "last_run": {
+        "$date": "2025-10-30T22:13:29.493Z"
+      },
+      "last_run_count": 1
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.cal_poly_humboldt.scraper2",
+      "url": "https://www.humboldt.edu/academic-affairs/news",
+      "last_run": {
+        "$date": "2025-10-30T22:14:40.158Z"
+      },
+      "last_run_count": 13
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:14:40.172Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dd719782f14d273bf33976"
+  },
+  "name": "Carnegie Mellon University",
+  "color": "#C41230",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.carnegie_mellon_university.scraper",
+      "url": "https://www.cmu.edu/news/stories/archives",
+      "last_run": {
+        "$date": "2025-10-30T22:14:40.734Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.carnegie_mellon_university.scraper2",
+      "url": "https://www.cmu.edu/oie/news-and-events/index.html",
+      "last_run": {
+        "$date": "2025-10-30T22:14:42.399Z"
+      },
+      "last_run_count": 1
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.carnegie_mellon_university.scraper3",
+      "url": "https://www.cmu.edu/leadership/president/campus-comms",
+      "last_run": {
+        "$date": "2025-10-30T22:14:44.130Z"
+      },
+      "last_run_count": 1
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.carnegie_mellon_university.scraper4",
+      "url": "https://www.cmu.edu/news/stories",
+      "last_run": {
+        "$date": "2025-10-30T22:17:52.359Z"
+      },
+      "last_run_count": 2
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:17:52.374Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dd790b82f14d273bf34618"
+  },
+  "name": "Clemson University",
+  "color": "#F56600",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.clemson_university.scraper",
+      "url": "https://news.clemson.edu/section/office-of-the-provost/",
+      "last_run": {
+        "$date": "2025-10-30T22:17:54.040Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.clemson_university.scraper2",
+      "url": "https://news.clemson.edu/section/office-of-the-president/",
+      "last_run": {
+        "$date": "2025-10-30T22:17:56.123Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "trustees articles",
+      "path": "scrapers.clemson_university.scraper3",
+      "url": "https://news.clemson.edu/tag/board-of-trustees/",
+      "last_run": {
+        "$date": "2025-10-30T22:17:57.475Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:17:57.489Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dd83fe82f14d273bf3561c"
+  },
+  "name": "Emory University",
+  "color": "#022169",
+  "scrapers": [
+    {
+      "name": "provost articles",
+      "path": "scrapers.emory_university.scraper",
+      "url": "https://news.emory.edu/tags/school_or_unit/provost_office/index.html",
+      "last_run": {
+        "$date": "2025-10-30T22:17:59.673Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.emory_university.scraper2",
+      "url": "https://news.emory.edu/tags/category/university/index.html",
+      "last_run": {
+        "$date": "2025-10-30T22:18:04.335Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.emory_university.scraper3",
+      "url": "https://news.emory.edu/tags/category/international/index.html",
+      "last_run": {
+        "$date": "2025-10-30T22:18:10.950Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.emory_university.scraper4",
+      "url": "https://news.emory.edu/tags/topic/staff/index.html",
+      "last_run": {
+        "$date": "2025-10-30T22:18:15.769Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:18:15.783Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dd83ff82f14d273bf3561d"
+  },
+  "name": "Duke University",
+  "color": "#022169",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.duke_university.scraper",
+      "url": "https://today.duke.edu/",
+      "last_run": {
+        "$date": "2025-10-30T22:19:21.438Z"
+      },
+      "last_run_count": 1
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.duke_university.scraper2",
+      "url": "https://today.duke.edu/topic/hr",
+      "last_run": {
+        "$date": "2025-10-30T22:20:50.745Z"
+      },
+      "last_run_count": 1589
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.duke_university.scraper3",
+      "url": "https://president.duke.edu/category/news/",
+      "last_run": {
+        "$date": "2025-10-30T22:20:52.323Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:20:52.336Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dd8e4082f14d273bf35a77"
+  },
+  "name": "Georgetown University",
+  "color": "#041E42",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.georgetown_university.scraper",
+      "url": "https://www.georgetown.edu/news/"
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.georgetown_university.scraper2",
+      "url": "https://politics.georgetown.edu/about/press-releases-announcements/",
+      "last_run": {
+        "$date": "2025-10-30T22:20:54.594Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:20:54.608Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dd923782f14d273bf36784"
+  },
+  "name": "Grand Valley State University",
+  "color": "/Users/torylysik/Desktop/campus-data/.venv/bin/python /Users/torylysik/Desktop/campus-data/scrapers/grand_valley_state_university/scraper.py",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.grand_valley_state_university.scraper",
+      "url": "https://www.gvsu.edu/gvnext/university-news.htm",
+      "last_run": {
+        "$date": "2025-10-30T22:21:33.917Z"
+      },
+      "last_run_count": 677
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.grand_valley_state_university.scraper2",
+      "url": "https://www.gvsu.edu/gvnext/office-of-the-provost.htm",
+      "last_run": {
+        "$date": "2025-10-30T22:21:45.155Z"
+      },
+      "last_run_count": 129
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.grand_valley_state_university.scraper3",
+      "url": "https://www.gvsu.edu/gvnext/board-of-trustees.htm",
+      "last_run": {
+        "$date": "2025-10-30T22:21:50.964Z"
+      },
+      "last_run_count": 64
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.grand_valley_state_university.scraper4",
+      "url": "https://www.gvsu.edu/president/module-gvnow-index.htm?siteModuleId=DC5D3134-9C20-8F94-4CC7EAC3F644F4E3",
+      "last_run": {
+        "$date": "2025-10-30T22:23:04.818Z"
+      },
+      "last_run_count": 5
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:23:04.833Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dd96d282f14d273bf368b3"
+  },
+  "name": "Ithaca College",
+  "color": "#003B71",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.ithaca_college.scraper",
+      "url": "https://www.ithaca.edu/news/latest-news",
+      "last_run": {
+        "$date": "2025-10-30T22:25:10.614Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:25:10.628Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68de8f1582f14d273bf43943"
+  },
+  "name": "Massachusetts Institute of Technology",
+  "color": "#0978A7",
+  "scrapers": [
+    {
+      "name": "president articles",
+      "path": "scrapers.massachusetts_institute_of_technology.scraper",
+      "url": "https://research.mit.edu/about/news-and-announcements",
+      "last_run": {
+        "$date": "2025-10-30T22:25:12.024Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.massachusetts_institute_of_technology.scraper2",
+      "url": "https://news.mit.edu/",
+      "last_run": {
+        "$date": "2025-10-30T22:25:33.543Z"
+      },
+      "last_run_count": 6
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.massachusetts_institute_of_technology.scraper3",
+      "url": "https://provost.mit.edu/updates/",
+      "last_run": {
+        "$date": "2025-10-30T22:25:35.477Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.massachusetts_institute_of_technology.scraper4",
+      "url": "https://president.mit.edu/news",
+      "last_run": {
+        "$date": "2025-10-30T22:25:38.481Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:25:38.502Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68de9c6282f14d273bf441d2"
+  },
+  "name": "Montana State University",
+  "color": "#09599C",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.montana_state_university.scraper",
+      "url": "https://www.montana.edu/news/",
+      "last_run": {
+        "$date": "2025-10-30T22:34:52.844Z"
+      },
+      "last_run_count": 30
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:34:52.858Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dea0d682f14d273bf453ce"
+  },
+  "name": "New England College of Optometry",
+  "color": "https://www.cjr.org/tow_center/unheard-using-large-langu\u001b[B",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.new_england_college_of_optometry.scraper",
+      "url": "https://www.neco.edu/news/",
+      "last_run": {
+        "$date": "2025-10-30T22:37:53.211Z"
+      },
+      "last_run_count": 257
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:37:53.225Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dea9b682f14d273bf459e5"
+  },
+  "name": "New York University",
+  "color": "#230337",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.new_york_university.scraper",
+      "url": "https://www.nyu.edu/about/news-publications/news/search.html ",
+      "last_run": {
+        "$date": "2025-10-30T22:43:54.598Z"
+      },
+      "last_run_count": 41
+    },
+    {
+      "name": "trustees articles",
+      "path": "scrapers.new_york_university.scraper2",
+      "url": "https://www.nyu.edu/about/leadership-university-administration/board-of-trustees/communications.html",
+      "last_run": {
+        "$date": "2025-10-30T22:43:55.338Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:43:55.364Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68ded90d82f14d273bf487e6"
+  },
+  "name": "Rice University",
+  "color": "#0D2550",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.rice_university.scraper",
+      "url": "https://news.rice.edu/news-releases",
+      "last_run": {
+        "$date": "2025-10-30T22:43:55.737Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.rice_university.scraper2",
+      "url": "https://news.rice.edu/tag/provost",
+      "last_run": {
+        "$date": "2025-10-30T22:43:56.082Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.rice_university.scraper3",
+      "url": "https://news.rice.edu/tag/president",
+      "last_run": {
+        "$date": "2025-10-30T22:43:56.423Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:43:56.443Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dee0fc82f14d273bf49016"
+  },
+  "name": "San Jose State University",
+  "color": "#123A91",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.san_jose_state_university.scraper",
+      "url": "https://blogs.sjsu.edu/newsroom/stories/",
+      "last_run": {
+        "$date": "2025-10-30T22:47:38.758Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.san_jose_state_university.scraper2",
+      "url": "https://www.sjsu.edu/provost/communications/provost-updates/index.php",
+      "last_run": {
+        "$date": "2025-10-30T22:47:42.754Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.san_jose_state_university.scraper3",
+      "url": "https://www.sjsu.edu/president/from-the-president/communications/index.php",
+      "last_run": {
+        "$date": "2025-10-30T22:47:46.326Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:47:46.357Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dee68d82f14d273bf4a5b6"
+  },
+  "name": "Towson University",
+  "color": "#C88901",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.towson_university.scraper",
+      "url": "https://www.towson.edu/news/archive.html",
+      "last_run": {
+        "$date": "2025-10-30T22:47:48.032Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.towson_university.scraper2",
+      "url": "https://www.towson.edu/news/archive.html?type=Presidential+Communication",
+      "last_run": {
+        "$date": "2025-10-30T22:47:49.641Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:47:49.656Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68def08e82f14d273bf4ac54"
+  },
+  "name": "University of Alabama",
+  "color": "#9E1B32",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_alabama.scraper",
+      "url": "https://www.uab.edu/news/campus-community",
+      "last_run": {
+        "$date": "2025-10-30T22:48:14.506Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.university_of_alabama.scraper2",
+      "url": "https://www.uab.edu/provost/news-events/provost-news",
+      "last_run": {
+        "$date": "2025-10-30T22:48:18.248Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_alabama.scraper3",
+      "url": "https://news.ua.edu/Audience/media/",
+      "last_run": {
+        "$date": "2025-10-30T22:49:28.379Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T22:49:28.400Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68def7b082f14d273bf4b3ec"
+  },
+  "name": "University of Arkansas",
+  "color": "#8B171D",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_arkansas.scraper",
+      "url": "https://news.uark.edu/RSSFeeds/Feed?type=RSS",
+      "last_run": {
+        "$date": "2025-10-30T22:49:31.286Z"
+      },
+      "last_run_count": 1
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_arkansas.scraper2",
+      "url": "https://news.uark.edu/search?searchStudioQuery=&facets=fq%3Dtopics_ss%3A%22Faculty%2520and%2520Staff%2520Success%22&isGrid=false&orderBy=&start=0&model=news",
+      "last_run": {
+        "$date": "2025-10-30T23:00:21.165Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_arkansas.scraper3",
+      "url": "https://uasys.edu/category/news/",
+      "last_run": {
+        "$date": "2025-10-30T23:06:24.132Z"
+      },
+      "last_run_count": 3
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T23:06:24.147Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68df033982f14d273bf4cc6d"
+  },
+  "name": "University of California",
+  "color": "#17797A",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_california.scraper",
+      "url": "https://www.universityofcalifornia.edu/news",
+      "last_run": {
+        "$date": "2025-10-30T23:15:28.657Z"
+      },
+      "last_run_count": 1162
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T23:15:28.672Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68df0c5a82f14d273bf4cfd9"
+  },
+  "name": "University of Chicago",
+  "color": "#800001",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_chicago.scraper",
+      "url": "https://news.uchicago.edu/",
+      "last_run": {
+        "$date": "2025-10-30T23:36:09.867Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.university_of_chicago.scraper2",
+      "url": "https://provost.uchicago.edu/announcements",
+      "last_run": {
+        "$date": "2025-10-30T23:36:11.479Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.university_of_chicago.scraper3",
+      "url": "https://president.uchicago.edu/en/from-the-president/announcements",
+      "last_run": {
+        "$date": "2025-10-30T23:36:20.761Z"
+      },
+      "last_run_count": 5
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T23:36:20.776Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dfe1bb82f14d273bf598c6"
+  },
+  "name": "University of Colorado",
+  "color": "#DEC78C",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_colorado.scraper",
+      "url": "https://news.uccs.edu/category/all/",
+      "last_run": {
+        "$date": "2025-10-30T23:36:41.538Z"
+      },
+      "last_run_count": 18
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.university_of_colorado.scraper2",
+      "url": "https://president.cu.edu/news",
+      "last_run": {
+        "$date": "2025-10-30T23:36:43.481Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_colorado.scraper3",
+      "url": "https://regents.cu.edu/news",
+      "last_run": {
+        "$date": "2025-10-30T23:36:46.145Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_colorado.scraper4",
+      "url": "https://www.colorado.edu/today/news-headlines-articles",
+      "last_run": {
+        "$date": "2025-10-30T23:36:47.394Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T23:36:47.408Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68dfe85082f14d273bf5a180"
+  },
+  "name": "University of Delaware",
+  "color": "#00539F",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_delaware.scraper",
+      "url": "https://www.udel.edu/udaily/campus/",
+      "last_run": {
+        "$date": "2025-10-30T23:37:42.424Z"
+      },
+      "last_run_count": 1
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_delaware.scraper2",
+      "url": "https://www.udel.edu/academics/global/isss/announcements/",
+      "last_run": {
+        "$date": "2025-10-30T23:37:46.759Z"
+      },
+      "last_run_count": 12
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.university_of_delaware.scraper3",
+      "url": "https://www.udel.edu/about/leadership/president/news-communications/",
+      "last_run": {
+        "$date": "2025-10-30T23:37:48.312Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T23:37:48.327Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e01e2782f14d273bf5ce1c"
+  },
+  "name": "University of Kansas",
+  "color": "#0051BA",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_kansas.scraper",
+      "url": "https://news.ku.edu/news",
+      "last_run": {
+        "$date": "2025-10-30T23:42:36.732Z"
+      },
+      "last_run_count": 15
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.university_of_kansas.scraper2",
+      "url": "https://provost.ku.edu/news",
+      "last_run": {
+        "$date": "2025-10-30T23:42:39.156Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T23:42:39.169Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e025c782f14d273bf5e3d2"
+  },
+  "name": "University of Kentucky",
+  "color": "#0033A0",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_kentucky.scraper",
+      "url": "https://pres.uky.edu/news",
+      "last_run": {
+        "$date": "2025-10-30T23:43:00.985Z"
+      },
+      "last_run_count": 199
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_kentucky.scraper2",
+      "url": "https://international.uky.edu/news",
+      "last_run": {
+        "$date": "2025-10-30T23:43:09.234Z"
+      },
+      "last_run_count": 83
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.university_of_kentucky.scraper3",
+      "url": "https://provost.uky.edu/news",
+      "last_run": {
+        "$date": "2025-10-30T23:43:26.736Z"
+      },
+      "last_run_count": 154
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T23:43:26.770Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e0290482f14d273bf5ec6a"
+  },
+  "name": "University of Louisville",
+  "color": "#AD0000",
+  "scrapers": [
+    {
+      "name": "president articles",
+      "path": "scrapers.university_of_louisville.scraper",
+      "url": "https://louisville.edu/president/news",
+      "last_run": {
+        "$date": "2025-10-30T23:43:32.277Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_louisville.scraper2",
+      "url": "https://news.louisville.edu/news",
+      "last_run": {
+        "$date": "2025-10-30T23:43:35.878Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T23:43:35.892Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e051f450be2d0da7aa5dc4"
+  },
+  "name": "University of Miami",
+  "color": "#006343",
+  "scrapers": [
+    {
+      "name": "provost articles",
+      "path": "scrapers.university_of_miami.scraper",
+      "url": "https://provost.miami.edu/about/latest-messages/index.html",
+      "last_run": {
+        "$date": "2025-10-30T23:43:38.657Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.university_of_miami.scraper2",
+      "url": "https://president.miami.edu/communications/letters-archive/index.html",
+      "last_run": {
+        "$date": "2025-10-30T23:43:39.193Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_miami.scraper3",
+      "url": "https://news.miami.edu/university/",
+      "last_run": {
+        "$date": "2025-10-30T23:58:07.464Z"
+      },
+      "last_run_count": 176
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T23:58:07.487Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e057fd50be2d0da7aa650b"
+  },
+  "name": "University of New Mexico",
+  "color": "#5D0A18",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_new_mexico.scraper",
+      "url": "https://news.unm.edu/categories/announcements",
+      "last_run": {
+        "$date": "2025-10-31T00:00:36.131Z"
+      },
+      "last_run_count": 805
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.university_of_new_mexico.scraper2",
+      "url": "https://news.unm.edu/categories/inside-unm/provost",
+      "last_run": {
+        "$date": "2025-10-31T00:01:42.542Z"
+      },
+      "last_run_count": 335
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.university_of_new_mexico.scraper3",
+      "url": "https://news.unm.edu/categories/inside-unm/president",
+      "last_run": {
+        "$date": "2025-10-31T00:02:11.328Z"
+      },
+      "last_run_count": 80
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-31T00:02:11.343Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e05aa950be2d0da7aa6595"
+  },
+  "name": "University of North Dakota",
+  "color": "#009A44",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_north_dakota.scraper",
+      "url": "https://blogs.und.edu/und-today/",
+      "last_run": {
+        "$date": "2025-10-31T00:03:00.132Z"
+      },
+      "last_run_count": 988
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-31T00:03:00.146Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e3ccb750be2d0da7ad3b85"
+  },
+  "name": "University of Notre Dame",
+  "color": "#0C2340",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_notre_dame.scraper",
+      "url": "https://news.nd.edu/news/archives/2025/",
+      "last_run": {
+        "$date": "2025-10-31T00:03:00.526Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.university_of_notre_dame.scraper2",
+      "url": "https://provost.nd.edu/news/",
+      "last_run": {
+        "$date": "2025-10-31T00:04:28.143Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.university_of_notre_dame.scraper3",
+      "url": "https://president.nd.edu/news/",
+      "last_run": {
+        "$date": "2025-10-31T00:04:56.966Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-31T00:04:56.980Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e3d6db50be2d0da7ad45ae"
+  },
+  "name": "University of Oklahoma",
+  "color": "#841617",
+  "scrapers": [
+    {
+      "name": "president articles",
+      "path": "scrapers.university_of_oklahoma.scraper",
+      "url": "https://www.ou.edu/news/articles/presidential-statements",
+      "last_run": {
+        "$date": "2025-10-31T00:04:57.549Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_oklahoma.scraper2",
+      "url": "https://www.ou.edu/news/articles/press-releases",
+      "last_run": {
+        "$date": "2025-10-31T00:04:58.045Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-31T00:04:58.064Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68e6c22050be2d0da7b54d38"
+  },
+  "name": "University of Oregon",
+  "color": "#007030",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_oregon.scraper",
+      "url": "https://news.uoregon.edu/news/workplace"
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_oregon.scraper2",
+      "url": "https://international.uoregon.edu/news",
+      "last_run": {
+        "$date": "2025-10-31T00:05:28.555Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.university_of_oregon.scraper3",
+      "url": "https://provost.uoregon.edu/provost#messages",
+      "last_run": {
+        "$date": "2025-10-31T00:05:45.536Z"
+      },
+      "last_run_count": 132
+    },
+    {
+      "name": "trustees articles",
+      "path": "scrapers.university_of_oregon.scraper4",
+      "url": "https://news.uoregon.edu/syndication/board%20of%20trustees",
+      "last_run": {
+        "$date": "2025-10-31T00:06:20.342Z"
+      },
+      "last_run_count": 10
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.university_of_oregon.scraper5",
+      "url": "https://president.uoregon.edu/presidential-messages",
+      "last_run": {
+        "$date": "2025-10-31T00:06:49.970Z"
+      },
+      "last_run_count": 57
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-31T00:06:49.985Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69028017aebac53944ad8414"
+  },
+  "name": "Swarthmore College",
+  "color": "#B43135",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.swarthmore_college.scraper",
+      "url": "https://www.swarthmore.edu/news-events/stories-swarthmore",
+      "last_run": {
+        "$date": "2025-10-31T00:09:10.045Z"
+      },
+      "last_run_count": 0
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-31T00:09:10.059Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69028017aebac53944ad8415"
+  },
+  "name": "SUNY binghamton",
+  "color": "#004333",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.suny_binghamton.scraper",
+      "url": "https://www.binghamton.edu/news/home",
+      "last_run": {
+        "$date": "2025-10-31T00:09:16.403Z"
+      },
+      "last_run_count": 0
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.suny_binghamton.scraper2",
+      "url": "https://www.binghamton.edu/president/news.html",
+      "last_run": {
+        "$date": "2025-10-31T00:09:21.227Z"
+      },
+      "last_run_count": 12
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-31T00:09:21.254Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69028018aebac53944ad8416"
+  },
+  "name": "University of South Florida",
+  "color": "#006748",
+  "scrapers": [
+    {
+      "name": "president articles",
+      "path": "scrapers.university_of_south_florida.scraper",
+      "url": "https://www.usf.edu/president/messages/index.aspx",
+      "last_run": {
+        "$date": "2025-10-31T00:09:32.442Z"
+      },
+      "last_run_count": 26
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_south_florida.scraper3",
+      "url": "https://www.usf.edu/news/listing.aspx"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-31T00:09:32.456Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69028018aebac53944ad8417"
+  },
+  "name": "University of Michigan",
+  "color": "#003E78",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_michigan.scraper",
+      "url": "https://news.umich.edu/"
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_michigan.scraper2",
+      "url": "https://internationalcenter.umich.edu/about/news"
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.university_of_michigan.scraper3",
+      "url": "https://provost.umich.edu/about-the-office/news-communications/"
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.university_of_michigan.scraper4",
+      "url": "https://president.umich.edu/news-communications/"
+    }
+  ],
+  "last_run": {
+    "$date": "2025-10-30T15:31:04.937Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69038bb2aebac53944b196e1"
+  },
+  "name": "Washington State University",
+  "color": "#6D081D",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.washington_state_university.scraper",
+      "url": "https://news.wsu.edu/announcements/"
+    },
+    {
+      "name": "provost articles",
+      "path": "scrapers.washington_state_university.scraper2",
+      "url": "https://provost.wsu.edu/news/"
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.washington_state_university.scraper3",
+      "url": "https://president.wsu.edu/presidents-message-archive/"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "69038bb4aebac53944b196f4"
+  },
+  "name": "University of North Texas",
+  "color": "#BCD136",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_north_texas.scraper",
+      "url": "https://news.unt.edu/news/index.html"
+    },
+    {
+      "name": "president articles",
+      "path": "scrapers.university_of_north_texas.scraper2",
+      "url": "https://president.unt.edu/communications.html"
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.university_of_north_texas.scraper3",
+      "url": "https://international.unt.edu/news/index.html"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "6904d163aebac53944b404c5"
+  },
+  "name": "Washington University in St. Louis",
+  "color": "#BA2030",
+  "scrapers": [
+    {
+      "name": "other articles",
+      "path": "scrapers.washington_university_in_st._louis.scraper",
+      "url": "https://source.washu.edu/channels/announcements/"
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.washington_university_in_st._louis.scraper2",
+      "url": "https://provost.washu.edu/category/news/"
+    },
+    {
+      "name": "other articles",
+      "path": "scrapers.washington_university_in_st._louis.scraper3",
+      "url": "https://source.washu.edu/news/"
+    }
+  ]
+}]

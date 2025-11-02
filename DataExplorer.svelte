@@ -2,17 +2,20 @@
   import { onMount } from 'svelte';
   
   // AWS S3 configuration - UPDATE THESE VALUES
-  const S3_BUCKET_URL = 'https://tow-campus-data.s3.us-east-2.amazonaws.com/20251102.json';
+  const S3_BUCKET_URL = 'https://tow-campus-data.s3.us-east-2.amazonaws.com/data.json';
+  const S3_LIST_URL = 'https://tow-campus-data.s3.us-east-2.amazonaws.com/list.json';
   
-  let allData = [];
-  let filteredData = [];
+  let allData = []; // Only loaded on download
+  let schoolsList = []; // List of schools from list.json
   let schools = [];
+  let schoolRecordCounts = {}; // Map of school name to record count
   let selectedSchools = new Set();
   let searchTerm = '';
   let loading = true;
   let error = null;
   let lastUpdated = null;
   let selectAll = false;
+  let dataLoaded = false; // Track if full data is loaded
   
   // Pagination
   let currentPage = 1;
@@ -32,27 +35,27 @@
       loading = true;
       error = null;
       
-      // Fetch data from AWS S3
-      const response = await fetch(S3_BUCKET_URL);
+      // Fetch school list from list.json (much smaller file)
+      const listResponse = await fetch(S3_LIST_URL);
       
-      if (!response.ok) {
-        throw new Error(`Failed to load data: ${response.status}`);
+      if (!listResponse.ok) {
+        throw new Error(`Failed to load school list: ${listResponse.status}`);
       }
       
-      allData = await response.json();
+      schoolsList = await listResponse.json();
       
       // Extract unique schools and sort them
       const schoolSet = new Set();
-      allData.forEach(item => {
-        if (item.org) {
-          schoolSet.add(item.org);
+      schoolsList.forEach(item => {
+        if (item.name) {
+          schoolSet.add(item.name);
         }
       });
       schools = Array.from(schoolSet).sort();
       
-      // Find the most recent last_updated_at date
-      const dates = allData
-        .map(item => item.last_updated_at?.$date)
+      // Find the most recent last_run date from list
+      const dates = schoolsList
+        .map(item => item.last_run?.$date)
         .filter(Boolean)
         .map(date => new Date(date));
       
@@ -60,13 +63,39 @@
         lastUpdated = new Date(Math.max(...dates));
       }
       
-      filteredData = [...allData];
-      updatePagination();
       loading = false;
     } catch (err) {
-      console.error('Error loading data:', err);
+      console.error('Error loading school list:', err);
       error = err.message;
       loading = false;
+    }
+  }
+  
+  async function loadFullData() {
+    if (dataLoaded) return allData; // Already loaded
+    
+    try {
+      // Fetch full data from data.json (only when needed for download)
+      const response = await fetch(S3_BUCKET_URL);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to load data: ${response.status}`);
+      }
+      
+      allData = await response.json();
+      dataLoaded = true;
+      
+      // Calculate record counts per school
+      allData.forEach(item => {
+        if (item.org) {
+          schoolRecordCounts[item.org] = (schoolRecordCounts[item.org] || 0) + 1;
+        }
+      });
+      
+      return allData;
+    } catch (err) {
+      console.error('Error loading full data:', err);
+      throw err;
     }
   }
   
@@ -92,20 +121,20 @@
     const term = searchTerm.toLowerCase().trim();
     
     if (!term) {
-      filteredData = [...allData];
-    } else {
-      filteredData = allData.filter(item => 
-        item.org?.toLowerCase().includes(term)
-      );
-      
-      // Update schools list based on filtered data
+      // Reset to all schools
       const schoolSet = new Set();
-      filteredData.forEach(item => {
-        if (item.org) {
-          schoolSet.add(item.org);
+      schoolsList.forEach(item => {
+        if (item.name) {
+          schoolSet.add(item.name);
         }
       });
       schools = Array.from(schoolSet).sort();
+    } else {
+      // Filter schools by search term
+      schools = schoolsList
+        .filter(item => item.name?.toLowerCase().includes(term))
+        .map(item => item.name)
+        .sort();
     }
     
     currentPage = 1;
@@ -147,19 +176,23 @@
     });
   }
   
-  function getSelectedData() {
-    if (selectedSchools.size === 0) {
-      return cleanDataForExport(filteredData);
-    }
+  async function getSelectedData() {
+    // Load full data if not already loaded
+    await loadFullData();
     
-    const selectedData = filteredData.filter(item => 
-      selectedSchools.has(item.org)
-    );
+    let selectedData;
+    if (selectedSchools.size === 0) {
+      selectedData = allData;
+    } else {
+      selectedData = allData.filter(item => 
+        selectedSchools.has(item.org)
+      );
+    }
     return cleanDataForExport(selectedData);
   }
   
-  function downloadCSV() {
-    const data = getSelectedData();
+  async function downloadCSV() {
+    const data = await getSelectedData();
     
     if (data.length === 0) {
       alert('No data selected for download');
@@ -211,8 +244,8 @@
     document.body.removeChild(link);
   }
   
-  function downloadJSON() {
-    const data = getSelectedData();
+  async function downloadJSON() {
+    const data = await getSelectedData();
     
     if (data.length === 0) {
       alert('No data selected for download');
@@ -231,12 +264,12 @@
     document.body.removeChild(link);
   }
   
-  function downloadAll(format) {
+  async function downloadAll(format) {
     selectedSchools = new Set(schools);
     if (format === 'csv') {
-      downloadCSV();
+      await downloadCSV();
     } else {
-      downloadJSON();
+      await downloadJSON();
     }
   }
   
@@ -246,9 +279,9 @@
   );
   
   $: selectedCount = selectedSchools.size;
-  $: totalRecords = filteredData.filter(item => 
-    selectedSchools.size === 0 || selectedSchools.has(item.org)
-  ).length;
+  $: totalRecords = dataLoaded 
+    ? allData.filter(item => selectedSchools.size === 0 || selectedSchools.has(item.org)).length 
+    : (selectedSchools.size > 0 ? `Selected ${selectedSchools.size} school${selectedSchools.size !== 1 ? 's' : ''}` : 'All schools');
 </script>
 
 <div class="data-explorer-container">
@@ -293,8 +326,7 @@
             <div class="download-info">
               <h3>Download Options</h3>
               <p class="stats">
-                {selectedCount > 0 ? `${selectedCount} institution${selectedCount !== 1 ? 's' : ''} selected` : 'No institutions selected'} • 
-                {totalRecords.toLocaleString()} total record{totalRecords !== 1 ? 's' : ''}
+                {selectedCount > 0 ? `${selectedCount} institution${selectedCount !== 1 ? 's' : ''} selected` : 'No institutions selected'}
               </p>
             </div>
             
@@ -385,12 +417,10 @@
                       <span class="sort-icon">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                     {/if}
                   </th>
-                  <th class="records-col">Records</th>
                 </tr>
               </thead>
               <tbody>
                 {#each paginatedSchools as school}
-                  {@const recordCount = allData.filter(item => item.org === school).length}
                   <tr class:selected={selectedSchools.has(school)}>
                     <td class="checkbox-col">
                       <label class="checkbox-container">
@@ -403,7 +433,6 @@
                       </label>
                     </td>
                     <td class="school-name">{school}</td>
-                    <td class="records-col">{recordCount.toLocaleString()}</td>
                   </tr>
                 {/each}
               </tbody>
