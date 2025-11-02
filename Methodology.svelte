@@ -10,10 +10,7 @@
       
       <section class="intro">
         <p class="lead">
-          This dataset tracks institutional responses from U.S. universities to campus protests, 
-          federal policy changes, and administrative actions from October 2023 through the present. 
-          Our methodology combines automated web scraping with manual verification to ensure accuracy 
-          and completeness.
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel ipsum non nisl tincidunt pulvinar eget et nisi. Aenean congue nec nisl quis ultrices. Nunc vel eleifend ante. Donec ac viverra velit. Mauris aliquam ipsum non lorem vestibulum, vitae aliquet velit dictum. Nullam vel orci orci. Morbi dictum viverra magna in imperdiet. Donec porttitor velit et erat aliquet dignissim. Duis lobortis ultricies nibh, a sollicitudin neque pellentesque id. Donec mi ligula, euismod eget risus quis, mollis scelerisque ligula. Maecenas pretium finibus nunc, quis pharetra tortor. Etiam purus erat, vulputate at porta sed, vehicula id orci. Fusce neque diam, posuere non quam vitae, pellentesque bibendum felis. Nam posuere vestibulum nisi eu dapibus. Donec et odio erat. Quisque pharetra turpis purus, id rutrum eros ultrices eu.
         </p>
       </section>
 
@@ -26,30 +23,16 @@
           funding issues, and legal actions.
         </p>
         <p>
-          Each document is tagged with metadata including the institution name, publication date, document 
-          type, and topic classifications. Our classification system uses a combination of keyword matching 
-          and manual review to categorize responses into the following areas:
+          Proin fermentum odio sit amet nisi euismod congue. Etiam felis nisl, dictum vitae faucibus vel, porttitor non quam. Proin ut accumsan sapien. Mauris eget venenatis eros. Proin cursus dapibus purus non elementum. Nullam laoreet, metus sed fringilla vehicula, arcu ante luctus nunc, posuere placerat nibh turpis sit amet nulla. Aenean eu eleifend mi. Sed viverra arcu in augue iaculis, non mollis libero vehicula. Curabitur tempor nulla sagittis leo posuere vestibulum. Suspendisse tincidunt sapien est, eget ullamcorper justo tristique at. Vivamus luctus sit amet neque eu ornare. Morbi ultrices tristique metus.
         </p>
-        <ul>
-          <li><strong>Protest-related:</strong> Institutional responses to on-campus demonstrations and activism</li>
-          <li><strong>Government-related:</strong> Communications addressing federal policies or actions</li>
-          <li><strong>Funding-related:</strong> Announcements concerning changes in federal or state funding</li>
-          <li><strong>Lawsuit-related:</strong> Legal actions involving the institution</li>
-        </ul>
       </section>
 
       <section>
-        <h3>Classification Process</h3>
+        <h3>More! </h3>
         <p>
-          We employ a multi-stage classification process to ensure accurate categorization:
-        </p>
+          Curabitur et fringilla massa, id elementum turpis        </p>
         <ol>
-          <li><strong>Automated Initial Classification:</strong> Documents are first processed using keyword 
-          matching and natural language processing to identify relevant topics.</li>
-          <li><strong>LLM-Assisted Analysis:</strong> Selected documents undergo analysis by large language 
-          models to extract nuanced positioning and sentiment.</li>
-          <li><strong>Manual Review:</strong> A team of researchers reviews flagged documents to verify 
-          classifications and resolve ambiguous cases.</li>
+          Ut euismod augue et risus pellentesque, eget auctor augue venenatis. Cras eu orci et tellus pharetra finibus. Fusce pharetra massa a turpis imperdiet ultricies. Aliquam erat volutpat. Fusce ultricies.
         </ol>
       </section>
 
@@ -66,28 +49,13 @@
       <section>
         <h3>Data Quality and Limitations</h3>
         <p>
-          While we strive for comprehensive coverage, several limitations should be noted:
+          Curabitur ut condimentum tellus. Quisque vitae lacinia dolor. Sed tempor ante eu mi facilisis, ut luctus ante gravida. Curabitur bibendum eleifend ipsum sagittis rutrum. Maecenas quis neque quam. In eros nisl, gravida sit amet urna in, laoreet bibendum lacus. Nulla commodo tempus quam non mattis.
         </p>
-        <ul>
-          <li>Coverage is limited to publicly available institutional communications</li>
-          <li>Some institutions may remove or edit communications after initial publication</li>
-          <li>Classification of institutional stance involves interpretive judgment</li>
-          <li>Small institutions with limited web presence may be underrepresented</li>
-        </ul>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer sollicitudin mi nulla, vel suscipit turpis dapibus id. Cras non augue ultricies, aliquam libero ut, tempor leo. Nunc eget tincidunt justo. Integer nec tempor lorem, non dictum nisl. Curabitur eleifend dictum laoreet. In ac odio varius, malesuada odio non, congue tortor. Mauris dignissim dui sed sodales ornare. Integer pharetra ante at faucibus tempus. Sed turpis massa, efficitur a leo sed, malesuada auctor enim. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Cras iaculis sit amet libero id cursus. Aenean ultricies tellus sit amet ante sodales pulvinar. Integer auctor orci gravida justo bibendum viverra. Donec nec consectetur dui. Phasellus laoreet felis quis lectus viverra, sed porttitor risus venenatis. Integer imperdiet vehicula sapien.
         <p>
           We welcome feedback on our methodology and encourage researchers to contact us with questions 
           or suggestions for improvement.
         </p>
-      </section>
-
-      <section class="chart-section">
-        <h3>Timeline of Data Collection</h3>
-        <div class="chart-placeholder">
-          <p><em>Chart placeholder: Timeline showing volume of institutional responses over time</em></p>
-          <div class="placeholder-box">
-            [Interactive timeline chart will be embedded here]
-          </div>
-        </div>
       </section>
 
       <section>
