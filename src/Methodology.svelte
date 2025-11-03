@@ -94,23 +94,6 @@
         </div>
       </section>
 
-      <section>
-        <h3>Data Quality and Limitations</h3>
-        <p>
-          While we strive for comprehensive coverage, several limitations should be noted:
-        </p>
-        <ul>
-          <li>Coverage is limited to publicly available institutional communications</li>
-          <li>Some institutions may remove or edit communications after initial publication</li>
-          <li>Classification of institutional stance involves interpretive judgment</li>
-          <li>Small institutions with limited web presence may be underrepresented</li>
-        </ul>
-        <p>
-          We welcome feedback on our methodology and encourage researchers to contact us with questions 
-          or suggestions for improvement.
-        </p>
-      </section>
-
       <section class="chart-section">
         <h3>Geographic Coverage</h3>
         <div class="chart-placeholder">

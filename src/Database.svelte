@@ -10,11 +10,15 @@
     let downloading = false;
     
     // Filters
-    let selectedSchool = 'all';
+    let selectedSchools = [];
     let selectedMonth = 'all';
     let searchTerm = '';
     let schools = [];
     let months = [];
+    
+    // Dropdown state
+    let schoolDropdownOpen = false;
+    let schoolSearchTerm = '';
     
     // Pagination
     let currentPage = 1;
@@ -45,7 +49,7 @@
             schoolSet.add(item.org);
           }
         });
-        schools = ['all', ...Array.from(schoolSet).sort()];
+        schools = Array.from(schoolSet).sort();
         
         // Extract unique months
         const monthSet = new Set();
@@ -70,8 +74,8 @@
     
     function applyFilters() {
       filteredData = allData.filter(item => {
-        // School filter
-        if (selectedSchool !== 'all' && item.org !== selectedSchool) {
+        // School filter - if any schools selected, item must match one of them
+        if (selectedSchools.length > 0 && !selectedSchools.includes(item.org)) {
           return false;
         }
         
@@ -104,6 +108,22 @@
       currentPage = 1;
       updatePagination();
     }
+    
+    function toggleSchool(school, checked) {
+      if (checked) {
+        selectedSchools = [...selectedSchools, school];
+      } else {
+        selectedSchools = selectedSchools.filter(s => s !== school);
+      }
+    }
+    
+    function clearSchools() {
+      selectedSchools = [];
+    }
+    
+    $: filteredSchools = schoolSearchTerm 
+      ? schools.filter(s => s.toLowerCase().includes(schoolSearchTerm.toLowerCase()))
+      : schools;
     
     function updatePagination() {
       totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -187,12 +207,50 @@
           <section class="filters-section">
             <div class="filters-grid">
               <div class="filter-group">
-                <label for="school-filter">Filter by Institution</label>
-                <select id="school-filter" bind:value={selectedSchool}>
-                  {#each schools as school}
-                    <option value={school}>{school === 'all' ? 'All Institutions' : school}</option>
-                  {/each}
-                </select>
+                <label>Filter by Institution</label>
+                <div class="multi-select-dropdown">
+                  <button 
+                    class="dropdown-toggle" 
+                    on:click={() => schoolDropdownOpen = !schoolDropdownOpen}
+                    type="button"
+                  >
+                    {selectedSchools.length === 0 
+                      ? 'All Institutions' 
+                      : `${selectedSchools.length} selected`}
+                    <span class="dropdown-arrow">{schoolDropdownOpen ? '▲' : '▼'}</span>
+                  </button>
+                  
+                  {#if schoolDropdownOpen}
+                    <div class="dropdown-menu">
+                      <div class="dropdown-search">
+                        <input 
+                          type="text" 
+                          bind:value={schoolSearchTerm}
+                          placeholder="Search institutions..."
+                          on:click|stopPropagation
+                        />
+                      </div>
+                      <div class="dropdown-options">
+                        {#each filteredSchools as school}
+                          <label class="dropdown-option">
+                            <input 
+                              type="checkbox" 
+                              value={school}
+                              checked={selectedSchools.includes(school)}
+                              on:change={(e) => toggleSchool(school, e.target.checked)}
+                            />
+                            <span>{school}</span>
+                          </label>
+                        {/each}
+                      </div>
+                      {#if selectedSchools.length > 0}
+                        <button class="clear-selection" on:click={clearSchools} type="button">
+                          Clear Selection
+                        </button>
+                      {/if}
+                    </div>
+                  {/if}
+                </div>
               </div>
               
               <div class="filter-group">
@@ -435,6 +493,114 @@
       outline: none;
       border-color: #D6613A;
       box-shadow: 0 0 0 3px rgba(214, 97, 58, 0.1);
+    }
+  
+    /* Multi-select dropdown */
+    .multi-select-dropdown {
+      position: relative;
+    }
+  
+    .dropdown-toggle {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      font-family: "Helvetica Neue", sans-serif;
+      background: white;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color 0.2s;
+    }
+  
+    .dropdown-toggle:hover {
+      border-color: #D6613A;
+    }
+  
+    .dropdown-arrow {
+      font-size: 0.8rem;
+      color: #666;
+    }
+  
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 0.25rem;
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      max-height: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+  
+    .dropdown-search {
+      padding: 0.75rem;
+      border-bottom: 1px solid #e0e0e0;
+    }
+  
+    .dropdown-search input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      font-family: "Helvetica Neue", sans-serif;
+    }
+  
+    .dropdown-search input:focus {
+      outline: none;
+      border-color: #D6613A;
+    }
+  
+    .dropdown-options {
+      overflow-y: auto;
+      max-height: 200px;
+    }
+  
+    .dropdown-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-size: 0.9rem;
+      font-family: "Helvetica Neue", sans-serif;
+    }
+  
+    .dropdown-option:hover {
+      background: #f8f8f8;
+    }
+  
+    .dropdown-option input[type="checkbox"] {
+      cursor: pointer;
+      accent-color: #D6613A;
+    }
+  
+    .clear-selection {
+      padding: 0.5rem 0.75rem;
+      margin: 0.5rem;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      background: white;
+      color: #666;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-family: "Helvetica Neue", sans-serif;
+      transition: all 0.2s;
+    }
+  
+    .clear-selection:hover {
+      background: #f8f8f8;
+      border-color: #D6613A;
     }
   
     .search-export-row {
