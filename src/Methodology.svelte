@@ -1,6 +1,37 @@
 <script>
   // Placeholder chart data - replace with your actual methodology charts
   let chartPlaceholder = true;
+  
+  // Contact form state
+  let contactForm = {
+    name: '',
+    email: '',
+    message: ''
+  };
+  let submitting = false;
+  let submitSuccess = false;
+  
+  async function handleContactSubmit() {
+    submitting = true;
+    submitSuccess = false;
+    
+    // Simulate form submission - replace with your actual endpoint
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // TODO: Replace with actual form submission logic
+    // Example: await fetch('/api/contact', { method: 'POST', body: JSON.stringify(contactForm) })
+    
+    submitting = false;
+    submitSuccess = true;
+    
+    // Reset form
+    contactForm = { name: '', email: '', message: '' };
+    
+    // Hide success message after 3 seconds
+    setTimeout(() => {
+      submitSuccess = false;
+    }, 3000);
+  }
 </script>
 
 <div class="methodology-container">
@@ -81,6 +112,26 @@
       </section>
 
       <section class="chart-section">
+        <h3>Geographic Coverage</h3>
+        <div class="chart-placeholder">
+          <p><em>Map showing distribution of monitored institutions across the United States</em></p>
+          <div class="placeholder-box" id="map-container">
+            [US map with institutional locations will be displayed here]
+          </div>
+        </div>
+      </section>
+
+      <section class="chart-section">
+        <h3>Daily Response Volume</h3>
+        <div class="chart-placeholder">
+          <p><em>Area chart showing number of institutional responses per day</em></p>
+          <div class="placeholder-box" id="area-chart-container">
+            [Area chart will be displayed here]
+          </div>
+        </div>
+      </section>
+
+      <section class="chart-section">
         <h3>Timeline of Data Collection</h3>
         <div class="chart-placeholder">
           <p><em>Chart placeholder: Timeline showing volume of institutional responses over time</em></p>
@@ -114,6 +165,44 @@
           or permissions, please contact the Tow Center for Digital Journalism.
         </p>
       </section>
+
+      <section class="contact-section">
+        <h3>Contact Us</h3>
+        <p>
+          [Add your description here - e.g., "Have questions about the dataset? Want to report an issue? 
+          We'd love to hear from you."]
+        </p>
+        
+        <form class="contact-form" on:submit|preventDefault={handleContactSubmit}>
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" bind:value={contactForm.name} placeholder="Your name" />
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" bind:value={contactForm.email} placeholder="your@email.com" />
+          </div>
+          
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" bind:value={contactForm.message} placeholder="Your message..." rows="5"></textarea>
+          </div>
+          
+          <button type="submit" class="submit-btn" disabled={submitting}>
+            {#if submitting}
+              <span class="btn-spinner"></span>
+              Sending...
+            {:else}
+              Send Message
+            {/if}
+          </button>
+
+          {#if submitSuccess}
+            <p class="success-message">✓ Message sent successfully!</p>
+          {/if}
+        </form>
+      </section>
     </div>
   </div>
 </div>
@@ -124,9 +213,9 @@
   }
 
   .container {
-    max-width: 800px;
+    max-width: 750px;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0 3rem;
   }
 
   .content-wrapper {
@@ -216,6 +305,113 @@
     margin-top: 1rem;
     font-family: "Helvetica Neue", sans-serif;
     font-size: 0.95rem;
+  }
+
+  /* Contact Form */
+  .contact-section {
+    margin-top: 4rem;
+    padding-top: 3rem;
+    border-top: 2px solid #e0e0e0;
+  }
+
+  .contact-form {
+    max-width: 600px;
+    margin: 2rem auto 0;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #222;
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: 0.95rem;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: "EB Garamond", serif;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #D6613A;
+    box-shadow: 0 0 0 3px rgba(214, 97, 58, 0.1);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .submit-btn {
+    background: white;
+    color: #D6613A;
+    border: 2px solid #D6613A;
+    border-radius: 4px;
+    padding: 0.75rem 2.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: "Helvetica Neue", sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .submit-btn:hover:not(:disabled) {
+    background: #D6613A;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+  }
+
+  .submit-btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .submit-btn:disabled {
+    background: white;
+    border-color: #ccc;
+    color: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .btn-spinner {
+    border: 2px solid #D6613A;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .success-message {
+    color: #28a745;
+    font-family: "Helvetica Neue", sans-serif;
+    margin-top: 1rem;
+    font-weight: 500;
   }
 
   @media (max-width: 768px) {

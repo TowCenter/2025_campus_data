@@ -504,7 +504,7 @@
   .container {
     max-width: 900px;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0 3rem;
   }
 
   .content-wrapper {
@@ -648,12 +648,12 @@
   }
 
   .btn-download {
-    background: #D6613A;
-    color: white;
-    border: none;
+    background: white;
+    color: #D6613A;
+    border: 2px solid #D6613A;
     border-radius: 4px;
-    padding: 0.75rem 2.5rem;
-    font-size: 1rem;
+    padding: 0.7rem 2.5rem;
+    font-size: 0.95rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -667,7 +667,8 @@
   }
 
   .btn-download:hover:not(:disabled) {
-    background: #c55532;
+    background: #D6613A;
+    color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
   }
@@ -678,7 +679,9 @@
   }
 
   .btn-download:disabled {
-    background: #ccc;
+    background: white;
+    border-color: #ccc;
+    color: #ccc;
     cursor: not-allowed;
     opacity: 0.6;
     box-shadow: none;
