@@ -11,14 +11,16 @@
     
     // Filters
     let selectedSchools = [];
-    let selectedMonth = 'all';
+    let selectedMonths = [];
     let searchTerm = '';
     let schools = [];
     let months = [];
     
     // Dropdown state
     let schoolDropdownOpen = false;
+    let monthDropdownOpen = false;
     let schoolSearchTerm = '';
+    let monthSearchTerm = '';
     
     // Pagination
     let currentPage = 1;
@@ -60,7 +62,7 @@
             monthSet.add(monthYear);
           }
         });
-        months = ['all', ...Array.from(monthSet).sort()];
+        months = Array.from(monthSet).sort().reverse(); // Most recent first
         
         filteredData = [...allData];
         updatePagination();
@@ -79,11 +81,11 @@
           return false;
         }
         
-        // Month filter
-        if (selectedMonth !== 'all' && item.date?.$date) {
+        // Month filter - if any months selected, item must match one of them
+        if (selectedMonths.length > 0 && item.date?.$date) {
           const date = new Date(item.date.$date);
           const monthYear = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
-          if (monthYear !== selectedMonth) {
+          if (!selectedMonths.includes(monthYear)) {
             return false;
           }
         }
@@ -115,15 +117,45 @@
       } else {
         selectedSchools = selectedSchools.filter(s => s !== school);
       }
+      applyFilters();
+    }
+    
+    function toggleMonth(month, checked) {
+      if (checked) {
+        selectedMonths = [...selectedMonths, month];
+      } else {
+        selectedMonths = selectedMonths.filter(m => m !== month);
+      }
+      applyFilters();
     }
     
     function clearSchools() {
       selectedSchools = [];
+      applyFilters();
     }
+    
+    function clearMonths() {
+      selectedMonths = [];
+      applyFilters();
+    }
+    
+    function handleSearchInput() {
+      // Debounce search to avoid too many filter calls
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        applyFilters();
+      }, 300);
+    }
+    
+    let searchTimeout;
     
     $: filteredSchools = schoolSearchTerm 
       ? schools.filter(s => s.toLowerCase().includes(schoolSearchTerm.toLowerCase()))
       : schools;
+      
+    $: filteredMonths = monthSearchTerm 
+      ? months.filter(m => m.toLowerCase().includes(monthSearchTerm.toLowerCase()))
+      : months;
     
     function updatePagination() {
       totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -135,6 +167,8 @@
     function changePage(newPage) {
       if (newPage >= 1 && newPage <= totalPages) {
         currentPage = newPage;
+        // Scroll to top of results
+        document.querySelector('.results-section')?.scrollIntoView({ behavior: 'smooth' });
       }
     }
     
@@ -160,6 +194,7 @@
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(url);
       } catch (err) {
         alert('Error exporting data: ' + err.message);
       } finally {
@@ -172,12 +207,18 @@
       currentPage * itemsPerPage
     );
     
-    $: {
-      // Auto-apply filters when any filter changes
-      if (!loading) {
-        applyFilters();
+    // Close dropdowns when clicking outside
+    function handleClickOutside(event) {
+      if (!event.target.closest('.multi-select-dropdown')) {
+        schoolDropdownOpen = false;
+        monthDropdownOpen = false;
       }
     }
+    
+    onMount(() => {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    });
   </script>
   
   <div class="database-container">
@@ -188,7 +229,7 @@
         <section class="intro">
           <p class="lead">
             Search and filter through all institutional responses. Use the filters below to narrow results by institution, 
-            date, or keyword.
+            date, or keyword, then download your filtered results.
           </p>
         </section>
   
@@ -207,11 +248,12 @@
           <section class="filters-section">
             <div class="filters-grid">
               <div class="filter-group">
-                <label>Filter by Institution</label>
+                <label for="institution-dropdown">Filter by Institution</label>
                 <div class="multi-select-dropdown">
                   <button 
+                    id="institution-dropdown"
                     class="dropdown-toggle" 
-                    on:click={() => schoolDropdownOpen = !schoolDropdownOpen}
+                    on:click|stopPropagation={() => { schoolDropdownOpen = !schoolDropdownOpen; monthDropdownOpen = false; }}
                     type="button"
                   >
                     {selectedSchools.length === 0 
@@ -254,12 +296,51 @@
               </div>
               
               <div class="filter-group">
-                <label for="month-filter">Filter by Month</label>
-                <select id="month-filter" bind:value={selectedMonth}>
-                  {#each months as month}
-                    <option value={month}>{month === 'all' ? 'All Months' : month}</option>
-                  {/each}
-                </select>
+                <label for="month-dropdown">Filter by Month</label>
+                <div class="multi-select-dropdown">
+                  <button 
+                    id="month-dropdown"
+                    class="dropdown-toggle" 
+                    on:click|stopPropagation={() => { monthDropdownOpen = !monthDropdownOpen; schoolDropdownOpen = false; }}
+                    type="button"
+                  >
+                    {selectedMonths.length === 0 
+                      ? 'All Months' 
+                      : `${selectedMonths.length} selected`}
+                    <span class="dropdown-arrow">{monthDropdownOpen ? '▲' : '▼'}</span>
+                  </button>
+                  
+                  {#if monthDropdownOpen}
+                    <div class="dropdown-menu">
+                      <div class="dropdown-search">
+                        <input 
+                          type="text" 
+                          bind:value={monthSearchTerm}
+                          placeholder="Search months..."
+                          on:click|stopPropagation
+                        />
+                      </div>
+                      <div class="dropdown-options">
+                        {#each filteredMonths as month}
+                          <label class="dropdown-option">
+                            <input 
+                              type="checkbox" 
+                              value={month}
+                              checked={selectedMonths.includes(month)}
+                              on:change={(e) => toggleMonth(month, e.target.checked)}
+                            />
+                            <span>{month}</span>
+                          </label>
+                        {/each}
+                      </div>
+                      {#if selectedMonths.length > 0}
+                        <button class="clear-selection" on:click={clearMonths} type="button">
+                          Clear Selection
+                        </button>
+                      {/if}
+                    </div>
+                  {/if}
+                </div>
               </div>
             </div>
             
@@ -268,6 +349,7 @@
                 <input 
                   type="text" 
                   bind:value={searchTerm}
+                  on:input={handleSearchInput}
                   placeholder="Search by keyword..."
                   class="search-input"
                 />
@@ -278,7 +360,7 @@
                   <span class="btn-spinner"></span>
                   Exporting...
                 {:else}
-                  Export {filteredData.length} items to JSON
+                  Export {filteredData.length.toLocaleString()} items to JSON
                 {/if}
               </button>
             </div>
@@ -289,6 +371,11 @@
             <div class="results-header">
               <p class="results-count">
                 Showing {filteredData.length.toLocaleString()} result{filteredData.length !== 1 ? 's' : ''}
+                {#if selectedSchools.length > 0 || selectedMonths.length > 0 || searchTerm}
+                  <span class="filter-indicator">
+                    (filtered from {allData.length.toLocaleString()} total)
+                  </span>
+                {/if}
               </p>
             </div>
   
@@ -476,23 +563,6 @@
       color: #222;
       font-family: "Helvetica Neue", sans-serif;
       font-size: 0.9rem;
-    }
-  
-    .filter-group select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #dee2e6;
-      border-radius: 4px;
-      font-size: 0.95rem;
-      font-family: "Helvetica Neue", sans-serif;
-      background: white;
-      cursor: pointer;
-    }
-  
-    .filter-group select:focus {
-      outline: none;
-      border-color: #D6613A;
-      box-shadow: 0 0 0 3px rgba(214, 97, 58, 0.1);
     }
   
     /* Multi-select dropdown */
@@ -689,6 +759,11 @@
       font-weight: 500;
       color: #666;
       font-size: 0.95rem;
+    }
+  
+    .filter-indicator {
+      color: #888;
+      font-weight: 400;
     }
   
     .results-list {
