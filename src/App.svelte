@@ -1,7 +1,6 @@
 <script>
   import { onMount } from 'svelte';
   import Methodology from './Methodology.svelte';
-  import DataExplorer from './DataExplorer.svelte';
   import Database from './Database.svelte';
   
   let currentPage = 'methodology';
@@ -9,9 +8,7 @@
   onMount(() => {
     // Handle browser navigation
     const path = window.location.pathname;
-    if (path.includes('data')) {
-      currentPage = 'data';
-    } else if (path.includes('database')) {
+    if (path.includes('database')) {
       currentPage = 'database';
     }
   });
@@ -20,7 +17,6 @@
     currentPage = page;
     const routes = {
       methodology: '/',
-      data: '/data',
       database: '/database'
     };
     window.history.pushState({}, '', routes[page]);
@@ -47,12 +43,6 @@
           Methodology
         </button>
         <button 
-          class:active={currentPage === 'data'} 
-          on:click={() => navigateTo('data')}
-        >
-          Data & Downloads
-        </button>
-        <button 
           class:active={currentPage === 'database'} 
           on:click={() => navigateTo('database')}
         >
@@ -65,8 +55,6 @@
   <div class="page-content">
     {#if currentPage === 'methodology'}
       <Methodology />
-    {:else if currentPage === 'data'}
-      <DataExplorer />
     {:else}
       <Database />
     {/if}
