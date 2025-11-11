@@ -3,21 +3,21 @@
   import Methodology from './Methodology.svelte';
   import Database from './Database.svelte';
   
-  let currentPage = 'methodology';
+  let currentPage = 'database';
   
   onMount(() => {
     // Handle browser navigation
     const path = window.location.pathname;
-    if (path.includes('database')) {
-      currentPage = 'database';
+    if (path.includes('methodology')) {
+      currentPage = 'methodology';
     }
   });
   
   function navigateTo(page) {
     currentPage = page;
     const routes = {
-      methodology: '/',
-      database: '/database'
+      database: '/',
+      methodology: '/methodology'
     };
     window.history.pushState({}, '', routes[page]);
   }
@@ -37,16 +37,16 @@
       </div>
       <nav>
         <button 
-          class:active={currentPage === 'methodology'} 
-          on:click={() => navigateTo('methodology')}
-        >
-          Methodology
-        </button>
-        <button 
           class:active={currentPage === 'database'} 
           on:click={() => navigateTo('database')}
         >
           Database
+        </button>
+        <button 
+          class:active={currentPage === 'methodology'} 
+          on:click={() => navigateTo('methodology')}
+        >
+          Methodology
         </button>
       </nav>
     </div>
@@ -167,12 +167,7 @@
     gap: 0.5rem;
   }
 
-  .tab-emoji {
-    height: 20px;
-    width: 20px;
-    display: inline-block;
-    vertical-align: middle;
-  }
+
 
   nav button:hover {
     color: #D6613A;
