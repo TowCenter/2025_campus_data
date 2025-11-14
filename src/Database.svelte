@@ -4,6 +4,7 @@
   const MONTH_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index.json';
   const INSTITUTION_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index.json';
   const ARTICLE_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/articles';
+  const SEARCH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/search_index';
 
   const NO_DATE_KEY = '_no_date';
   const NO_ORG_KEY = '_no_org';
@@ -25,7 +26,7 @@
   // Ordered list of all IDs for the global timeline
   let globalIds = [];
 
-  // IDs after applying current filters
+  // IDs after applying filters and search
   let activeIds = [];
 
 
@@ -41,9 +42,18 @@
   let currentPage = 1;
   const pageSize = 50;
   let totalPages = 1;
+  let gotoPage = 1;
 
   // Cache of article JSONs
   const articleCache = new Map();
+
+  // --- Search state (using search_index shards) ---
+  let searchTerm = '';
+  let searchLoading = false;
+  let searchError = null;
+  let searchTimeout;
+  // shardKey -> { token: [ids...] }
+  const searchShardCache = new Map();
 
   onMount(async () => {
     await loadInitialData();
@@ -59,8 +69,8 @@
 
       selectedMonth = 'ALL';
       selectedInstitution = 'ALL';
-      recomputeActiveIds();
-      await loadPage(1);
+      searchTerm = '';
+      await applyFiltersAndSearch();
     } catch (e) {
       console.error(e);
       error = e.message;
@@ -115,8 +125,10 @@
             .sort((a, b) => a.localeCompare(b));
   }
 
-  function recomputeActiveIds() {
-    // 1) Base on month filter
+  // --- Filtering helpers (month + institution) ---
+
+  function getBaseIdsFromFilters() {
+    // 1) Month
     let baseIds;
     if (selectedMonth === 'ALL') {
       baseIds = globalIds;
@@ -127,22 +139,115 @@
       baseIds = Array.isArray(ids) ? ids : [];
     }
 
-    // 2) Apply institution filter (intersection)
+    // 2) Institution
     if (selectedInstitution === 'ALL') {
-      activeIds = baseIds;
-      return;
+      return baseIds;
     }
 
     const instIds = institutionIndex[selectedInstitution];
     if (!Array.isArray(instIds) || instIds.length === 0) {
-      activeIds = [];
-      return;
+      return [];
     }
 
     const instSet = new Set(instIds);
-    activeIds = baseIds.filter((id) => instSet.has(id));
+    return baseIds.filter((id) => instSet.has(id));
   }
 
+  // --- Search index helpers ---
+
+  function getShardKey(term) {
+    if (!term) return null;
+    const first = term[0].toLowerCase();
+    if (first >= 'a' && first <= 'z') return first;
+    return null; // no shard for non-letter queries
+  }
+
+  async function ensureShardLoaded(shardKey) {
+    if (!shardKey) return null;
+
+    if (searchShardCache.has(shardKey)) {
+      return searchShardCache.get(shardKey);
+    }
+
+    searchLoading = true;
+    searchError = null;
+
+    try {
+      const res = await fetch(`${SEARCH_INDEX_BASE_URL}/${shardKey}.json`);
+      if (!res.ok) {
+        throw new Error(`Failed to load search index shard '${shardKey}': ${res.status}`);
+      }
+      const shard = await res.json();
+      searchShardCache.set(shardKey, shard);
+      return shard;
+    } catch (e) {
+      console.error(e);
+      searchError = e.message;
+      return null;
+    } finally {
+      searchLoading = false;
+    }
+  }
+
+  // --- Core: apply filters + search, set activeIds, then page 1 ---
+
+  async function applyFiltersAndSearch() {
+    const baseIds = getBaseIdsFromFilters();
+    const term = searchTerm.trim().toLowerCase();
+
+    // No search term → just filtered timeline
+    if (!term) {
+      activeIds = baseIds;
+      currentPage = 1;
+      await loadPage(1);
+      return;
+    }
+
+    const shardKey = getShardKey(term);
+    if (!shardKey) {
+      // query starts with non-letter: no shard → no results
+      activeIds = [];
+      currentPage = 1;
+      await loadPage(1);
+      return;
+    }
+
+    const shard = await ensureShardLoaded(shardKey);
+    if (!shard) {
+      activeIds = [];
+      currentPage = 1;
+      await loadPage(1);
+      return;
+    }
+
+    // shard is { token -> [ids...] }
+    // we do substring on token: token.includes(term)
+    const searchIdSet = new Set();
+
+    for (const [token, ids] of Object.entries(shard)) {
+      if (token.includes(term)) {
+        for (const id of ids) {
+          searchIdSet.add(id);
+        }
+      }
+    }
+
+    if (searchIdSet.size === 0) {
+      activeIds = [];
+      currentPage = 1;
+      await loadPage(1);
+      return;
+    }
+
+    // Intersection with baseIds, preserving the date order from baseIds
+    const filteredBySearch = baseIds.filter((id) => searchIdSet.has(id));
+
+    activeIds = filteredBySearch;
+    currentPage = 1;
+    await loadPage(1);
+  }
+
+  // --- Paging + article loading ---
 
   async function loadPage(page) {
     const ids = activeIds;
@@ -151,6 +256,7 @@
       articles = [];
       currentPage = 1;
       totalPages = 1;
+      gotoPage = 1;
       return;
     }
 
@@ -160,6 +266,7 @@
 
     currentPage = page;
     totalPages = newTotalPages;
+    gotoPage = currentPage;
 
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
@@ -194,15 +301,25 @@
   async function handleMonthChange(event) {
     selectedMonth = event.target.value;
     currentPage = 1;
-    recomputeActiveIds();
-    await loadPage(1);
+    await applyFiltersAndSearch();
   }
 
   async function handleInstitutionChange(event) {
     selectedInstitution = event.target.value;
     currentPage = 1;
-    recomputeActiveIds();
-    await loadPage(1);
+    await applyFiltersAndSearch();
+  }
+
+  function handleSearchInput(event) {
+    searchTerm = event.target.value;
+
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    searchTimeout = setTimeout(() => {
+      applyFiltersAndSearch();
+    }, 300); // debounce
   }
 
   function changePage(newPage) {
@@ -220,7 +337,11 @@
     if (!year || !month) return key;
 
     const d = new Date(Date.UTC(year, month - 1, 1));
-    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long',timeZone: 'UTC' });
+    return d.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      timeZone: 'UTC'
+    });
   }
 
   function formatDate(dateStr) {
@@ -243,8 +364,8 @@
 
       <section class="intro">
         <p class="lead">
-          Browse institutional responses in reverse chronological order. Use the month and
-          institution filters to narrow results. Articles are loaded lazily as you change pages.
+          Search and filter through all institutional responses. Use the filters below to narrow results by institution,
+          date, or keyword, then download your filtered results.
         </p>
       </section>
 
@@ -267,7 +388,7 @@
               <label for="month-select">Filter by Month</label>
               <select
                       id="month-select"
-                      class="month-select"
+                      class="dropdown-toggle"
                       bind:value={selectedMonth}
                       on:change={handleMonthChange}
               >
@@ -286,7 +407,7 @@
               <label for="institution-select">Filter by Institution</label>
               <select
                       id="institution-select"
-                      class="institution-select"
+                      class="dropdown-toggle"
                       bind:value={selectedInstitution}
                       on:change={handleInstitutionChange}
               >
@@ -296,6 +417,25 @@
                 {/each}
               </select>
             </div>
+
+            <!-- Search filter -->
+            <div class="filter-group">
+              <label for="search-input">Search</label>
+              <input
+                      id="search-input"
+                      class="search-input"
+                      type="text"
+                      placeholder="Search title, institution, or content..."
+                      value={searchTerm}
+                      on:input={handleSearchInput}
+              />
+              {#if searchLoading}
+                <span class="search-status">Loading search index…</span>
+              {/if}
+              {#if searchError}
+                <span class="search-status error-text">Search error: {searchError}</span>
+              {/if}
+            </div>
           </div>
         </section>
 
@@ -304,7 +444,7 @@
           <div class="results-header">
             <h3>Results</h3>
             <p class="results-meta">
-              {#if selectedMonth === 'ALL' && selectedInstitution === 'ALL'}
+              {#if selectedMonth === 'ALL' && selectedInstitution === 'ALL' && !searchTerm}
                 Showing {articles.length} article(s) — page {currentPage} of {totalPages}
               {:else}
                 Showing {articles.length} article(s)
@@ -317,6 +457,9 @@
                   with no date
                 {:else}
                   in {formatMonthLabel(selectedMonth)}
+                {/if}
+                {#if searchTerm}
+                  matching “{searchTerm}”
                 {/if}
                 — page {currentPage} of {totalPages}
               {/if}
@@ -365,6 +508,13 @@
             <div class="pagination">
               <button
                       class="page-btn"
+                      on:click={() => changePage(1)}
+                      disabled={currentPage === 1 || loadingArticles}
+              >
+                First
+              </button>
+              <button
+                      class="page-btn"
                       on:click={() => changePage(currentPage - 1)}
                       disabled={currentPage === 1 || loadingArticles}
               >
@@ -372,22 +522,36 @@
               </button>
 
               <span class="page-info">
-    Page {currentPage} of {totalPages}
-  </span>
+                Page {currentPage} of {totalPages}
+              </span>
 
               <!-- Jump to page -->
-              <label class="page-jump">
-                Go to
+              <label class="page-info">
+                Page
                 <input
                         type="number"
                         min="1"
                         max={totalPages}
-                        value={currentPage}
+                        class="goto-input"
+                        bind:value={gotoPage}
                         on:change={(e) => {
-        const target = Number(e.currentTarget.value);
-        if (!Number.isNaN(target)) changePage(target);
-      }}
+                          const target = Number(e.currentTarget.value);
+                          if (!Number.isNaN(target)) changePage(target);
+                        }}
                 />
+
+
+              <button
+                      type="button"
+                      class="page-btn"
+                      on:click={() => {
+                      const target = Number(gotoPage);
+                      if (!Number.isNaN(target)) {
+                        changePage(target);
+                      }
+                    }}>
+                                Go
+              </button>
               </label>
 
               <button
@@ -406,7 +570,6 @@
                 Last
               </button>
             </div>
-
           {/if}
         </section>
       {/if}
@@ -545,6 +708,8 @@
   .search-loader { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; color: #888; font-family: "Helvetica Neue", sans-serif; }
   .search-input { width: 100%; padding: 0.75rem 1rem; border: 1px solid #dee2e6; border-radius: 4px; font-size: 0.95rem; font-family: "Helvetica Neue", sans-serif; }
   .search-input:focus { outline: none; border-color: #D6613A; box-shadow: 0 0 0 3px rgba(214,97,58,0.1); }
+  .goto-input { padding: 0.4rem 0.4rem; border: 1px solid #dee2e6; border-radius: 4px; font-family: "Helvetica Neue", sans-serif; }
+  .goto-input:focus { outline: none; border-color: #D6613A; box-shadow: 0 0 0 3px rgba(214,97,58,0.1); }
 
   .export-btn {
     background: white; color: #D6613A; border: 2px solid #D6613A; border-radius: 4px; padding: 0.7rem 1.5rem; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; font-family: "Helvetica Neue", sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; display: inline-flex; align-items: center; gap: 0.5rem;
