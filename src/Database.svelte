@@ -80,7 +80,7 @@
       if (selectedSchools.length > 0 && !selectedSchools.includes(item.org)) {
         return false;
       }
-      
+
       // Month filter - if any months selected, item must match one of them
       if (selectedMonths.length > 0 && item.date?.$date) {
         const date = new Date(item.date.$date);
@@ -89,7 +89,7 @@
           return false;
         }
       }
-      
+
       // Search filter
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
@@ -98,17 +98,27 @@
           item.org,
           item.content
         ].filter(Boolean).join(' ').toLowerCase();
-        
+
         if (!searchableText.includes(term)) {
           return false;
         }
       }
-      
+
       return true;
     });
-    
+
     currentPage = 1;
     updatePagination();
+
+    // Track filter usage in Umami
+    if (window.umami) {
+      window.umami.track('filter-applied', {
+        schools: selectedSchools.length,
+        months: selectedMonths.length,
+        hasSearch: !!searchTerm,
+        results: filteredData.length
+      });
+    }
   }
   
   function toggleSchool(school, checked) {
@@ -181,7 +191,15 @@
   
   async function exportResults() {
     downloading = true;
-    
+
+    // Track CSV export in Umami
+    if (window.umami) {
+      window.umami.track('csv-export', {
+        rowCount: filteredData.length,
+        hasFilters: selectedSchools.length > 0 || selectedMonths.length > 0 || !!searchTerm
+      });
+    }
+
     try {
       const cleanData = cleanDataForExport(filteredData);
       await downloadCSV(cleanData);

@@ -11,6 +11,11 @@
     if (path.includes('methodology')) {
       currentPage = 'methodology';
     }
+
+    // Track initial page view with Umami
+    if (window.umami) {
+      window.umami.track();
+    }
   });
   
   function navigateTo(page) {
@@ -20,6 +25,15 @@
       methodology: '/methodology'
     };
     window.history.pushState({}, '', routes[page]);
+
+    // Track page view in Umami for SPA navigation
+    if (window.umami) {
+      window.umami.track(props => ({
+        ...props,
+        url: routes[page],
+        title: page === 'database' ? 'Database' : 'Methodology'
+      }));
+    }
   }
 </script>
 

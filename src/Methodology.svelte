@@ -9,9 +9,20 @@
   let showTooltip = false;
   let statesGeoJSON = null;
 
-  // AWS S3 configuration for record count only
+  // Calendar tooltip
+  let calendarTooltip = null;
+  let calendarTooltipX = 0;
+  let calendarTooltipY = 0;
+  let showCalendarTooltip = false;
+  let calendarContainer;
+
+  // AWS S3 configuration
   const S3_LIST_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/list.json';
+  const S3_BUCKET_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
   let schoolsList = [];
+  let allArticles = [];
+  let articlesByDate = {};
+  let loadingArticles = false;
 
   // Your pre-geocoded school data
   let schoolData = [
@@ -166,6 +177,14 @@
     hoveredSchool = school;
     showTooltip = true;
     updateTooltipPosition(event);
+
+    // Track map interaction in Umami
+    if (window.umami) {
+      window.umami.track('map-school-hover', {
+        school: school.name,
+        state: school.state
+      });
+    }
   }
   
   function handleDotLeave() {
@@ -196,6 +215,42 @@
       updateTooltipPosition(event);
     }
   }
+
+  // Calendar tooltip handlers
+  function handleCalendarDayHover(dayInfo, event) {
+    calendarTooltip = dayInfo;
+    showCalendarTooltip = true;
+    updateCalendarTooltipPosition(event);
+  }
+
+  function handleCalendarDayLeave() {
+    calendarTooltip = null;
+    showCalendarTooltip = false;
+  }
+
+  function updateCalendarTooltipPosition(event) {
+    if (calendarContainer) {
+      const rect = calendarContainer.getBoundingClientRect();
+      calendarTooltipX = event.clientX - rect.left;
+      calendarTooltipY = event.clientY - rect.top;
+
+      if (calendarTooltipX > rect.width - 200) {
+        calendarTooltipX = calendarTooltipX - 200;
+      }
+
+      if (calendarTooltipY < 60) {
+        calendarTooltipY = calendarTooltipY + 20;
+      } else {
+        calendarTooltipY = calendarTooltipY - 60;
+      }
+    }
+  }
+
+  function handleCalendarMouseMove(event) {
+    if (showCalendarTooltip) {
+      updateCalendarTooltipPosition(event);
+    }
+  }
   
   // Convert GeoJSON to SVG path data using Albers USA projection
   function geoJSONToPath(feature) {
@@ -221,6 +276,123 @@
     return pathData;
   }
 
+  // Process articles data for charts
+  function processArticleData(articles) {
+    const dateMap = {};
+
+    articles.forEach(item => {
+      if (item.date?.$date) {
+        const date = new Date(item.date.$date);
+        const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
+        dateMap[dateStr] = (dateMap[dateStr] || 0) + 1;
+      }
+    });
+
+    return dateMap;
+  }
+
+  // Group articles by month for bar chart
+  function groupByMonth(dateMap) {
+    const monthMap = {};
+
+    Object.keys(dateMap).forEach(dateStr => {
+      // dateStr format is "YYYY-MM-DD"
+      const [year, month, day] = dateStr.split('-').map(Number);
+
+      // Only include dates from January 1, 2025 onwards
+      if (year < 2025) return;
+
+      const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+      const date = new Date(year, month - 1, day);
+      const monthLabel = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+
+      if (!monthMap[monthKey]) {
+        monthMap[monthKey] = {
+          label: monthLabel,
+          count: 0
+        };
+      }
+
+      monthMap[monthKey].count += dateMap[dateStr];
+    });
+
+    return Object.entries(monthMap).sort((a, b) => a[0].localeCompare(b[0]));
+  }
+
+  $: monthlyBarData = groupByMonth(articlesByDate);
+
+  // Organize dates by month for calendar view with week grids
+  function organizeByMonth(dateMap) {
+    const months = {};
+
+    Object.keys(dateMap).sort().forEach(dateStr => {
+      const date = new Date(dateStr);
+
+      // Only include dates from January 1, 2025 onwards
+      if (date.getFullYear() < 2025) return;
+
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+      if (!months[monthKey]) {
+        months[monthKey] = {
+          label: date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
+          year: date.getFullYear(),
+          month: date.getMonth(),
+          days: {}
+        };
+      }
+
+      months[monthKey].days[date.getDate()] = {
+        dateStr,
+        date: date,
+        count: dateMap[dateStr]
+      };
+    });
+
+    return months;
+  }
+
+  // Generate calendar grid for a month (with empty cells for proper alignment)
+  function getMonthGrid(year, month, daysData) {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startOffset = firstDay.getDay(); // 0 = Sunday, 6 = Saturday
+    const daysInMonth = lastDay.getDate();
+
+    const grid = [];
+    let week = [];
+
+    // Add empty cells for days before month starts
+    for (let i = 0; i < startOffset; i++) {
+      week.push(null);
+    }
+
+    // Add all days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      week.push({
+        day,
+        data: daysData[day] || null
+      });
+
+      if (week.length === 7) {
+        grid.push(week);
+        week = [];
+      }
+    }
+
+    // Add empty cells to complete last week
+    while (week.length > 0 && week.length < 7) {
+      week.push(null);
+    }
+    if (week.length > 0) {
+      grid.push(week);
+    }
+
+    return grid;
+  }
+
+  $: monthlyData = organizeByMonth(articlesByDate);
+
   // Load S3 data for record count and US states map
   onMount(async () => {
     try {
@@ -236,8 +408,18 @@
         const topology = await topoResponse.json();
         statesGeoJSON = topojson.feature(topology, topology.objects.states);
       }
+
+      // Load article data for charts
+      loadingArticles = true;
+      const articlesResponse = await fetch(S3_BUCKET_URL);
+      if (articlesResponse.ok) {
+        allArticles = await articlesResponse.json();
+        articlesByDate = processArticleData(allArticles);
+      }
+      loadingArticles = false;
     } catch (err) {
       console.warn('Could not load data:', err);
+      loadingArticles = false;
     }
   });
 </script>
@@ -374,6 +556,230 @@
           </div>
         </div>
       </section>
+
+      <!-- Charts Section -->
+      {#if !loadingArticles && Object.keys(articlesByDate).length > 0}
+        <section class="charts-section">
+          <h3>Article Frequency Over Time</h3>
+
+          <div class="charts-grid">
+            <!-- Bar Chart -->
+            <div class="chart-container">
+              <h4>Bar Chart View</h4>
+              <div class="bar-chart">
+                {#if monthlyBarData.length > 0}
+                  {@const maxCount = Math.max(...monthlyBarData.map(m => m[1].count), 1)}
+                  {#each monthlyBarData as [monthKey, monthData]}
+                    {@const heightPercent = (monthData.count / maxCount) * 100}
+                    <div class="bar-wrapper">
+                      <div
+                        class="bar"
+                        style="height: {heightPercent}%"
+                        title="{monthData.label}: {monthData.count} articles"
+                      />
+                      <div class="bar-label">{monthData.label}</div>
+                    </div>
+                  {/each}
+                {/if}
+              </div>
+            </div>
+
+            <!-- Area Chart -->
+            <div class="chart-container">
+              <h4>Area Chart View</h4>
+              <div class="area-chart-wrapper">
+                {#if monthlyBarData.length > 0}
+                  {@const maxCount = Math.max(...monthlyBarData.map(m => m[1].count), 1)}
+                  {@const chartHeight = 300}
+                  {@const chartWidth = 800}
+                  {@const leftMargin = 10}
+                  {@const bottomMargin = 20}
+                  {@const chartAreaWidth = chartWidth - leftMargin}
+                  {@const chartAreaHeight = chartHeight - bottomMargin}
+                  {@const getNiceNumber = (num) => {
+                    if (num <= 0) return 10;
+                    const magnitude = Math.pow(10, Math.floor(Math.log10(num)));
+                    const normalized = num / magnitude;
+                    if (normalized <= 1) return magnitude;
+                    if (normalized <= 2) return 2 * magnitude;
+                    if (normalized <= 5) return 5 * magnitude;
+                    return 10 * magnitude;
+                  }}
+                  {@const yAxisMax = getNiceNumber(Math.max(maxCount * 1.1, 1))}
+                  {@const points = monthlyBarData.map(([key, data], i) => {
+                    const x = leftMargin + (i / (monthlyBarData.length - 1)) * chartAreaWidth;
+                    const y = (1 - (data.count / yAxisMax)) * (chartAreaHeight - 10) + 5;
+                    return { x, y, label: data.label, count: data.count };
+                  })}
+                  {@const pathD = (() => {
+                    if (points.length === 0) return '';
+                    let path = `M ${points[0].x} ${points[0].y}`;
+                    for (let i = 0; i < points.length - 1; i++) {
+                      const current = points[i];
+                      const next = points[i + 1];
+                      const controlX = current.x + (next.x - current.x) / 2;
+                      path += ` Q ${controlX} ${current.y}, ${controlX} ${(current.y + next.y) / 2}`;
+                      path += ` Q ${controlX} ${next.y}, ${next.x} ${next.y}`;
+                    }
+                    return path;
+                  })()}
+                  {@const areaD = `${pathD} L ${chartWidth} ${chartAreaHeight} L ${leftMargin} ${chartAreaHeight} Z`}
+                  {@const yAxisSteps = 5}
+                  {@const yAxisStep = yAxisMax / yAxisSteps}
+                  {@const yAxisValues = Array.from({length: yAxisSteps + 1}, (_, i) => Math.round(yAxisStep * i))}
+
+                  <div class="area-chart-container">
+                    <!-- Y-axis labels -->
+                    <div class="y-axis-labels">
+                      {#each yAxisValues.reverse() as value, i}
+                        <div class="y-axis-label">
+                          {value}
+                        </div>
+                      {/each}
+                    </div>
+
+                    <!-- Chart SVG -->
+                    <div class="area-chart-svg-container">
+                      <svg viewBox="0 0 {chartWidth} {chartHeight}" class="area-chart-svg" preserveAspectRatio="xMinYMin meet">
+                        <!-- Grid lines -->
+                        <g class="grid-lines">
+                          {#each yAxisValues as value, i}
+                            {@const y = (chartAreaHeight - 10) * (i / yAxisSteps) + 5}
+                            <line x1={leftMargin} y1={y} x2={chartWidth} y2={y} stroke="#e0e0e0" stroke-width="0.3" />
+                          {/each}
+                        </g>
+
+                        <!-- Area fill -->
+                        <path
+                          d={areaD}
+                          fill="url(#areaGradient)"
+                          class="area-path"
+                        />
+
+                        <!-- Line -->
+                        <path
+                          d={pathD}
+                          fill="none"
+                          stroke="#D6613A"
+                          stroke-width="2"
+                          class="area-line"
+                          vector-effect="non-scaling-stroke"
+                        />
+
+                        <!-- Gradient definition -->
+                        <defs>
+                          <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color: rgba(214, 97, 58, 0.3); stop-opacity: 1" />
+                            <stop offset="100%" style="stop-color: rgba(214, 97, 58, 0.05); stop-opacity: 1" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+
+                      <!-- X-axis labels -->
+                      <div class="area-chart-labels">
+                        {#each monthlyBarData as [monthKey, monthData], i}
+                          {@const showLabel = monthlyBarData.length <= 6 || i % Math.max(1, Math.floor(monthlyBarData.length / 6)) === 0 || i === monthlyBarData.length - 1}
+                          {#if showLabel}
+                            {@const xPosition = (leftMargin / chartWidth) * 100 + (i / (monthlyBarData.length - 1)) * (chartAreaWidth / chartWidth) * 100}
+                            <span class="area-label" style="left: {xPosition}%">
+                              {monthData.label}
+                            </span>
+                          {/if}
+                        {/each}
+                      </div>
+                    </div>
+                  </div>
+                {/if}
+              </div>
+            </div>
+
+            <!-- Calendar Heatmap -->
+            <div class="chart-container">
+              <h4>Calendar Heatmap View</h4>
+              <div
+                class="calendar-grid-container"
+                bind:this={calendarContainer}
+                on:mousemove={handleCalendarMouseMove}
+                role="img"
+                aria-label="Calendar heatmap of article frequency"
+              >
+                {#each Object.entries(monthlyData) as [monthKey, monthData]}
+                  {@const monthGrid = getMonthGrid(monthData.year, monthData.month, monthData.days)}
+                  {@const maxCount = Math.max(...Object.values(articlesByDate))}
+                  <div class="month-calendar">
+                    <div class="month-label">{monthData.label}</div>
+                    <div class="month-grid">
+                      {#each monthGrid as week}
+                        {#each week as dayCell}
+                          {#if dayCell === null}
+                            <div class="calendar-day empty"></div>
+                          {:else if dayCell.data}
+                            {@const ratio = dayCell.data.count / maxCount}
+                            {@const intensity = Math.pow(ratio, 0.3)}
+                            {@const dayOfWeek = dayCell.data.date.toLocaleDateString('en-US', { weekday: 'short' })}
+                            {@const fullDate = dayCell.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                            <div
+                              class="calendar-day"
+                              style="background-color: rgba(214, 97, 58, {Math.min(1, Math.max(0.2, intensity))})"
+                              on:mouseenter={(event) => handleCalendarDayHover({ date: fullDate, dayOfWeek, count: dayCell.data.count }, event)}
+                              on:mouseleave={handleCalendarDayLeave}
+                              role="button"
+                              tabindex="0"
+                              aria-label="{dayOfWeek}, {fullDate}: {dayCell.data.count} articles"
+                            ></div>
+                          {:else}
+                            {@const tempDate = new Date(monthData.year, monthData.month, dayCell.day)}
+                            {@const dayOfWeek = tempDate.toLocaleDateString('en-US', { weekday: 'short' })}
+                            {@const fullDate = tempDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                            <div
+                              class="calendar-day no-data"
+                              on:mouseenter={(event) => handleCalendarDayHover({ date: fullDate, dayOfWeek, count: 0 }, event)}
+                              on:mouseleave={handleCalendarDayLeave}
+                              role="button"
+                              tabindex="0"
+                              aria-label="{dayOfWeek}, {fullDate}: No articles"
+                            ></div>
+                          {/if}
+                        {/each}
+                      {/each}
+                    </div>
+                  </div>
+                {/each}
+
+                <!-- Calendar Tooltip -->
+                {#if showCalendarTooltip && calendarTooltip}
+                  <div
+                    class="tooltip calendar-tooltip"
+                    style="left: {calendarTooltipX}px; top: {calendarTooltipY}px;"
+                  >
+                    <div class="tooltip-content">
+                      <div class="tooltip-title">{calendarTooltip.dayOfWeek}, {calendarTooltip.date}</div>
+                      <div class="tooltip-state">
+                        {calendarTooltip.count} {calendarTooltip.count === 1 ? 'article' : 'articles'}
+                      </div>
+                    </div>
+                  </div>
+                {/if}
+              </div>
+              <div class="heatmap-legend">
+                <span>Less</span>
+                <div class="legend-scale">
+                  <div style="background-color: rgba(214, 97, 58, 0.2)"></div>
+                  <div style="background-color: rgba(214, 97, 58, 0.4)"></div>
+                  <div style="background-color: rgba(214, 97, 58, 0.6)"></div>
+                  <div style="background-color: rgba(214, 97, 58, 0.8)"></div>
+                  <div style="background-color: rgba(214, 97, 58, 1)"></div>
+                </div>
+                <span>More</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      {:else if loadingArticles}
+        <section class="charts-section">
+          <p class="loading-text">Loading article data...</p>
+        </section>
+      {/if}
 
       <!-- Methodology Content Placeholder -->
       <section class="methodology-content">
@@ -603,6 +1009,245 @@
     border: 2px dashed #D6613A;
   }
 
+  /* Charts Section */
+  .charts-section {
+    margin: 3rem 0;
+    padding: 1.5rem;
+    background: #fafafa;
+    border-radius: 8px;
+  }
+
+  .charts-section h3 {
+    font-size: 1.6rem;
+    color: #D6613A;
+    margin-bottom: 1.5rem;
+    font-family: "EB Garamond", serif;
+    font-weight: 400;
+    text-align: center;
+  }
+
+  .charts-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .chart-container {
+    background: white;
+    padding: 1.25rem;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chart-container h4 {
+    font-size: 1rem;
+    color: #444;
+    margin-bottom: 1rem;
+    font-family: "Helvetica Neue", sans-serif;
+    font-weight: 500;
+  }
+
+  /* Bar Chart */
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    gap: 1rem;
+    height: 200px;
+    padding: 1rem;
+    background: #fafafa;
+    border-radius: 4px;
+  }
+
+  .bar-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    max-width: 80px;
+  }
+
+  .bar {
+    width: 100%;
+    background: #D6613A;
+    border-radius: 4px 4px 0 0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    min-height: 4px;
+  }
+
+  .bar:hover {
+    background: #c55532;
+    transform: scaleY(1.05);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  .bar-label {
+    font-size: 0.7rem;
+    color: #666;
+    text-align: center;
+    margin-top: 0.5rem;
+    font-family: "Helvetica Neue", sans-serif;
+  }
+
+  /* Area Chart */
+  .area-chart-wrapper {
+    position: relative;
+    width: 100%;
+    padding: 1rem;
+    background: #fafafa;
+    border-radius: 4px;
+  }
+
+  .area-chart-container {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .y-axis-labels {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-top: 5px;
+    padding-bottom: 15px;
+    min-width: 40px;
+  }
+
+  .y-axis-label {
+    font-size: 0.65rem;
+    color: #888;
+    font-family: "Helvetica Neue", sans-serif;
+    text-align: right;
+    line-height: 1;
+  }
+
+  .area-chart-svg-container {
+    flex: 1;
+    position: relative;
+  }
+
+  .area-chart-svg {
+    width: 100%;
+    height: 220px;
+    overflow: visible;
+  }
+
+  .area-path {
+    transition: opacity 0.3s ease;
+  }
+
+  .area-line {
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .area-chart-labels {
+    position: relative;
+    width: 100%;
+    height: 30px;
+    margin-top: 0.5rem;
+  }
+
+  .area-label {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    color: #666;
+    font-family: "Helvetica Neue", sans-serif;
+    white-space: nowrap;
+  }
+
+  /* Calendar Heatmap */
+  .calendar-grid-container {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    padding: 0.75rem;
+    background: #fafafa;
+    border-radius: 4px;
+  }
+
+  .month-calendar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .month-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #D6613A;
+    font-family: "Helvetica Neue", sans-serif;
+    text-align: center;
+  }
+
+  .month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+
+  .calendar-day {
+    aspect-ratio: 1;
+    border-radius: 2px;
+    border: 1px solid rgba(214, 97, 58, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .calendar-day.empty {
+    background: transparent;
+    border: none;
+    cursor: default;
+  }
+
+  .calendar-day.no-data {
+    background: #f5f5f5;
+    border-color: #e0e0e0;
+  }
+
+  .calendar-day:not(.empty):not(.no-data):hover {
+    transform: scale(1.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-color: #D6613A;
+    z-index: 10;
+    border-width: 2px;
+  }
+
+  .heatmap-legend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: #666;
+    font-family: "Helvetica Neue", sans-serif;
+  }
+
+  .legend-scale {
+    display: flex;
+    gap: 2px;
+  }
+
+  .legend-scale div {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .loading-text {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 2rem;
+  }
+
   /* Methodology Content */
   .methodology-content {
     margin-top: 4rem;
@@ -669,6 +1314,53 @@
       flex-direction: column;
       align-items: center;
       gap: 1rem;
+    }
+
+    .charts-section h3 {
+      font-size: 1.3rem;
+    }
+
+    .charts-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .chart-container {
+      padding: 1rem;
+    }
+
+    .chart-container h4 {
+      font-size: 0.9rem;
+    }
+
+    .bar-chart {
+      height: 150px;
+      gap: 0.5rem;
+    }
+
+    .bar-wrapper {
+      max-width: 60px;
+    }
+
+    .bar-label {
+      font-size: 0.6rem;
+    }
+
+    .area-chart-svg {
+      height: 180px;
+    }
+
+    .area-label {
+      font-size: 0.6rem;
+    }
+
+    .calendar-grid-container {
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.5rem;
+    }
+
+    .month-label {
+      font-size: 0.7rem;
     }
   }
 </style>
