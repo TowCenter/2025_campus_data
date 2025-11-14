@@ -22,12 +22,19 @@
   let selectedMonth = 'ALL';        // "ALL", "YYYY-MM", or NO_DATE_KEY
   let selectedInstitution = 'ALL';  // "ALL" or actual org name
 
+  // Search state
+  let searchTerm = '';
+  let isSearching = false;
+  let searchProgress = 0;
+  let searchTotal = 0;
+  let searchRunId = 0; // used to cancel previous searches
+
+
   // Ordered list of all IDs for the global timeline
   let globalIds = [];
 
   // IDs after applying current filters
   let activeIds = [];
-
 
   // Current page's articles
   let articles = [];
@@ -59,7 +66,7 @@
 
       selectedMonth = 'ALL';
       selectedInstitution = 'ALL';
-      recomputeActiveIds();
+      recomputeActiveIdsWithoutSearch();
       await loadPage(1);
     } catch (e) {
       console.error(e);
@@ -115,8 +122,8 @@
             .sort((a, b) => a.localeCompare(b));
   }
 
-  function recomputeActiveIds() {
-    // 1) Base on month filter
+  function getBaseIdsFromFilters() {
+    // 1) Month
     let baseIds;
     if (selectedMonth === 'ALL') {
       baseIds = globalIds;
@@ -127,21 +134,23 @@
       baseIds = Array.isArray(ids) ? ids : [];
     }
 
-    // 2) Apply institution filter (intersection)
-    if (selectedInstitution === 'ALL') {
-      activeIds = baseIds;
-      return;
+    // 2) Institution
+    if (selectedInstitution !== 'ALL') {
+      const instIds = institutionIndex[selectedInstitution];
+      if (!Array.isArray(instIds) || instIds.length === 0) {
+        return [];
+      }
+      const instSet = new Set(instIds);
+      baseIds = baseIds.filter((id) => instSet.has(id));
     }
 
-    const instIds = institutionIndex[selectedInstitution];
-    if (!Array.isArray(instIds) || instIds.length === 0) {
-      activeIds = [];
-      return;
-    }
-
-    const instSet = new Set(instIds);
-    activeIds = baseIds.filter((id) => instSet.has(id));
+    return baseIds;
   }
+
+  function recomputeActiveIdsWithoutSearch() {
+    activeIds = getBaseIdsFromFilters();
+  }
+
 
 
   async function loadPage(page) {
@@ -194,16 +203,27 @@
   async function handleMonthChange(event) {
     selectedMonth = event.target.value;
     currentPage = 1;
-    recomputeActiveIds();
-    await loadPage(1);
+    await applyFiltersAndSearch();
   }
 
   async function handleInstitutionChange(event) {
     selectedInstitution = event.target.value;
     currentPage = 1;
-    recomputeActiveIds();
-    await loadPage(1);
+    await applyFiltersAndSearch();
   }
+
+  let searchTimeout;
+
+  function handleSearchInput(event) {
+    searchTerm = event.target.value;
+
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      applyFiltersAndSearch();
+    }, 300); // debounce
+  }
+
+
 
   function changePage(newPage) {
     if (newPage < 1 || newPage > totalPages || loadingArticles) return;
@@ -234,6 +254,82 @@
       timeZone: 'UTC'
     });
   }
+
+  async function applyFiltersAndSearch() {
+    const term = searchTerm.trim().toLowerCase();
+    const baseIds = getBaseIdsFromFilters();
+
+    // no search term → just filtered timeline
+    if (!term) {
+      isSearching = false;
+      searchProgress = 0;
+      searchTotal = baseIds.length;
+      activeIds = baseIds;
+      await loadPage(1);
+      return;
+    }
+
+    const myRunId = ++searchRunId; // bump runId to cancel older searches
+    isSearching = true;
+    searchProgress = 0;
+    searchTotal = baseIds.length;
+
+    const matchedIds = [];
+    const chunkSize = 50; // adjust as you like
+
+    for (let start = 0; start < baseIds.length; start += chunkSize) {
+      // cancelled by a new search / filter change?
+      if (myRunId !== searchRunId) {
+        isSearching = false;
+        return;
+      }
+
+      const chunk = baseIds.slice(start, start + chunkSize);
+
+      for (const id of chunk) {
+        // fetch article JSON if not cached
+        let article;
+        if (articleCache.has(id)) {
+          article = articleCache.get(id);
+        } else {
+          try {
+            const res = await fetch(`${ARTICLE_BASE_URL}/${id}.json`);
+            if (!res.ok) continue; // skip bad ones
+            article = await res.json();
+            articleCache.set(id, article);
+          } catch {
+            continue;
+          }
+        }
+
+        const haystack = [
+          article.title || '',
+          article.org || '',
+          article.content || ''
+        ]
+                .join(' ')
+                .toLowerCase();
+
+        if (haystack.includes(term)) {
+          matchedIds.push(id);
+        }
+      }
+
+      // update progress + visible matches incrementally
+      searchProgress = Math.min(start + chunk.length, searchTotal);
+      activeIds = matchedIds.slice();
+
+      // show first page as matches accumulate
+      currentPage = 1;
+      await loadPage(1);
+
+      // yield to the browser so UI can update
+      await new Promise((r) => setTimeout(r, 0));
+    }
+
+    isSearching = false;
+  }
+
 </script>
 
 <div class="database-container">
@@ -296,6 +392,18 @@
                 {/each}
               </select>
             </div>
+            <div class="filter-group">
+              <label for="search-input">Search</label>
+              <input
+                      id="search-input"
+                      class="search-input"
+                      type="text"
+                      placeholder="Search title, institution, or content..."
+                      value={searchTerm}
+                      on:input={handleSearchInput}
+              />
+            </div>
+
           </div>
         </section>
 
@@ -303,7 +411,13 @@
         <section class="results-section">
           <div class="results-header">
             <h3>Results</h3>
+
             <p class="results-meta">
+              {#if isSearching}
+                <p class="search-status">
+                  Searching... {searchProgress} / {searchTotal} articles scanned
+                </p>
+              {/if}
               {#if selectedMonth === 'ALL' && selectedInstitution === 'ALL'}
                 Showing {articles.length} article(s) — page {currentPage} of {totalPages}
               {:else}
