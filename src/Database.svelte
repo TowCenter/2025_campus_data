@@ -1,33 +1,40 @@
 <script>
   import { onMount } from 'svelte';
 
-  // Point these to your new S3 layout
   const MONTH_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index.json';
+  const INSTITUTION_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index.json';
   const ARTICLE_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/articles';
+
   const NO_DATE_KEY = '_no_date';
+  const NO_ORG_KEY = '_no_org';
 
-
-  // monthIndex: { "YYYY-MM": ["id1","id2",...], ... }
+  // monthIndex: { "YYYY-MM": ["id1","id2",...], "_no_date": ["idX",...] }
   let monthIndex = {};
+  // institutionIndex: { "Harvard University": ["id1","id2",...], "_no_org": [...] }
+  let institutionIndex = {};
 
-  // Sorted month keys, newest → oldest, e.g. ["2025-11", "2025-10", ...]
-  let months = [];
+  let months = [];        // real months only, e.g. ["2025-11","2025-10",...]
+  let institutions = [];  // institution names (no _no_org)
 
-  // Added a place to store no-date IDs:
-  let noDateIds = [];
+  let noDateIds = [];     // from monthIndex[NO_DATE_KEY] if present
 
-  // "ALL" means global across all months
-  let selectedMonth = 'ALL';
+  // Filters
+  let selectedMonth = 'ALL';        // "ALL", "YYYY-MM", or NO_DATE_KEY
+  let selectedInstitution = 'ALL';  // "ALL" or actual org name
 
-  // Global ordered list of all article IDs across months, newest → oldest
+  // Ordered list of all IDs for the global timeline
   let globalIds = [];
 
-  // Articles for *current* page only
+  // IDs after applying current filters
+  let activeIds = [];
+
+
+  // Current page's articles
   let articles = [];
 
-  // Loading + error
-  let loading = true;           // initial load (index + first page)
-  let loadingArticles = false;  // per-page article fetch
+  // Loading / error state
+  let loading = true;
+  let loadingArticles = false;
   let error = null;
 
   // Pagination
@@ -35,7 +42,7 @@
   const pageSize = 50;
   let totalPages = 1;
 
-  // Cache article JSON so we don't refetch them
+  // Cache of article JSONs
   const articleCache = new Map();
 
   onMount(async () => {
@@ -47,10 +54,12 @@
     error = null;
 
     try {
-      await loadMonthIndex();
+      // load indexes in parallel
+      await Promise.all([loadMonthIndex(), loadInstitutionIndex()]);
 
-      // Start with the full global timeline
       selectedMonth = 'ALL';
+      selectedInstitution = 'ALL';
+      recomputeActiveIds();
       await loadPage(1);
     } catch (e) {
       console.error(e);
@@ -70,16 +79,16 @@
 
     const allKeys = Object.keys(monthIndex);
 
-    // pull out no-date bucket if present
+    // pull out no-date bucket
     noDateIds = Array.isArray(monthIndex[NO_DATE_KEY]) ? monthIndex[NO_DATE_KEY] : [];
 
-    // months = all keys except NO_DATE_KEY, sorted newest → oldest
+    // months = all keys except NO_DATE_KEY, newest → oldest
     months = allKeys
             .filter((k) => k !== NO_DATE_KEY)
             .sort()
             .reverse();
 
-    // Build globalIds: all dated months (newest → oldest), then no-date
+    // globalIds = all dated months (newest → oldest), then no-date
     globalIds = [];
     for (const month of months) {
       const ids = monthIndex[month];
@@ -87,28 +96,58 @@
         globalIds.push(...ids);
       }
     }
-    // append no-date IDs last
     if (noDateIds.length > 0) {
       globalIds.push(...noDateIds);
     }
   }
 
-  function getActiveIdList() {
+  async function loadInstitutionIndex() {
+    const res = await fetch(INSTITUTION_INDEX_URL);
+    if (!res.ok) {
+      throw new Error(`Failed to load institution index: ${res.status}`);
+    }
+
+    institutionIndex = await res.json();
+
+    // institutions = all keys except NO_ORG_KEY, sorted alphabetically
+    institutions = Object.keys(institutionIndex)
+            .filter((k) => k !== NO_ORG_KEY)
+            .sort((a, b) => a.localeCompare(b));
+  }
+
+  function recomputeActiveIds() {
+    // 1) Base on month filter
+    let baseIds;
     if (selectedMonth === 'ALL') {
-      return globalIds;
+      baseIds = globalIds;
+    } else if (selectedMonth === NO_DATE_KEY) {
+      baseIds = noDateIds;
+    } else {
+      const ids = monthIndex[selectedMonth];
+      baseIds = Array.isArray(ids) ? ids : [];
     }
-    if (selectedMonth === NO_DATE_KEY) {
-      return noDateIds;
+
+    // 2) Apply institution filter (intersection)
+    if (selectedInstitution === 'ALL') {
+      activeIds = baseIds;
+      return;
     }
-    const ids = monthIndex[selectedMonth];
-    return Array.isArray(ids) ? ids : [];
+
+    const instIds = institutionIndex[selectedInstitution];
+    if (!Array.isArray(instIds) || instIds.length === 0) {
+      activeIds = [];
+      return;
+    }
+
+    const instSet = new Set(instIds);
+    activeIds = baseIds.filter((id) => instSet.has(id));
   }
 
 
   async function loadPage(page) {
-    const ids = getActiveIdList();
+    const ids = activeIds;
 
-    if (ids.length === 0) {
+    if (!ids || ids.length === 0) {
       articles = [];
       currentPage = 1;
       totalPages = 1;
@@ -155,6 +194,14 @@
   async function handleMonthChange(event) {
     selectedMonth = event.target.value;
     currentPage = 1;
+    recomputeActiveIds();
+    await loadPage(1);
+  }
+
+  async function handleInstitutionChange(event) {
+    selectedInstitution = event.target.value;
+    currentPage = 1;
+    recomputeActiveIds();
     await loadPage(1);
   }
 
@@ -173,9 +220,8 @@
     if (!year || !month) return key;
 
     const d = new Date(Date.UTC(year, month - 1, 1));
-    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long',timeZone: 'UTC' });
   }
-
 
   function formatDate(dateStr) {
     if (!dateStr) return 'Date unknown';
@@ -184,10 +230,10 @@
     return d.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: 'UTC'
     });
   }
-
 </script>
 
 <div class="database-container">
@@ -197,8 +243,8 @@
 
       <section class="intro">
         <p class="lead">
-          Browse institutional responses in reverse chronological order. The newest articles are
-          loaded first; older ones are fetched lazily when you browse further pages.
+          Browse institutional responses in reverse chronological order. Use the month and
+          institution filters to narrow results. Articles are loaded lazily as you change pages.
         </p>
       </section>
 
@@ -213,9 +259,10 @@
           <button on:click={loadInitialData} class="retry-btn">Retry</button>
         </div>
       {:else}
-        <!-- Month filter (with "All Months" option) -->
+        <!-- Filters -->
         <section class="filters-section">
           <div class="filters-grid">
+            <!-- Month filter -->
             <div class="filter-group">
               <label for="month-select">Filter by Month</label>
               <select
@@ -232,7 +279,22 @@
                   <option value={NO_DATE_KEY}>No Date</option>
                 {/if}
               </select>
+            </div>
 
+            <!-- Institution filter -->
+            <div class="filter-group">
+              <label for="institution-select">Filter by Institution</label>
+              <select
+                      id="institution-select"
+                      class="institution-select"
+                      bind:value={selectedInstitution}
+                      on:change={handleInstitutionChange}
+              >
+                <option value="ALL">All Institutions</option>
+                {#each institutions as inst}
+                  <option value={inst}>{inst}</option>
+                {/each}
+              </select>
             </div>
           </div>
         </section>
@@ -242,12 +304,21 @@
           <div class="results-header">
             <h3>Results</h3>
             <p class="results-meta">
-              {#if selectedMonth === 'ALL'}
-                Showing {articles.length} article(s) from all months —
-                page {currentPage} of {totalPages}
+              {#if selectedMonth === 'ALL' && selectedInstitution === 'ALL'}
+                Showing {articles.length} article(s) — page {currentPage} of {totalPages}
               {:else}
-                Showing {articles.length} article(s) from {formatMonthLabel(selectedMonth)} —
-                page {currentPage} of {totalPages}
+                Showing {articles.length} article(s)
+                {#if selectedInstitution !== 'ALL'}
+                  from {selectedInstitution}
+                {/if}
+                {#if selectedMonth === 'ALL'}
+                  across all months
+                {:else if selectedMonth === NO_DATE_KEY}
+                  with no date
+                {:else}
+                  in {formatMonthLabel(selectedMonth)}
+                {/if}
+                — page {currentPage} of {totalPages}
               {/if}
             </p>
           </div>
@@ -279,9 +350,7 @@
                     {/if}
                   </div>
 
-                  {#if item.date}
-                    <p class="result-date">{formatDate(item.date)}</p>
-                  {/if}
+                  <p class="result-date">{formatDate(item.date)}</p>
 
                   {#if item.content}
                     <p class="result-excerpt">
