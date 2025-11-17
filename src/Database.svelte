@@ -210,73 +210,107 @@
 
   // --- Core: apply filters + search, set activeIds, then page 1 ---
 
+  // Allow multi-word search
+  function getSearchTokens(raw) {
+    return raw.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  }
+
   async function applyFiltersAndSearch() {
     const baseIds = getBaseIdsFromFilters();
-    const term = searchTerm.trim().toLowerCase();
+    const tokens = getSearchTokens(searchTerm);
 
-    // No search term → just filtered timeline
-    if (!term) {
+    // No search term: just filtered timeline
+    if (tokens.length === 0) {
       activeIds = baseIds;
       currentPage = 1;
       await loadPage(1);
       return;
     }
 
-    const shardKey = getShardKey(term);
-    if (!shardKey) {
-      // query starts with non-letter: no shard → no results
+    // unique shard keys (one per first letter)
+    const shardKeys = Array.from(
+            new Set(
+                    tokens
+                            .map((t) => getShardKey(t))
+                            .filter((k) => k !== null)
+            )
+    );
+
+    if (shardKeys.length === 0) {
       activeIds = [];
       currentPage = 1;
       await loadPage(1);
       return;
     }
 
-    const shard = await ensureShardLoaded(shardKey);
-    if (!shard) {
+    // load all needed shards
+    const shardMap = new Map();
+    for (const key of shardKeys) {
+      const shard = await ensureShardLoaded(key);
+      if (shard) {
+        shardMap.set(key, shard);
+      }
+    }
+
+    if (shardMap.size === 0) {
       activeIds = [];
       currentPage = 1;
       await loadPage(1);
       return;
     }
 
-    // shard is { token -> [ids...] }
-    // exact matches first and then substrings
-    const exactMatchIds = new Set();
-    const partialMatchIds = new Set();
+    // scoreMap: id -> score
+    const scoreMap = new Map();
 
-    for (const [tokenRaw, ids] of Object.entries(shard)) {
-      const token = tokenRaw.toLowerCase();
+    for (const term of tokens) {
+      const key = getShardKey(term);
+      if (!key) continue;
 
-      if (token === term) {
-        for (const id of ids) {
-          exactMatchIds.add(id);
+      const shard = shardMap.get(key);
+      if (!shard) continue;
+
+      for (const [tokenRaw, ids] of Object.entries(shard)) {
+        const token = tokenRaw.toLowerCase();
+
+        let weight = 0;
+        if (token === term) {
+          weight = 100;           // exact word
+        } else if (token.startsWith(term)) {
+          weight = 10;           // prefix
+        } else if (token.includes(term)) {
+          weight = 1;           // looser contains
         }
-      } else if (token.includes(term)) {
+
+        if (!weight) continue;
+
         for (const id of ids) {
-          partialMatchIds.add(id);
+          const prev = scoreMap.get(id) || 0;
+          scoreMap.set(id, prev + weight);
         }
       }
     }
 
-// Build ordered list of ids based on baseIds ordering
-    const exactOrdered = [];
-    const partialOrdered = [];
+    // Score-based ordering, but still respecting baseIds (date) within each score
+    const buckets = new Map(); // score -> [ids in baseIds order]
 
     for (const id of baseIds) {
-      if (exactMatchIds.has(id)) {
-        exactOrdered.push(id);
-      } else if (partialMatchIds.has(id)) {
-        partialOrdered.push(id);
-      }
+      const score = scoreMap.get(id);
+      if (!score) continue; // id doesn't match any word
+      if (!buckets.has(score)) buckets.set(score, []);
+      buckets.get(score).push(id);
     }
 
-    let filteredBySearch;
-    if (exactOrdered.length > 0) {
-      // prefer exact matches; partials come after
-      filteredBySearch = [...exactOrdered, ...partialOrdered];
-    } else {
-      // no exact matches → fallback to partials only
-      filteredBySearch = partialOrdered;
+    if (buckets.size === 0) {
+      activeIds = [];
+      currentPage = 1;
+      await loadPage(1);
+      return;
+    }
+
+    const sortedScores = [...buckets.keys()].sort((a, b) => b - a);
+    const filteredBySearch = [];
+    for (const score of sortedScores) {
+      filteredBySearch.push(...buckets.get(score));
     }
 
     activeIds = filteredBySearch;
@@ -411,8 +445,11 @@
     if (!text) return '';
     if (!term || !term.trim()) return escapeHtml(text);
 
-    const safeTerm = escapeRegExp(term.trim());
-    const regex = new RegExp(`(${safeTerm})`, 'ig');
+    const tokens = term.trim().split(/\s+/).filter(Boolean);
+    if (tokens.length === 0) return escapeHtml(text);
+
+    const pattern = tokens.map(escapeRegExp).join('|');
+    const regex = new RegExp(`(${pattern})`, 'ig');
 
     const parts = text.split(regex);
 
@@ -430,13 +467,15 @@
    * - if no term: first `maxLen` chars
    * - if term found: snippet centered around first occurrence, with some context
    */
-  function getSnippet(content, term, maxLen = 250, context = 120) {
+  function getSnippet(content, term, maxLen = 250, context = 20) {
     if (!content) return '';
 
-    // No search term: just leading snippet, word-safe-ish
-    if (!term || !term.trim()) {
+    const trimmed = term ? term.trim() : '';
+    const firstWord = trimmed.split(/\s+/).filter(Boolean)[0];
+
+    // No usable search word: just take the leading snippet, word-safe
+    if (!firstWord) {
       let text = content.slice(0, maxLen);
-      // trim to last full word
       const lastSpace = text.lastIndexOf(' ');
       if (lastSpace > 0 && content.length > maxLen) {
         text = text.slice(0, lastSpace);
@@ -446,7 +485,7 @@
     }
 
     const lowerContent = content.toLowerCase();
-    const lowerTerm = term.trim().toLowerCase();
+    const lowerTerm = firstWord.toLowerCase();
 
     const matchIndex = lowerContent.indexOf(lowerTerm);
 
@@ -624,16 +663,16 @@
                     <h4 class="result-title">
                       {#if item.url}
                         <a href={item.url} target="_blank" rel="noopener noreferrer">
-                          {@html highlight(item.title, searchTerm)}
+                          {@html highlight(getSnippet(item.title, searchTerm), searchTerm)}
                         </a>
                       {:else}
-                        {@html highlight(item.title, searchTerm)}
+                        {@html highlight(getSnippet(item.title, searchTerm), searchTerm)}
                       {/if}
                     </h4>
 
                     {#if item.org}
                       <span class="result-school">
-                        {@html highlight(item.org, searchTerm)}
+                        {@html highlight(getSnippet(item.org, searchTerm), searchTerm)}
                       </span>
                     {/if}
 
