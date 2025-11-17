@@ -29,7 +29,6 @@
   // IDs after applying filters and search
   let activeIds = [];
 
-
   // Current page's articles
   let articles = [];
 
@@ -40,9 +39,12 @@
 
   // Pagination
   let currentPage = 1;
-  const pageSize = 50;
+  const pageSize = 20;
   let totalPages = 1;
   let gotoPage = 1;
+
+  // Caching
+  let initialized = false;
 
   // Cache of article JSONs
   const articleCache = new Map();
@@ -56,10 +58,22 @@
   const searchShardCache = new Map();
 
   onMount(async () => {
-    await loadInitialData();
+    if (!initialized) {
+      // First time visiting the tab: fetch everything
+      await loadInitialData();
+    } else {
+      // Coming back to the tab: reuse existing data
+      loading = false;          // don’t show "Loading database..." again
+      error = null;
+      // Optionally re-apply filters & search based on existing state:
+      await applyFiltersAndSearch();
+    }
   });
 
   async function loadInitialData() {
+    // if already initialized, don’t fetch again
+    if (initialized) return;
+
     loading = true;
     error = null;
 
@@ -67,10 +81,14 @@
       // load indexes in parallel
       await Promise.all([loadMonthIndex(), loadInstitutionIndex()]);
 
+      // only set default filters on first successful load
       selectedMonth = 'ALL';
       selectedInstitution = 'ALL';
       searchTerm = '';
+
       await applyFiltersAndSearch();
+
+      initialized = true;  // mark as ready after success
     } catch (e) {
       console.error(e);
       error = e.message;
@@ -78,6 +96,7 @@
       loading = false;
     }
   }
+
 
   async function loadMonthIndex() {
     const res = await fetch(MONTH_INDEX_URL);
@@ -221,33 +240,51 @@
     }
 
     // shard is { token -> [ids...] }
-    // we do substring on token: token.includes(term)
-    const searchIdSet = new Set();
+    // exact matches first and then substrings
+    const exactMatchIds = new Set();
+    const partialMatchIds = new Set();
 
-    for (const [token, ids] of Object.entries(shard)) {
-      if (token.includes(term)) {
+    for (const [tokenRaw, ids] of Object.entries(shard)) {
+      const token = tokenRaw.toLowerCase();
+
+      if (token === term) {
         for (const id of ids) {
-          searchIdSet.add(id);
+          exactMatchIds.add(id);
+        }
+      } else if (token.includes(term)) {
+        for (const id of ids) {
+          partialMatchIds.add(id);
         }
       }
     }
 
-    if (searchIdSet.size === 0) {
-      activeIds = [];
-      currentPage = 1;
-      await loadPage(1);
-      return;
+// Build ordered list of ids based on baseIds ordering
+    const exactOrdered = [];
+    const partialOrdered = [];
+
+    for (const id of baseIds) {
+      if (exactMatchIds.has(id)) {
+        exactOrdered.push(id);
+      } else if (partialMatchIds.has(id)) {
+        partialOrdered.push(id);
+      }
     }
 
-    // Intersection with baseIds, preserving the date order from baseIds
-    const filteredBySearch = baseIds.filter((id) => searchIdSet.has(id));
+    let filteredBySearch;
+    if (exactOrdered.length > 0) {
+      // prefer exact matches; partials come after
+      filteredBySearch = [...exactOrdered, ...partialOrdered];
+    } else {
+      // no exact matches → fallback to partials only
+      filteredBySearch = partialOrdered;
+    }
 
     activeIds = filteredBySearch;
     currentPage = 1;
     await loadPage(1);
   }
 
-  // --- Paging + article loading ---
+    // --- Paging + article loading ---
 
   async function loadPage(page) {
     const ids = activeIds;
@@ -355,6 +392,112 @@
       timeZone: 'UTC'
     });
   }
+
+  function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+  }
+
+  function highlight(text, term) {
+    if (!text) return '';
+    if (!term || !term.trim()) return escapeHtml(text);
+
+    const safeTerm = escapeRegExp(term.trim());
+    const regex = new RegExp(`(${safeTerm})`, 'ig');
+
+    const parts = text.split(regex);
+
+    return parts
+            .map((part, i) =>
+                    i % 2 === 1
+                            ? `<mark>${escapeHtml(part)}</mark>`
+                            : escapeHtml(part)
+            )
+            .join('');
+  }
+
+  /**
+   * Returns a snippet of `content`:
+   * - if no term: first `maxLen` chars
+   * - if term found: snippet centered around first occurrence, with some context
+   */
+  function getSnippet(content, term, maxLen = 250, context = 120) {
+    if (!content) return '';
+
+    // No search term: just leading snippet, word-safe-ish
+    if (!term || !term.trim()) {
+      let text = content.slice(0, maxLen);
+      // trim to last full word
+      const lastSpace = text.lastIndexOf(' ');
+      if (lastSpace > 0 && content.length > maxLen) {
+        text = text.slice(0, lastSpace);
+        return text + '…';
+      }
+      return content.length > maxLen ? text + '…' : text;
+    }
+
+    const lowerContent = content.toLowerCase();
+    const lowerTerm = term.trim().toLowerCase();
+
+    const matchIndex = lowerContent.indexOf(lowerTerm);
+
+    // Term not found: fallback to start
+    if (matchIndex === -1) {
+      let text = content.slice(0, maxLen);
+      const lastSpace = text.lastIndexOf(' ');
+      if (lastSpace > 0 && content.length > maxLen) {
+        text = text.slice(0, lastSpace);
+        return text + '…';
+      }
+      return content.length > maxLen ? text + '…' : text;
+    }
+
+    // raw window around the match
+    let rawStart = Math.max(0, matchIndex - context);
+    let rawEnd = Math.min(content.length, matchIndex + lowerTerm.length + context);
+
+    // Adjust start to the previous space (word boundary)
+    if (rawStart > 0) {
+      const prevSpace = content.lastIndexOf(' ', rawStart);
+      if (prevSpace !== -1) {
+        rawStart = prevSpace + 1;
+      }
+    }
+
+    // Adjust end to the next space (word boundary)
+    if (rawEnd < content.length) {
+      const nextSpace = content.indexOf(' ', rawEnd);
+      if (nextSpace !== -1) {
+        rawEnd = nextSpace;
+      }
+    }
+
+    // Ensure snippet length doesn't exceed maxLen too much
+    if (rawEnd - rawStart > maxLen) {
+      rawEnd = rawStart + maxLen;
+      const lastSpace = content.lastIndexOf(' ', rawEnd);
+      if (lastSpace > rawStart) {
+        rawEnd = lastSpace;
+      }
+    }
+
+    let snippet = content.slice(rawStart, rawEnd);
+
+    if (rawStart > 0) snippet = '…' + snippet;
+    if (rawEnd < content.length) snippet = snippet + '…';
+
+    return snippet;
+  }
+
 </script>
 
 <div class="database-container">
@@ -481,26 +624,30 @@
                     <h4 class="result-title">
                       {#if item.url}
                         <a href={item.url} target="_blank" rel="noopener noreferrer">
-                          {item.title}
+                          {@html highlight(item.title, searchTerm)}
                         </a>
                       {:else}
-                        {item.title}
+                        {@html highlight(item.title, searchTerm)}
                       {/if}
                     </h4>
 
                     {#if item.org}
-                      <span class="result-school">{item.org}</span>
+                      <span class="result-school">
+                        {@html highlight(item.org, searchTerm)}
+                      </span>
                     {/if}
+
                   </div>
 
                   <p class="result-date">{formatDate(item.date)}</p>
 
                   {#if item.content}
                     <p class="result-excerpt">
-                      {item.content.substring(0, 250)}
-                      {item.content.length > 250 ? '...' : ''}
+                      {@html highlight(getSnippet(item.content, searchTerm), searchTerm)}
                     </p>
                   {/if}
+
+
                 </article>
               {/each}
             </div>
@@ -596,9 +743,9 @@
   h2 {
     font-size: 2.5rem;
     margin: 0 0 1.5rem;
-    color: #D6613A;
+    color: #d6613a;
     font-weight: 400;
-    font-family: "EB Garamond", serif;
+    font-family: 'EB Garamond', serif;
     text-align: center;
   }
 
@@ -616,14 +763,15 @@
     color: #444;
   }
 
-  .loading, .error {
+  .loading,
+  .error {
     text-align: center;
     padding: 3rem 2rem;
   }
 
   .spinner {
     border: 4px solid #f3f3f3;
-    border-top: 4px solid #D6613A;
+    border-top: 4px solid #d6613a;
     border-radius: 50%;
     width: 50px;
     height: 50px;
@@ -632,27 +780,36 @@
   }
 
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 
-  .error { color: #dc3545; }
+  .error {
+    color: #dc3545;
+  }
 
   .retry-btn {
     margin-top: 1rem;
     padding: 0.5rem 1.5rem;
     background: white;
-    color: #D6613A;
-    border: 2px solid #D6613A;
+    color: #d6613a;
+    border: 2px solid #d6613a;
     border-radius: 4px;
     cursor: pointer;
     font-size: 1rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: 'Helvetica Neue', sans-serif;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: all 0.2s ease;
   }
   .retry-btn:hover {
-    background: #D6613A; color: white; box-shadow: 0 4px 8px rgba(0,0,0,0.15); transform: translateY(-1px);
+    background: #d6613a;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
   }
 
   .filters-section {
@@ -675,78 +832,177 @@
     margin-bottom: 0.5rem;
     font-weight: 500;
     color: #222;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: 'Helvetica Neue', sans-serif;
     font-size: 0.9rem;
   }
 
-  .multi-select-dropdown { position: relative; }
-
   .dropdown-toggle {
-    width: 100%; padding: 0.75rem; border: 1px solid #dee2e6; border-radius: 4px; font-size: 0.95rem;
-    font-family: "Helvetica Neue", sans-serif; background: white; cursor: pointer; text-align: left;
-    display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-family: 'Helvetica Neue', sans-serif;
+    background: white;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: border-color 0.2s;
   }
-  .dropdown-toggle:hover { border-color: #D6613A; }
-  .dropdown-arrow { font-size: 0.8rem; color: #666; }
-
-  .dropdown-menu {
-    position: absolute; top: 100%; left: 0; right: 0; margin-top: 0.25rem; background: white; border: 1px solid #dee2e6;
-    border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; max-height: 300px; display: flex; flex-direction: column;
+  .dropdown-toggle:hover {
+    border-color: #d6613a;
   }
-  .dropdown-search { padding: 0.75rem; border-bottom: 1px solid #e0e0e0; }
-  .dropdown-search input { width: 100%; padding: 0.5rem; border: 1px solid #dee2e6; border-radius: 4px; font-size: 0.9rem; font-family: "Helvetica Neue", sans-serif; }
-  .dropdown-search input:focus { outline: none; border-color: #D6613A; }
-  .dropdown-options { overflow-y: auto; max-height: 200px; }
-  .dropdown-option { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; cursor: pointer; transition: background 0.15s; font-size: 0.9rem; font-family: "Helvetica Neue", sans-serif; }
-  .dropdown-option:hover { background: #f8f8f8; }
-  .dropdown-option input[type="checkbox"] { cursor: pointer; accent-color: #D6613A; }
-  .clear-selection { padding: 0.5rem 0.75rem; margin: 0.5rem; border: 1px solid #dee2e6; border-radius: 4px; background: white; color: #666; font-size: 0.85rem; cursor: pointer; font-family: "Helvetica Neue", sans-serif; transition: all 0.2s; }
-  .clear-selection:hover { background: #f8f8f8; border-color: #D6613A; }
 
-  .search-export-row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
-  .search-wrapper { flex: 1; min-width: 250px; position: relative; }
-  .search-loader { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; color: #888; font-family: "Helvetica Neue", sans-serif; }
-  .search-input { width: 100%; padding: 0.75rem 1rem; border: 1px solid #dee2e6; border-radius: 4px; font-size: 0.95rem; font-family: "Helvetica Neue", sans-serif; }
-  .search-input:focus { outline: none; border-color: #D6613A; box-shadow: 0 0 0 3px rgba(214,97,58,0.1); }
-  .goto-input { padding: 0.4rem 0.4rem; border: 1px solid #dee2e6; border-radius: 4px; font-family: "Helvetica Neue", sans-serif; }
-  .goto-input:focus { outline: none; border-color: #D6613A; box-shadow: 0 0 0 3px rgba(214,97,58,0.1); }
-
-  .export-btn {
-    background: white; color: #D6613A; border: 2px solid #D6613A; border-radius: 4px; padding: 0.7rem 1.5rem; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; font-family: "Helvetica Neue", sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; display: inline-flex; align-items: center; gap: 0.5rem;
+  .search-input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-family: 'Helvetica Neue', sans-serif;
   }
-  .export-btn:hover:not(:disabled) { background: #D6613A; color: white; box-shadow: 0 4px 8px rgba(0,0,0,0.15); transform: translateY(-1px); }
-  .export-btn:disabled { background: white; border-color: #ccc; color: #ccc; cursor: not-allowed; box-shadow: none; }
-  .btn-spinner { border: 2px solid #D6613A; border-top: 2px solid transparent; border-radius: 50%; width: 16px; height: 16px; animation: spin 0.8s linear infinite; display: inline-block; }
+  .search-input:focus {
+    outline: none;
+    border-color: #d6613a;
+    box-shadow: 0 0 0 3px rgba(214, 97, 58, 0.1);
+  }
+  .goto-input {
+    padding: 0.4rem 0.4rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+  .goto-input:focus {
+    outline: none;
+    border-color: #d6613a;
+    box-shadow: 0 0 0 3px rgba(214, 97, 58, 0.1);
+  }
 
-  .results-section { margin-top: 2rem; }
-  .results-header { margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 2px solid #e0e0e0; }
-  .results-count { font-family: "Helvetica Neue", sans-serif; font-weight: 500; color: #666; font-size: 0.95rem; }
-  .filter-indicator { color: #888; font-weight: 400; }
+  .results-section {
+    margin-top: 2rem;
+  }
+  .results-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e0e0e0;
+  }
 
-  .results-list { display: flex; flex-direction: column; gap: 1.5rem; }
-  .result-card { background: white; border: 1px solid #e0e0e0; border-radius: 6px; padding: 1.5rem; transition: all 0.2s ease; }
-  .result-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-color: #D6613A; }
-  .result-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.5rem; }
-  .result-title { font-size: 1.25rem; font-weight: 500; color: #222; margin: 0; font-family: "EB Garamond", serif; flex: 1; }
-  .result-title a { color: #D6613A; text-decoration: none; }
-  .result-title a:hover { text-decoration: underline; }
-  .result-school { background: #f0f0f0; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.85rem; font-family: "Helvetica Neue", sans-serif; color: #666; white-space: nowrap; }
-  .result-date { font-size: 0.9rem; color: #888; margin: 0.5rem 0; font-family: "Helvetica Neue", sans-serif; }
-  .result-excerpt { font-size: 0.95rem; line-height: 1.6; color: #555; margin: 1rem 0 0; }
+  .results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .result-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+  }
+  .result-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: #d6613a;
+  }
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .result-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #222;
+    margin: 0;
+    font-family: 'EB Garamond', serif;
+    flex: 1;
+  }
+  .result-title a {
+    color: #d6613a;
+    text-decoration: none;
+  }
+  .result-title a:hover {
+    text-decoration: underline;
+  }
+  .result-school {
+    background: #f0f0f0;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-family: 'Helvetica Neue', sans-serif;
+    color: #666;
+    white-space: nowrap;
+  }
+  .result-date {
+    font-size: 0.9rem;
+    color: #888;
+    margin: 0.5rem 0;
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+  .result-excerpt {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #555;
+    margin: 1rem 0 0;
+  }
 
-  .pagination { display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 3rem; padding: 1.5rem 0; }
-  .page-btn { padding: 0.5rem 1rem; border: 1px solid #dee2e6; background: white; border-radius: 4px; cursor: pointer; font-size: 0.9rem; font-family: "Helvetica Neue", sans-serif; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-  .page-btn:hover:not(:disabled) { background: #f8f9fa; border-color: #D6613A; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transform: translateY(-1px); }
-  .page-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
-  .page-info { padding: 0 1rem; font-weight: 500; font-family: "Helvetica Neue", sans-serif; font-size: 0.95rem; }
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 3rem;
+    padding: 1.5rem 0;
+  }
+  .page-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: 'Helvetica Neue', sans-serif;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  .page-btn:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: #d6613a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+  .page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .page-info {
+    padding: 0 1rem;
+    font-weight: 500;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 0.95rem;
+  }
+
 
   @media (max-width: 768px) {
-    .container { padding: 0 1.5rem; }
-    h2 { font-size: 2rem; }
-    .filters-grid { grid-template-columns: 1fr; }
-    .search-export-row { flex-direction: column; align-items: stretch; }
-    .export-btn { width: 100%; justify-content: center; }
-    .result-header { flex-direction: column; align-items: flex-start; }
-    .result-school { align-self: flex-start; }
+    .container {
+      padding: 0 1.5rem;
+    }
+    h2 {
+      font-size: 2rem;
+    }
+    .filters-grid {
+      grid-template-columns: 1fr;
+    }
+    .result-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .result-school {
+      align-self: flex-start;
+    }
   }
 </style>
