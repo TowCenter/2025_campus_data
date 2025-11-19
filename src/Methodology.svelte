@@ -148,6 +148,61 @@
   }, {});
   $: totalStates = Object.keys(stateGroups).length;
   $: totalRecords = schoolsList.length;
+
+  // Group schools by proximity and calculate offset positions
+  function getSchoolPositions(schools) {
+    const positions = new Map();
+    const proximityThreshold = 15; // pixels - schools within this distance are considered overlapping
+
+    schools.forEach(school => {
+      const coords = projectCoordinates(school.lat, school.lng);
+
+      // Find if there's already a school at roughly this location
+      let cluster = null;
+      for (const [key, group] of positions.entries()) {
+        const [cx, cy] = key.split(',').map(Number);
+        const distance = Math.sqrt(Math.pow(coords.x - cx, 2) + Math.pow(coords.y - cy, 2));
+        if (distance < proximityThreshold) {
+          cluster = key;
+          break;
+        }
+      }
+
+      if (cluster) {
+        positions.get(cluster).push({ ...school, baseCoords: coords });
+      } else {
+        const key = `${coords.x},${coords.y}`;
+        positions.set(key, [{ ...school, baseCoords: coords }]);
+      }
+    });
+
+    // Calculate offset positions for clustered schools
+    const result = [];
+    for (const group of positions.values()) {
+      if (group.length === 1) {
+        result.push({ ...group[0], displayCoords: group[0].baseCoords });
+      } else {
+        // Arrange schools in a circle around the centroid
+        const radius = 8; // offset distance
+        group.forEach((school, i) => {
+          const angle = (i / group.length) * 2 * Math.PI;
+          const offsetX = Math.cos(angle) * radius;
+          const offsetY = Math.sin(angle) * radius;
+          result.push({
+            ...school,
+            displayCoords: {
+              x: school.baseCoords.x + offsetX,
+              y: school.baseCoords.y + offsetY
+            }
+          });
+        });
+      }
+    }
+
+    return result;
+  }
+
+  $: schoolPositions = getSchoolPositions(schoolData);
   
   // Convert lat/lng to SVG coordinates (simple linear projection)
   function projectCoordinates(lat, lng) {
@@ -282,8 +337,8 @@
 
     articles.forEach(item => {
       if (item.date?.$date) {
-        const date = new Date(item.date.$date);
-        const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
+        // Extract just the date part from UTC string (YYYY-MM-DD)
+        const dateStr = item.date.$date.split('T')[0];
         dateMap[dateStr] = (dateMap[dateStr] || 0) + 1;
       }
     });
@@ -291,35 +346,35 @@
     return dateMap;
   }
 
-  // Group articles by month for bar chart
-  function groupByMonth(dateMap) {
-    const monthMap = {};
+  // Convert daily article data to 7-day rolling sum
+  function processWeeklyRollingData(dateMap) {
+    // Get all dates sorted, only from Jan 1, 2025 onwards
+    const allDates = Object.keys(dateMap)
+      .filter(dateStr => {
+        return dateStr >= '2025-01-01';
+      })
+      .sort();
 
-    Object.keys(dateMap).forEach(dateStr => {
-      // dateStr format is "YYYY-MM-DD"
-      const [year, month, day] = dateStr.split('-').map(Number);
+    if (allDates.length === 0) return [];
 
-      // Only include dates from January 1, 2025 onwards
-      if (year < 2025) return;
+    // Calculate 7-day rolling sum
+    const weeklyData = [];
+    for (let i = 0; i < allDates.length; i++) {
+      const currentDate = allDates[i];
 
-      const monthKey = `${year}-${String(month).padStart(2, '0')}`;
-      const date = new Date(year, month - 1, day);
-      const monthLabel = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
-
-      if (!monthMap[monthKey]) {
-        monthMap[monthKey] = {
-          label: monthLabel,
-          count: 0
-        };
+      // Sum the current day and previous 6 days (7 days total)
+      let sum = 0;
+      for (let j = Math.max(0, i - 6); j <= i; j++) {
+        sum += dateMap[allDates[j]] || 0;
       }
 
-      monthMap[monthKey].count += dateMap[dateStr];
-    });
+      weeklyData.push([currentDate, { count: sum }]);
+    }
 
-    return Object.entries(monthMap).sort((a, b) => a[0].localeCompare(b[0]));
+    return weeklyData;
   }
 
-  $: monthlyBarData = groupByMonth(articlesByDate);
+  $: dailyBarData = processWeeklyRollingData(articlesByDate);
 
   // Organize dates by month for calendar view with week grids
   function organizeByMonth(dateMap) {
@@ -480,54 +535,23 @@
               <!-- Loading placeholder -->
               <text x="480" y="300" text-anchor="middle" fill="#ccc" font-size="14">Loading map...</text>
             {/if}
-            
+
             <!-- School Dots -->
-            {#each schoolData as school, i}
-              {@const coords = projectCoordinates(school.lat, school.lng)}
+            {#each schoolPositions as school, i}
               <circle
-                cx={coords.x}
-                cy={coords.y}
-                r="6"
+                cx={school.displayCoords.x}
+                cy={school.displayCoords.y}
+                r="5"
                 class="school-dot"
                 class:hovered={hoveredSchool === school}
                 on:mouseenter={(event) => handleDotHover(school, event)}
                 on:mouseleave={handleDotLeave}
-                style="--delay: {i * 0.05}s"
+                style="--delay: {i * 0.01}s"
                 role="button"
                 tabindex="0"
                 aria-label="View details for {school.name}"
               />
             {/each}
-            
-            <!-- Clustering indicators -->
-            <g class="cluster-indicators">
-              <!-- California cluster -->
-              {#if schoolData.filter(s => s.state === 'California').length > 1}
-                {@const caCoords = projectCoordinates(37.4419, -122.1430)}
-                <circle cx={caCoords.x} cy={caCoords.y} r="15" class="cluster-ring" />
-                <text x={caCoords.x} y={caCoords.y + 3} class="cluster-count">
-                  {schoolData.filter(s => s.state === 'California').length}
-                </text>
-              {/if}
-              
-              <!-- New York area cluster -->
-              {#if schoolData.filter(s => s.state === 'New York').length > 1}
-                {@const nyCoords = projectCoordinates(40.7589, -73.9851)}
-                <circle cx={nyCoords.x} cy={nyCoords.y} r="12" class="cluster-ring" />
-                <text x={nyCoords.x} y={nyCoords.y + 3} class="cluster-count">
-                  {schoolData.filter(s => s.state === 'New York').length}
-                </text>
-              {/if}
-              
-              <!-- Massachusetts cluster -->
-              {#if schoolData.filter(s => s.state === 'Massachusetts').length > 1}
-                {@const maCoords = projectCoordinates(42.3601, -71.0589)}
-                <circle cx={maCoords.x} cy={maCoords.y} r="12" class="cluster-ring" />
-                <text x={maCoords.x} y={maCoords.y + 3} class="cluster-count">
-                  {schoolData.filter(s => s.state === 'Massachusetts').length}
-                </text>
-              {/if}
-            </g>
           </svg>
           
           <!-- Tooltip -->
@@ -548,11 +572,7 @@
         <div class="map-legend">
           <div class="legend-item">
             <div class="legend-dot single"></div>
-            <span>Individual University</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot cluster"></div>
-            <span>Multiple Universities</span>
+            <span>Each dot represents a university</span>
           </div>
         </div>
       </section>
@@ -562,33 +582,40 @@
         <section class="charts-section">
           <h3>Article Frequency Over Time</h3>
 
-          <div class="charts-grid">
-            <!-- Area Chart -->
-            <div class="chart-container">
-              <h4>Timeline</h4>
-              <div class="area-chart-wrapper">
-                {#if monthlyBarData.length > 0}
-                  {@const maxCount = Math.max(...monthlyBarData.map(m => m[1].count), 1)}
+          <!-- Area Chart -->
+          <div class="chart-container">
+            <h4>hed hed hed</h4>
+            <p class="chart-dek">dek dek dek</p>
+            <div class="area-chart-wrapper">
+                {#if dailyBarData.length > 0}
+                  {@const maxCount = Math.max(...dailyBarData.map(m => m[1].count), 1)}
                   {@const chartHeight = 300}
                   {@const chartWidth = 800}
-                  {@const leftMargin = 10}
-                  {@const bottomMargin = 20}
+                  {@const leftMargin = 50}
+                  {@const bottomMargin = 30}
                   {@const chartAreaWidth = chartWidth - leftMargin}
                   {@const chartAreaHeight = chartHeight - bottomMargin}
-                  {@const getNiceNumber = (num) => {
-                    if (num <= 0) return 10;
-                    const magnitude = Math.pow(10, Math.floor(Math.log10(num)));
-                    const normalized = num / magnitude;
-                    if (normalized <= 1) return magnitude;
-                    if (normalized <= 2) return 2 * magnitude;
-                    if (normalized <= 5) return 5 * magnitude;
-                    return 10 * magnitude;
+                  {@const yAxisMax = 1600}
+                  {@const yAxisValues = [0, 400, 800, 1200, 1600]}
+                  {@const yAxisSteps = 4}
+                  {@const formatNumber = (num) => {
+                    if (num >= 1000) {
+                      return (num / 1000).toFixed(1) + 'k';
+                    }
+                    return num.toString();
                   }}
-                  {@const yAxisMax = getNiceNumber(Math.max(maxCount * 1.1, 1))}
-                  {@const points = monthlyBarData.map(([key, data], i) => {
-                    const x = leftMargin + (i / (monthlyBarData.length - 1)) * chartAreaWidth;
+                  {@const dateToTimestamp = (dateKey) => {
+                    const [year, month, day] = dateKey.split('-').map(Number);
+                    return Date.UTC(year, month - 1, day);
+                  }}
+                  {@const minTimestamp = dateToTimestamp(dailyBarData[0][0])}
+                  {@const maxTimestamp = dateToTimestamp(dailyBarData[dailyBarData.length - 1][0])}
+                  {@const timeRange = maxTimestamp - minTimestamp || 1}
+                  {@const points = dailyBarData.map(([key, data], i) => {
+                    const timestamp = dateToTimestamp(key);
+                    const x = leftMargin + ((timestamp - minTimestamp) / timeRange) * chartAreaWidth;
                     const y = (1 - (data.count / yAxisMax)) * (chartAreaHeight - 10) + 5;
-                    return { x, y, label: data.label, count: data.count };
+                    return { x, y, label: data.label, count: data.count, key };
                   })}
                   {@const pathD = (() => {
                     if (points.length === 0) return '';
@@ -603,23 +630,46 @@
                     return path;
                   })()}
                   {@const areaD = `${pathD} L ${chartWidth} ${chartAreaHeight} L ${leftMargin} ${chartAreaHeight} Z`}
-                  {@const yAxisSteps = 5}
-                  {@const yAxisStep = yAxisMax / yAxisSteps}
-                  {@const yAxisValues = Array.from({length: yAxisSteps + 1}, (_, i) => Math.round(yAxisStep * i))}
+                  {@const monthLabels = (() => {
+                    const labels = [];
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+                    // Parse start and end dates using UTC to avoid timezone issues
+                    const [startYear, startMonth] = dailyBarData[0][0].split('-').map(Number);
+                    const [endYear, endMonth] = dailyBarData[dailyBarData.length - 1][0].split('-').map(Number);
+
+                    let year = startYear;
+                    let month = startMonth;
+
+                    while (year < endYear || (year === endYear && month <= endMonth)) {
+                      const timestamp = Date.UTC(year, month - 1, 1);
+                      const x = leftMargin + ((timestamp - minTimestamp) / timeRange) * chartAreaWidth;
+                      const monthIndex = month - 1;
+                      const label = month === 1 ? `${monthNames[monthIndex]} ${year}` : monthNames[monthIndex];
+                      labels.push({ x, label });
+
+                      month++;
+                      if (month > 12) {
+                        month = 1;
+                        year++;
+                      }
+                    }
+                    return labels;
+                  })()}
 
                   <div class="area-chart-container">
                     <!-- Y-axis labels -->
                     <div class="y-axis-labels">
                       {#each yAxisValues.reverse() as value, i}
                         <div class="y-axis-label">
-                          {value}
+                          {formatNumber(value)}
                         </div>
                       {/each}
                     </div>
 
                     <!-- Chart SVG -->
                     <div class="area-chart-svg-container">
-                      <svg viewBox="0 0 {chartWidth} {chartHeight}" class="area-chart-svg" preserveAspectRatio="xMinYMin meet">
+                      <svg viewBox="0 0 {chartWidth} {chartHeight}" class="area-chart-svg" preserveAspectRatio="none">
                         <!-- Grid lines -->
                         <g class="grid-lines">
                           {#each yAxisValues as value, i}
@@ -656,14 +706,11 @@
 
                       <!-- X-axis labels -->
                       <div class="area-chart-labels">
-                        {#each monthlyBarData as [monthKey, monthData], i}
-                          {@const showLabel = monthlyBarData.length <= 6 || i % Math.max(1, Math.floor(monthlyBarData.length / 6)) === 0 || i === monthlyBarData.length - 1}
-                          {#if showLabel}
-                            {@const xPosition = (leftMargin / chartWidth) * 100 + (i / (monthlyBarData.length - 1)) * (chartAreaWidth / chartWidth) * 100}
-                            <span class="area-label" style="left: {xPosition}%">
-                              {monthData.label}
-                            </span>
-                          {/if}
+                        {#each monthLabels as monthLabel}
+                          {@const xPosition = (monthLabel.x / chartWidth) * 100}
+                          <span class="area-label" style="left: {xPosition}%">
+                            {monthLabel.label}
+                          </span>
                         {/each}
                       </div>
                     </div>
@@ -671,88 +718,6 @@
                 {/if}
               </div>
             </div>
-
-            <!-- Calendar Heatmap -->
-            <div class="chart-container">
-              <h4>Daily Activity</h4>
-              <div
-                class="calendar-grid-container"
-                bind:this={calendarContainer}
-                on:mousemove={handleCalendarMouseMove}
-                role="img"
-                aria-label="Calendar heatmap of article frequency"
-              >
-                {#each Object.entries(monthlyData) as [monthKey, monthData]}
-                  {@const monthGrid = getMonthGrid(monthData.year, monthData.month, monthData.days)}
-                  {@const maxCount = Math.max(...Object.values(articlesByDate))}
-                  <div class="month-calendar">
-                    <div class="month-label">{monthData.label}</div>
-                    <div class="month-grid">
-                      {#each monthGrid as week}
-                        {#each week as dayCell}
-                          {#if dayCell === null}
-                            <div class="calendar-day empty"></div>
-                          {:else if dayCell.data}
-                            {@const ratio = dayCell.data.count / maxCount}
-                            {@const intensity = Math.pow(ratio, 0.3)}
-                            {@const dayOfWeek = dayCell.data.date.toLocaleDateString('en-US', { weekday: 'short' })}
-                            {@const fullDate = dayCell.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                            <div
-                              class="calendar-day"
-                              style="background-color: rgba(214, 97, 58, {Math.min(1, Math.max(0.2, intensity))})"
-                              on:mouseenter={(event) => handleCalendarDayHover({ date: fullDate, dayOfWeek, count: dayCell.data.count }, event)}
-                              on:mouseleave={handleCalendarDayLeave}
-                              role="button"
-                              tabindex="0"
-                              aria-label="{dayOfWeek}, {fullDate}: {dayCell.data.count} articles"
-                            ></div>
-                          {:else}
-                            {@const tempDate = new Date(monthData.year, monthData.month, dayCell.day)}
-                            {@const dayOfWeek = tempDate.toLocaleDateString('en-US', { weekday: 'short' })}
-                            {@const fullDate = tempDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                            <div
-                              class="calendar-day no-data"
-                              on:mouseenter={(event) => handleCalendarDayHover({ date: fullDate, dayOfWeek, count: 0 }, event)}
-                              on:mouseleave={handleCalendarDayLeave}
-                              role="button"
-                              tabindex="0"
-                              aria-label="{dayOfWeek}, {fullDate}: No articles"
-                            ></div>
-                          {/if}
-                        {/each}
-                      {/each}
-                    </div>
-                  </div>
-                {/each}
-
-                <!-- Calendar Tooltip -->
-                {#if showCalendarTooltip && calendarTooltip}
-                  <div
-                    class="tooltip calendar-tooltip"
-                    style="left: {calendarTooltipX}px; top: {calendarTooltipY}px;"
-                  >
-                    <div class="tooltip-content">
-                      <div class="tooltip-title">{calendarTooltip.dayOfWeek}, {calendarTooltip.date}</div>
-                      <div class="tooltip-state">
-                        {calendarTooltip.count} {calendarTooltip.count === 1 ? 'article' : 'articles'}
-                      </div>
-                    </div>
-                  </div>
-                {/if}
-              </div>
-              <div class="heatmap-legend">
-                <span>Less</span>
-                <div class="legend-scale">
-                  <div style="background-color: rgba(214, 97, 58, 0.2)"></div>
-                  <div style="background-color: rgba(214, 97, 58, 0.4)"></div>
-                  <div style="background-color: rgba(214, 97, 58, 0.6)"></div>
-                  <div style="background-color: rgba(214, 97, 58, 0.8)"></div>
-                  <div style="background-color: rgba(214, 97, 58, 1)"></div>
-                </div>
-                <span>More</span>
-              </div>
-            </div>
-          </div>
         </section>
       {:else if loadingArticles}
         <section class="charts-section">
@@ -760,12 +725,94 @@
         </section>
       {/if}
 
-      <!-- Methodology Content Placeholder -->
+      <!-- Methodology Content -->
       <section class="methodology-content">
-        <h3>Research Methodology</h3>
-        <p class="placeholder-text">
-          [Methodology content will be added here - this section will contain detailed 
-          information about data collection, analysis methods, and research approach.]
+        <h3>Dataset Methodology</h3>
+
+        <h4>Overview</h4>
+        <p>
+          This database tracks public communications from 100+ universities during a period of heightened federal oversight,
+          capturing how higher education institutions respond to regulatory pressure through their official announcements and statements.
+        </p>
+
+        <h4>Data Sources</h4>
+
+        <h5>University Selection</h5>
+        <ul>
+          <li>
+            Universities flagged for federal oversight in the <a href="https://hechingerreport.org/which-schools-and-colleges-are-being-investigated-by-the-trump-administration/" target="_blank" rel="noopener noreferrer">Hechinger Report's investigation tracker</a>
+          </li>
+          <li>
+            Institutions subject to Department of Education investigation announcements
+          </li>
+          <li>
+            This equals out to 100+ total higher education institutions across the U.S.
+          </li>
+        </ul>
+
+        <h5>Content Types</h5>
+        <ul>
+          <li>Official university press releases</li>
+          <li>University news pages and portals</li>
+          <li>Public announcement pages for campus communities</li>
+          <li>Policy statements from university leadership</li>
+          <li>Operational updates and campus communications</li>
+        </ul>
+
+        <h4>Collection Methods</h4>
+
+        <h5>Technical Approach</h5>
+        <p>
+          Data collected using Scraper Factories pipeline deployed across university domains. The system adapts to varying
+          website formats while maintaining full compliance with robots.txt protocols, when available.
+        </p>
+
+        <h5>Temporal Scope</h5>
+        <ul>
+          <li>Current coverage: January 1, 2025 onwards</li>
+          <li>Planned expansion: Pre-2025 historical data for baseline comparisons</li>
+        </ul>
+
+        <h4>Quality Controls</h4>
+        <ul>
+          <li>English-language content only</li>
+          <li>Original publication dates preserved when available</li>
+          <li>Manual verification for undated content where possible</li>
+          <li>Cross-validation through spot-checking sample institutions</li>
+        </ul>
+
+        <h4>Limitations & Exclusions</h4>
+
+        <h5>Not Included</h5>
+        <ul>
+          <li>Private or internal communications</li>
+          <li>Social media posts</li>
+          <li>Routine academic announcements (course schedules, calendars)</li>
+          <li>Individual department or faculty pages</li>
+          <li>Password-protected or login-protected content</li>
+        </ul>
+
+        <h5>Data Gaps</h5>
+        <ul>
+          <li>Some universities may block automated access to certain pages</li>
+          <li>Announcements without clear publication dates marked as undated</li>
+          <li>Historical communications prior to January 2025 (collection in progress)</li>
+        </ul>
+
+        <h4>Privacy & Ethics</h4>
+        <p>
+          All data collection focuses exclusively on publicly available content that universities have chosen to share openly.
+          No private communications or restricted-access materials are included in the database.
+        </p>
+
+        <h4>Access & Updates</h4>
+        <p>
+          This dataset is open-source and updated regularly as new university communications are published. For technical
+          questions about data collection methods or to report data quality issues, please contact our research team.
+        </p>
+
+        <p class="last-updated">
+          <strong>Last Updated:</strong> November 18, 2025
         </p>
       </section>
     </div>
@@ -883,37 +930,11 @@
 
   .school-dot:hover,
   .school-dot.hovered {
-    r: 10;
+    r: 8;
     fill: #c55532;
     stroke: #D6613A;
     stroke-width: 3;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-  }
-
-  .cluster-indicators {
-    pointer-events: none;
-  }
-
-  .cluster-ring {
-    fill: rgba(214, 97, 58, 0.15);
-    stroke: #D6613A;
-    stroke-width: 2;
-    stroke-dasharray: 5,5;
-    animation: pulse 2s infinite;
-  }
-
-  .cluster-count {
-    fill: #D6613A;
-    font-family: "Helvetica Neue", sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    text-anchor: middle;
-    dominant-baseline: middle;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 0.7; }
-    50% { opacity: 1; }
   }
 
   /* Tooltip */
@@ -983,11 +1004,6 @@
     box-shadow: 0 0 0 1px #D6613A;
   }
 
-  .legend-dot.cluster {
-    background: rgba(214, 97, 58, 0.15);
-    border: 2px dashed #D6613A;
-  }
-
   /* Charts Section */
   .charts-section {
     margin: 3rem 0;
@@ -1020,9 +1036,18 @@
   .chart-container h4 {
     font-size: 1.1rem;
     color: #D6613A;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     font-family: "EB Garamond", serif;
     font-weight: 500;
+  }
+
+  .chart-dek {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+    font-family: "Helvetica Neue", sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
   }
 
   /* Area Chart */
@@ -1169,7 +1194,7 @@
     width: 16px;
     height: 16px;
     border-radius: 2px;
-    border: 1px solid rgba(214, 97, 58, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.1);
   }
 
   .loading-text {
@@ -1190,9 +1215,63 @@
   .methodology-content h3 {
     font-size: 1.8rem;
     color: #D6613A;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    margin-top: 0;
     font-family: "EB Garamond", serif;
     font-weight: 400;
+  }
+
+  .methodology-content h4 {
+    font-size: 1.3rem;
+    color: #D6613A;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    font-family: "EB Garamond", serif;
+    font-weight: 500;
+  }
+
+  .methodology-content h5 {
+    font-size: 1.1rem;
+    color: #444;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-family: "Helvetica Neue", sans-serif;
+    font-weight: 600;
+  }
+
+  .methodology-content p {
+    color: #444;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+
+  .methodology-content ul {
+    margin: 0.75rem 0 1.5rem 1.5rem;
+    line-height: 1.7;
+  }
+
+  .methodology-content li {
+    color: #444;
+    margin-bottom: 0.5rem;
+  }
+
+  .methodology-content a {
+    color: #D6613A;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(214, 97, 58, 0.3);
+    transition: border-color 0.2s;
+  }
+
+  .methodology-content a:hover {
+    border-bottom-color: #D6613A;
+  }
+
+  .last-updated {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e0e0e0;
+    color: #666;
+    font-size: 0.9rem;
   }
 
   .placeholder-text {
