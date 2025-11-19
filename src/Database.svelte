@@ -217,6 +217,7 @@
 
   async function applyFiltersAndSearch() {
     const baseIds = getBaseIdsFromFilters();
+    const baseIdsSet = new Set(baseIds);
     const tokens = getSearchTokens(searchTerm);
 
     // No search term: just filtered timeline
@@ -284,6 +285,9 @@
         if (!weight) continue;
 
         for (const id of ids) {
+          // 🚀 Only score IDs that survive month/institution filters
+          if (!baseIdsSet.has(id)) continue;
+
           const prev = scoreMap.get(id) || 0;
           scoreMap.set(id, prev + weight);
         }
@@ -565,6 +569,23 @@
         <!-- Filters -->
         <section class="filters-section">
           <div class="filters-grid">
+
+            <!-- Institution filter -->
+            <div class="filter-group">
+              <label for="institution-select">Filter by Institution</label>
+              <select
+                      id="institution-select"
+                      class="dropdown-toggle"
+                      bind:value={selectedInstitution}
+                      on:change={handleInstitutionChange}
+              >
+                <option value="ALL">All Institutions</option>
+                {#each institutions as inst}
+                  <option value={inst}>{inst}</option>
+                {/each}
+              </select>
+            </div>
+
             <!-- Month filter -->
             <div class="filter-group">
               <label for="month-select">Filter by Month</label>
@@ -581,22 +602,6 @@
                 {#if noDateIds.length}
                   <option value={NO_DATE_KEY}>No Date</option>
                 {/if}
-              </select>
-            </div>
-
-            <!-- Institution filter -->
-            <div class="filter-group">
-              <label for="institution-select">Filter by Institution</label>
-              <select
-                      id="institution-select"
-                      class="dropdown-toggle"
-                      bind:value={selectedInstitution}
-                      on:change={handleInstitutionChange}
-              >
-                <option value="ALL">All Institutions</option>
-                {#each institutions as inst}
-                  <option value={inst}>{inst}</option>
-                {/each}
               </select>
             </div>
 
