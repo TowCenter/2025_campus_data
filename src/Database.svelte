@@ -19,9 +19,15 @@
 
   let noDateIds = [];     // from monthIndex[NO_DATE_KEY] if present
 
-  // Filters
-  let selectedMonth = 'ALL';        // "ALL", "YYYY-MM", or NO_DATE_KEY
-  let selectedInstitution = 'ALL';  // "ALL" or actual org name
+  // Filters (multi-select)
+  let selectedMonths = [];        // [] = all months
+  let selectedInstitutions = [];  // [] = all institutions
+
+  // Dropdown state
+  let institutionDropdownOpen = false;
+  let monthDropdownOpen = false;
+  let institutionSearchTerm = '';
+  let monthSearchTerm = '';
 
   // Ordered list of all IDs for the global timeline
   let globalIds = [];
@@ -54,8 +60,28 @@
   let searchLoading = false;
   let searchError = null;
   let searchTimeout;
+  let exporting = false;
   // shardKey -> { token: [ids...] }
   const searchShardCache = new Map();
+
+  $: filteredInstitutions = institutionSearchTerm
+          ? institutions.filter((inst) =>
+                  inst.toLowerCase().includes(institutionSearchTerm.toLowerCase())
+          )
+          : institutions;
+
+  $: filteredMonths = monthSearchTerm
+          ? months.filter((month) => {
+            const label = formatMonthLabel(month).toLowerCase();
+            const search = monthSearchTerm.toLowerCase();
+            return label.includes(search) || month.toLowerCase().includes(search);
+          })
+          : months;
+
+  $: showNoDateOption =
+          monthSearchTerm.trim() === ''
+                  ? true
+                  : 'no date'.includes(monthSearchTerm.toLowerCase());
 
   onMount(async () => {
     if (!initialized) {
@@ -82,8 +108,8 @@
       await Promise.all([loadMonthIndex(), loadInstitutionIndex()]);
 
       // only set default filters on first successful load
-      selectedMonth = 'ALL';
-      selectedInstitution = 'ALL';
+      selectedMonths = [];
+      selectedInstitutions = [];
       searchTerm = '';
 
       await applyFiltersAndSearch();
@@ -147,29 +173,45 @@
   // --- Filtering helpers (month + institution) ---
 
   function getBaseIdsFromFilters() {
-    // 1) Month
-    let baseIds;
-    if (selectedMonth === 'ALL') {
+    let baseIds = [];
+
+    // 1) Month (multi-select)
+    if (selectedMonths.length === 0) {
       baseIds = globalIds;
-    } else if (selectedMonth === NO_DATE_KEY) {
-      baseIds = noDateIds;
     } else {
-      const ids = monthIndex[selectedMonth];
-      baseIds = Array.isArray(ids) ? ids : [];
+      const monthSet = new Set(selectedMonths);
+      const orderedMonths = months.filter((m) => monthSet.has(m));
+
+      for (const month of orderedMonths) {
+        const ids = monthIndex[month];
+        if (Array.isArray(ids)) {
+          baseIds.push(...ids);
+        }
+      }
+
+      if (monthSet.has(NO_DATE_KEY) && noDateIds.length) {
+        baseIds.push(...noDateIds);
+      }
     }
 
-    // 2) Institution
-    if (selectedInstitution === 'ALL') {
+    // 2) Institution (multi-select)
+    if (selectedInstitutions.length === 0) {
       return baseIds;
     }
 
-    const instIds = institutionIndex[selectedInstitution];
-    if (!Array.isArray(instIds) || instIds.length === 0) {
+    const instIdSet = new Set();
+    for (const inst of selectedInstitutions) {
+      const ids = institutionIndex[inst];
+      if (Array.isArray(ids)) {
+        ids.forEach((id) => instIdSet.add(id));
+      }
+    }
+
+    if (instIdSet.size === 0) {
       return [];
     }
 
-    const instSet = new Set(instIds);
-    return baseIds.filter((id) => instSet.has(id));
+    return baseIds.filter((id) => instIdSet.has(id));
   }
 
   // --- Search index helpers ---
@@ -324,6 +366,19 @@
 
     // --- Paging + article loading ---
 
+  async function getArticleById(id) {
+    if (articleCache.has(id)) return articleCache.get(id);
+
+    const res = await fetch(`${ARTICLE_BASE_URL}/${id}.json`);
+    if (!res.ok) {
+      throw new Error(`Failed to load article ${id}: ${res.status}`);
+    }
+
+    const data = await res.json();
+    articleCache.set(id, data);
+    return data;
+  }
+
   async function loadPage(page) {
     const ids = activeIds;
 
@@ -351,18 +406,7 @@
     error = null;
 
     try {
-      const promises = pageIds.map(async (id) => {
-        if (articleCache.has(id)) return articleCache.get(id);
-
-        const res = await fetch(`${ARTICLE_BASE_URL}/${id}.json`);
-        if (!res.ok) {
-          throw new Error(`Failed to load article ${id}: ${res.status}`);
-        }
-
-        const data = await res.json();
-        articleCache.set(id, data);
-        return data;
-      });
+      const promises = pageIds.map((id) => getArticleById(id));
 
       articles = await Promise.all(promises);
     } catch (e) {
@@ -373,14 +417,38 @@
     }
   }
 
-  async function handleMonthChange(event) {
-    selectedMonth = event.target.value;
+  async function toggleMonth(month, checked) {
+    if (checked) {
+      if (!selectedMonths.includes(month)) {
+        selectedMonths = [...selectedMonths, month];
+      }
+    } else {
+      selectedMonths = selectedMonths.filter((m) => m !== month);
+    }
     currentPage = 1;
     await applyFiltersAndSearch();
   }
 
-  async function handleInstitutionChange(event) {
-    selectedInstitution = event.target.value;
+  async function toggleInstitution(inst, checked) {
+    if (checked) {
+      if (!selectedInstitutions.includes(inst)) {
+        selectedInstitutions = [...selectedInstitutions, inst];
+      }
+    } else {
+      selectedInstitutions = selectedInstitutions.filter((i) => i !== inst);
+    }
+    currentPage = 1;
+    await applyFiltersAndSearch();
+  }
+
+  async function clearMonths() {
+    selectedMonths = [];
+    currentPage = 1;
+    await applyFiltersAndSearch();
+  }
+
+  async function clearInstitutions() {
+    selectedInstitutions = [];
     currentPage = 1;
     await applyFiltersAndSearch();
   }
@@ -396,6 +464,97 @@
       applyFiltersAndSearch();
     }, 300); // debounce
   }
+
+  function cleanDataForExport(data) {
+    return data.map((item) => {
+      const { llm_response, scraper, ...cleanItem } = item;
+      return cleanItem;
+    });
+  }
+
+  async function exportResults() {
+    if (!activeIds || activeIds.length === 0) {
+      alert('No data to export');
+      return;
+    }
+
+    exporting = true;
+
+    try {
+      const articlesToExport = [];
+      for (const id of activeIds) {
+        // fetch sequentially to avoid overwhelming requests
+        const article = await getArticleById(id);
+        articlesToExport.push(article);
+      }
+
+      const cleanData = cleanDataForExport(articlesToExport);
+      await downloadCSV(cleanData);
+    } catch (e) {
+      console.error(e);
+      alert('Error exporting data: ' + e.message);
+    } finally {
+      exporting = false;
+    }
+  }
+
+  async function downloadCSV(data) {
+    if (!data.length) {
+      alert('No data to export');
+      return;
+    }
+
+    const allKeys = new Set();
+    data.forEach((item) => {
+      Object.keys(item).forEach((key) => allKeys.add(key));
+    });
+
+    const headers = Array.from(allKeys);
+
+    function flattenValue(value) {
+      if (value === null || value === undefined) {
+        return '';
+      }
+      if (typeof value === 'object') {
+        if (value.$oid) return value.$oid;
+        if (value.$date) return new Date(value.$date).toISOString();
+        return JSON.stringify(value).replace(/"/g, '""');
+      }
+      const str = String(value);
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    }
+
+    const csvContent = [
+      headers.join(','),
+      ...data.map((row) => headers.map((header) => flattenValue(row[header])).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `university_responses_filtered_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  onMount(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.multi-select-dropdown')) {
+        institutionDropdownOpen = false;
+        monthDropdownOpen = false;
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  });
 
   function changePage(newPage) {
     if (newPage < 1 || newPage > totalPages || loadingArticles) return;
@@ -570,51 +729,129 @@
         <section class="filters-section">
           <div class="filters-grid">
 
-            <!-- Institution filter -->
             <div class="filter-group">
-              <label for="institution-select">Filter by Institution</label>
-              <select
-                      id="institution-select"
-                      class="dropdown-toggle"
-                      bind:value={selectedInstitution}
-                      on:change={handleInstitutionChange}
-              >
-                <option value="ALL">All Institutions</option>
-                {#each institutions as inst}
-                  <option value={inst}>{inst}</option>
-                {/each}
-              </select>
-            </div>
+              <label for="institution-dropdown">Filter by Institution</label>
+              <div class="multi-select-dropdown">
+                <button
+                        id="institution-dropdown"
+                        class="dropdown-toggle"
+                        on:click|stopPropagation={() => {
+                          institutionDropdownOpen = !institutionDropdownOpen;
+                          monthDropdownOpen = false;
+                        }}
+                        type="button"
+                >
+                  {selectedInstitutions.length === 0
+                          ? 'All Institutions'
+                          : `${selectedInstitutions.length} selected`}
+                  <span class="dropdown-arrow">{institutionDropdownOpen ? '▲' : '▼'}</span>
+                </button>
 
-            <!-- Month filter -->
-            <div class="filter-group">
-              <label for="month-select">Filter by Month</label>
-              <select
-                      id="month-select"
-                      class="dropdown-toggle"
-                      bind:value={selectedMonth}
-                      on:change={handleMonthChange}
-              >
-                <option value="ALL">All Months</option>
-                {#each months as month}
-                  <option value={month}>{formatMonthLabel(month)}</option>
-                {/each}
-                {#if noDateIds.length}
-                  <option value={NO_DATE_KEY}>No Date</option>
+                {#if institutionDropdownOpen}
+                  <div class="dropdown-menu">
+                    <div class="dropdown-search">
+                      <input
+                              type="text"
+                              bind:value={institutionSearchTerm}
+                              placeholder="Search institutions..."
+                              on:click|stopPropagation
+                      />
+                    </div>
+                    <div class="dropdown-options">
+                      {#each filteredInstitutions as inst}
+                        <label class="dropdown-option">
+                          <input
+                                  type="checkbox"
+                                  value={inst}
+                                  checked={selectedInstitutions.includes(inst)}
+                                  on:change={(e) => toggleInstitution(inst, e.target.checked)}
+                          />
+                          <span>{inst}</span>
+                        </label>
+                      {/each}
+                    </div>
+                    {#if selectedInstitutions.length > 0}
+                      <button class="clear-selection" on:click={clearInstitutions} type="button">
+                        Clear Selection
+                      </button>
+                    {/if}
+                  </div>
                 {/if}
-              </select>
+              </div>
             </div>
 
-            <!-- Search filter -->
             <div class="filter-group">
-              <label for="search-input">Search</label>
+              <label for="month-dropdown">Filter by Month</label>
+              <div class="multi-select-dropdown">
+                <button
+                        id="month-dropdown"
+                        class="dropdown-toggle"
+                        on:click|stopPropagation={() => {
+                          monthDropdownOpen = !monthDropdownOpen;
+                          institutionDropdownOpen = false;
+                        }}
+                        type="button"
+                >
+                  {selectedMonths.length === 0
+                          ? 'All Months'
+                          : `${selectedMonths.length} selected`}
+                  <span class="dropdown-arrow">{monthDropdownOpen ? '▲' : '▼'}</span>
+                </button>
+
+                {#if monthDropdownOpen}
+                  <div class="dropdown-menu">
+                    <div class="dropdown-search">
+                      <input
+                              type="text"
+                              bind:value={monthSearchTerm}
+                              placeholder="Search months..."
+                              on:click|stopPropagation
+                      />
+                    </div>
+                    <div class="dropdown-options">
+                      {#each filteredMonths as month}
+                        <label class="dropdown-option">
+                          <input
+                                  type="checkbox"
+                                  value={month}
+                                  checked={selectedMonths.includes(month)}
+                                  on:change={(e) => toggleMonth(month, e.target.checked)}
+                          />
+                          <span>{formatMonthLabel(month)}</span>
+                        </label>
+                      {/each}
+                      {#if noDateIds.length && showNoDateOption}
+                        <label class="dropdown-option">
+                          <input
+                                  type="checkbox"
+                                  value={NO_DATE_KEY}
+                                  checked={selectedMonths.includes(NO_DATE_KEY)}
+                                  on:change={(e) => toggleMonth(NO_DATE_KEY, e.target.checked)}
+                          />
+                          <span>No Date</span>
+                        </label>
+                      {/if}
+                    </div>
+                    {#if selectedMonths.length > 0}
+                      <button class="clear-selection" on:click={clearMonths} type="button">
+                        Clear Selection
+                      </button>
+                    {/if}
+                  </div>
+                {/if}
+              </div>
+            </div>
+          </div>
+
+          <div class="search-export-row">
+            <div class="search-wrapper">
               <input
                       id="search-input"
-                      class="search-input"
                       type="text"
-                      placeholder="Search title, institution, or content..."
-                      value={searchTerm}
+                      bind:value={searchTerm}
                       on:input={handleSearchInput}
+                      placeholder="Search title, institution, or content..."
+                      class="search-input"
               />
               {#if searchLoading}
                 <span class="search-status">Loading search index…</span>
@@ -623,6 +860,18 @@
                 <span class="search-status error-text">Search error: {searchError}</span>
               {/if}
             </div>
+            <button
+                    on:click={exportResults}
+                    class="export-btn"
+                    disabled={exporting || loadingArticles || activeIds.length === 0}
+            >
+              {#if exporting}
+                <span class="btn-spinner"></span>
+                Exporting...
+              {:else}
+                Export {activeIds.length.toLocaleString()} items to CSV
+              {/if}
+            </button>
           </div>
         </section>
 
@@ -631,19 +880,28 @@
           <div class="results-header">
             <h3>Results</h3>
             <p class="results-meta">
-              {#if selectedMonth === 'ALL' && selectedInstitution === 'ALL' && !searchTerm}
+              {#if selectedMonths.length === 0 && selectedInstitutions.length === 0 && !searchTerm}
                 Showing {articles.length} article(s) — page {currentPage} of {totalPages}
               {:else}
                 Showing {articles.length} article(s)
-                {#if selectedInstitution !== 'ALL'}
-                  from {selectedInstitution}
+                {#if selectedInstitutions.length === 1}
+                  from {selectedInstitutions[0]}
+                {:else if selectedInstitutions.length > 1}
+                  from {selectedInstitutions.length} institutions
                 {/if}
-                {#if selectedMonth === 'ALL'}
+                {#if selectedMonths.length === 0}
                   across all months
-                {:else if selectedMonth === NO_DATE_KEY}
-                  with no date
+                {:else if selectedMonths.length === 1}
+                  {#if selectedMonths[0] === NO_DATE_KEY}
+                    with no date
+                  {:else}
+                    in {formatMonthLabel(selectedMonths[0])}
+                  {/if}
                 {:else}
-                  in {formatMonthLabel(selectedMonth)}
+                  in {selectedMonths.length} month selections
+                  {#if selectedMonths.includes(NO_DATE_KEY)}
+                    (includes No Date)
+                  {/if}
                 {/if}
                 {#if searchTerm}
                   matching “{searchTerm}”
@@ -899,6 +1157,93 @@
     border-color: #d6613a;
   }
 
+  .multi-select-dropdown {
+    position: relative;
+  }
+
+  .dropdown-arrow {
+    font-size: 0.8rem;
+    color: #666;
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.25rem;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 300px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dropdown-search {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .dropdown-search input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+
+  .dropdown-search input:focus {
+    outline: none;
+    border-color: #d6613a;
+  }
+
+  .dropdown-options {
+    overflow-y: auto;
+    max-height: 200px;
+  }
+
+  .dropdown-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-size: 0.9rem;
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+
+  .dropdown-option:hover {
+    background: #f8f8f8;
+  }
+
+  .dropdown-option input[type='checkbox'] {
+    cursor: pointer;
+    accent-color: #d6613a;
+  }
+
+  .clear-selection {
+    padding: 0.5rem 0.75rem;
+    margin: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: white;
+    color: #666;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: 'Helvetica Neue', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .clear-selection:hover {
+    background: #f8f8f8;
+    border-color: #d6613a;
+  }
+
   .search-input {
     width: 100%;
     padding: 0.8rem 1rem;
@@ -922,6 +1267,72 @@
     outline: none;
     border-color: #d6613a;
     box-shadow: 0 0 0 3px rgba(214, 97, 58, 0.1);
+  }
+
+  .search-export-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search-wrapper {
+    flex: 1;
+    min-width: 250px;
+  }
+
+  .search-status {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .search-status.error-text {
+    color: #dc3545;
+  }
+
+  .export-btn {
+    background: white;
+    color: #d6613a;
+    border: 2px solid #d6613a;
+    border-radius: 4px;
+    padding: 0.7rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Helvetica Neue', sans-serif;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .export-btn:hover:not(:disabled) {
+    background: #d6613a;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+  }
+
+  .export-btn:disabled {
+    background: white;
+    border-color: #ccc;
+    color: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .btn-spinner {
+    border: 2px solid #d6613a;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
   }
 
   .results-section {
@@ -1040,6 +1451,10 @@
     }
     .filters-grid {
       grid-template-columns: 1fr;
+    }
+    .search-export-row {
+      flex-direction: column;
+      align-items: stretch;
     }
     .result-header {
       flex-direction: column;
