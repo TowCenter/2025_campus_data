@@ -5,6 +5,7 @@
   const INSTITUTION_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index.json';
   const ARTICLE_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/articles';
   const SEARCH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/search_index';
+  const FULL_DATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
 
   const NO_DATE_KEY = '_no_date';
   const NO_ORG_KEY = '_no_org';
@@ -63,6 +64,7 @@
   let exporting = false;
   // shardKey -> { token: [ids...] }
   const searchShardCache = new Map();
+  let fullDatasetCache = null;
 
   $: filteredInstitutions = institutionSearchTerm
           ? institutions.filter((inst) =>
@@ -465,6 +467,22 @@
     }, 300); // debounce
   }
 
+  const isUnfiltered = () =>
+          selectedMonths.length === 0 &&
+          selectedInstitutions.length === 0 &&
+          !searchTerm.trim();
+
+  async function getFullDataset() {
+    if (fullDatasetCache) return fullDatasetCache;
+
+    const res = await fetch(FULL_DATA_URL);
+    if (!res.ok) {
+      throw new Error(`Failed to load full dataset: ${res.status}`);
+    }
+    fullDatasetCache = await res.json();
+    return fullDatasetCache;
+  }
+
   function cleanDataForExport(data) {
     return data.map((item) => {
       const { llm_response, scraper, ...cleanItem } = item;
@@ -481,11 +499,16 @@
     exporting = true;
 
     try {
-      const articlesToExport = [];
-      for (const id of activeIds) {
-        // fetch sequentially to avoid overwhelming requests
-        const article = await getArticleById(id);
-        articlesToExport.push(article);
+      let articlesToExport;
+
+      if (isUnfiltered()) {
+        articlesToExport = await getFullDataset();
+      } else {
+        articlesToExport = [];
+        for (const id of activeIds) {
+          const article = await getArticleById(id);
+          articlesToExport.push(article);
+        }
       }
 
       const cleanData = cleanDataForExport(articlesToExport);
