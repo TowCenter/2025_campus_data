@@ -160,7 +160,6 @@
   nav {
     display: flex;
     gap: 0;
-    border-bottom: 2px solid #e0e0e0;
   }
 
   nav button {

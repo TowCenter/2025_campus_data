@@ -1,229 +1,539 @@
 <script>
   import { onMount } from 'svelte';
-  
-  const S3_BUCKET_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
-  
-  let allData = [];
-  let filteredData = [];
-  let loading = true;
-  let error = null;
-  let downloading = false;
-  
-  // Filters
-  let selectedSchools = [];
-  let selectedMonths = [];
-  let searchTerm = '';
-  let schools = [];
-  let months = [];
-  
+
+  const MONTH_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index.json';
+  const INSTITUTION_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index.json';
+  const ARTICLE_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/articles';
+  const SEARCH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/search_index';
+  const FULL_DATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
+
+  const NO_DATE_KEY = '_no_date';
+  const NO_ORG_KEY = '_no_org';
+
+  // monthIndex: { "YYYY-MM": ["id1","id2",...], "_no_date": ["idX",...] }
+  let monthIndex = {};
+  // institutionIndex: { "Harvard University": ["id1","id2",...], "_no_org": [...] }
+  let institutionIndex = {};
+
+  let months = [];        // real months only, e.g. ["2025-11","2025-10",...]
+  let institutions = [];  // institution names (no _no_org)
+
+  let noDateIds = [];     // from monthIndex[NO_DATE_KEY] if present
+
+  // Filters (multi-select)
+  let selectedMonths = [];        // [] = all months
+  let selectedInstitutions = [];  // [] = all institutions
+
   // Dropdown state
-  let schoolDropdownOpen = false;
+  let institutionDropdownOpen = false;
   let monthDropdownOpen = false;
-  let schoolSearchTerm = '';
+  let institutionSearchTerm = '';
   let monthSearchTerm = '';
-  
+
+  // Ordered list of all IDs for the global timeline
+  let globalIds = [];
+
+  // IDs after applying filters and search
+  let activeIds = [];
+
+  // Current page's articles
+  let articles = [];
+
+  // Loading / error state
+  let loading = true;
+  let loadingArticles = false;
+  let error = null;
+
   // Pagination
   let currentPage = 1;
-  let itemsPerPage = 50;
+  const pageSize = 20;
   let totalPages = 1;
-  
-  onMount(async () => {
-    await loadData();
-  });
-  
-  async function loadData() {
-    try {
-      loading = true;
-      error = null;
-      
-      const response = await fetch(S3_BUCKET_URL);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to load data: ${response.status}`);
-      }
-      
-      allData = await response.json();
-      
-      // Extract unique schools
-      const schoolSet = new Set();
-      allData.forEach(item => {
-        if (item.org) {
-          schoolSet.add(item.org);
-        }
-      });
-      schools = Array.from(schoolSet).sort();
-      
-      // Extract unique months
-      const monthSet = new Set();
-      allData.forEach(item => {
-        if (item.date?.$date) {
-          const date = new Date(item.date.$date);
-          const monthYear = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
-          monthSet.add(monthYear);
-        }
-      });
-      months = Array.from(monthSet).sort().reverse(); // Most recent first
-      
-      filteredData = [...allData];
-      updatePagination();
-      loading = false;
-    } catch (err) {
-      console.error('Error loading data:', err);
-      error = err.message;
-      loading = false;
-    }
-  }
-  
-  function applyFilters() {
-    filteredData = allData.filter(item => {
-      // School filter - if any schools selected, item must match one of them
-      if (selectedSchools.length > 0 && !selectedSchools.includes(item.org)) {
-        return false;
-      }
+  let gotoPage = 1;
 
-      // Month filter - if any months selected, item must match one of them
-      if (selectedMonths.length > 0 && item.date?.$date) {
-        const date = new Date(item.date.$date);
-        const monthYear = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
-        if (!selectedMonths.includes(monthYear)) {
-          return false;
-        }
-      }
+  // Caching
+  let initialized = false;
 
-      // Search filter
-      if (searchTerm) {
-        const term = searchTerm.toLowerCase();
-        const searchableText = [
-          item.title,
-          item.org,
-          item.content
-        ].filter(Boolean).join(' ').toLowerCase();
+  // Cache of article JSONs
+  const articleCache = new Map();
 
-        if (!searchableText.includes(term)) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-    currentPage = 1;
-    updatePagination();
-
-    // Track filter usage in Umami
-    if (window.umami) {
-      window.umami.track('filter-applied', {
-        schools: selectedSchools.length,
-        months: selectedMonths.length,
-        hasSearch: !!searchTerm,
-        results: filteredData.length
-      });
-    }
-  }
-  
-  function toggleSchool(school, checked) {
-    if (checked) {
-      selectedSchools = [...selectedSchools, school];
-    } else {
-      selectedSchools = selectedSchools.filter(s => s !== school);
-    }
-    applyFilters();
-  }
-  
-  function toggleMonth(month, checked) {
-    if (checked) {
-      selectedMonths = [...selectedMonths, month];
-    } else {
-      selectedMonths = selectedMonths.filter(m => m !== month);
-    }
-    applyFilters();
-  }
-  
-  function clearSchools() {
-    selectedSchools = [];
-    applyFilters();
-  }
-  
-  function clearMonths() {
-    selectedMonths = [];
-    applyFilters();
-  }
-  
-  function handleSearchInput() {
-    // Debounce search to avoid too many filter calls
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-      applyFilters();
-    }, 300);
-  }
-  
+  // --- Search state (using search_index shards) ---
+  let searchTerm = '';
+  let searchLoading = false;
+  let searchError = null;
   let searchTimeout;
-  
-  $: filteredSchools = schoolSearchTerm 
-    ? schools.filter(s => s.toLowerCase().includes(schoolSearchTerm.toLowerCase()))
-    : schools;
-    
-  $: filteredMonths = monthSearchTerm 
-    ? months.filter(m => m.toLowerCase().includes(monthSearchTerm.toLowerCase()))
-    : months;
-  
-  function updatePagination() {
-    totalPages = Math.ceil(filteredData.length / itemsPerPage);
-    if (currentPage > totalPages) {
-      currentPage = totalPages || 1;
+  let exporting = false;
+  // shardKey -> { token: [ids...] }
+  const searchShardCache = new Map();
+  let fullDatasetCache = null;
+
+  $: filteredInstitutions = institutionSearchTerm
+          ? institutions.filter((inst) =>
+                  inst.toLowerCase().includes(institutionSearchTerm.toLowerCase())
+          )
+          : institutions;
+
+  $: filteredMonths = monthSearchTerm
+          ? months.filter((month) => {
+            const label = formatMonthLabel(month).toLowerCase();
+            const search = monthSearchTerm.toLowerCase();
+            return label.includes(search) || month.toLowerCase().includes(search);
+          })
+          : months;
+
+  $: showNoDateOption =
+          monthSearchTerm.trim() === ''
+                  ? true
+                  : 'no date'.includes(monthSearchTerm.toLowerCase());
+
+  onMount(async () => {
+    if (!initialized) {
+      // First time visiting the tab: fetch everything
+      await loadInitialData();
+    } else {
+      // Coming back to the tab: reuse existing data
+      loading = false;          // don’t show "Loading database..." again
+      error = null;
+      // Optionally re-apply filters & search based on existing state:
+      await applyFiltersAndSearch();
+    }
+  });
+
+  async function loadInitialData() {
+    // if already initialized, don’t fetch again
+    if (initialized) return;
+
+    loading = true;
+    error = null;
+
+    try {
+      // load indexes in parallel
+      await Promise.all([loadMonthIndex(), loadInstitutionIndex()]);
+
+      // only set default filters on first successful load
+      selectedMonths = [];
+      selectedInstitutions = [];
+      searchTerm = '';
+
+      await applyFiltersAndSearch();
+
+      initialized = true;  // mark as ready after success
+    } catch (e) {
+      console.error(e);
+      error = e.message;
+    } finally {
+      loading = false;
     }
   }
-  
-  function changePage(newPage) {
-    if (newPage >= 1 && newPage <= totalPages) {
-      currentPage = newPage;
-      // Scroll to top of results
-      document.querySelector('.results-section')?.scrollIntoView({ behavior: 'smooth' });
+
+
+  async function loadMonthIndex() {
+    const res = await fetch(MONTH_INDEX_URL);
+    if (!res.ok) {
+      throw new Error(`Failed to load month index: ${res.status}`);
+    }
+
+    monthIndex = await res.json();
+
+    const allKeys = Object.keys(monthIndex);
+
+    // pull out no-date bucket
+    noDateIds = Array.isArray(monthIndex[NO_DATE_KEY]) ? monthIndex[NO_DATE_KEY] : [];
+
+    // months = all keys except NO_DATE_KEY, newest → oldest
+    months = allKeys
+            .filter((k) => k !== NO_DATE_KEY)
+            .sort()
+            .reverse();
+
+    // globalIds = all dated months (newest → oldest), then no-date
+    globalIds = [];
+    for (const month of months) {
+      const ids = monthIndex[month];
+      if (Array.isArray(ids)) {
+        globalIds.push(...ids);
+      }
+    }
+    if (noDateIds.length > 0) {
+      globalIds.push(...noDateIds);
     }
   }
-  
+
+  async function loadInstitutionIndex() {
+    const res = await fetch(INSTITUTION_INDEX_URL);
+    if (!res.ok) {
+      throw new Error(`Failed to load institution index: ${res.status}`);
+    }
+
+    institutionIndex = await res.json();
+
+    // institutions = all keys except NO_ORG_KEY, sorted alphabetically
+    institutions = Object.keys(institutionIndex)
+            .filter((k) => k !== NO_ORG_KEY)
+            .sort((a, b) => a.localeCompare(b));
+  }
+
+  // --- Filtering helpers (month + institution) ---
+
+  function getBaseIdsFromFilters() {
+    let baseIds = [];
+
+    // 1) Month (multi-select)
+    if (selectedMonths.length === 0) {
+      baseIds = globalIds;
+    } else {
+      const monthSet = new Set(selectedMonths);
+      const orderedMonths = months.filter((m) => monthSet.has(m));
+
+      for (const month of orderedMonths) {
+        const ids = monthIndex[month];
+        if (Array.isArray(ids)) {
+          baseIds.push(...ids);
+        }
+      }
+
+      if (monthSet.has(NO_DATE_KEY) && noDateIds.length) {
+        baseIds.push(...noDateIds);
+      }
+    }
+
+    // 2) Institution (multi-select)
+    if (selectedInstitutions.length === 0) {
+      return baseIds;
+    }
+
+    const instIdSet = new Set();
+    for (const inst of selectedInstitutions) {
+      const ids = institutionIndex[inst];
+      if (Array.isArray(ids)) {
+        ids.forEach((id) => instIdSet.add(id));
+      }
+    }
+
+    if (instIdSet.size === 0) {
+      return [];
+    }
+
+    return baseIds.filter((id) => instIdSet.has(id));
+  }
+
+  // --- Search index helpers ---
+
+  function getShardKey(term) {
+    if (!term) return null;
+    const first = term[0].toLowerCase();
+    if (first >= 'a' && first <= 'z') return first;
+    return null; // no shard for non-letter queries
+  }
+
+  async function ensureShardLoaded(shardKey) {
+    if (!shardKey) return null;
+
+    if (searchShardCache.has(shardKey)) {
+      return searchShardCache.get(shardKey);
+    }
+
+    searchLoading = true;
+    searchError = null;
+
+    try {
+      const res = await fetch(`${SEARCH_INDEX_BASE_URL}/${shardKey}.json`);
+      if (!res.ok) {
+        throw new Error(`Failed to load search index shard '${shardKey}': ${res.status}`);
+      }
+      const shard = await res.json();
+      searchShardCache.set(shardKey, shard);
+      return shard;
+    } catch (e) {
+      console.error(e);
+      searchError = e.message;
+      return null;
+    } finally {
+      searchLoading = false;
+    }
+  }
+
+  // --- Core: apply filters + search, set activeIds, then page 1 ---
+
+  // Allow multi-word search
+  function getSearchTokens(raw) {
+    return raw.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  }
+
+  async function applyFiltersAndSearch() {
+    const baseIds = getBaseIdsFromFilters();
+    const baseIdsSet = new Set(baseIds);
+    const tokens = getSearchTokens(searchTerm);
+
+    // No search term: just filtered timeline
+    if (tokens.length === 0) {
+      activeIds = baseIds;
+      currentPage = 1;
+      await loadPage(1);
+      return;
+    }
+
+    // unique shard keys (one per first letter)
+    const shardKeys = Array.from(
+            new Set(
+                    tokens
+                            .map((t) => getShardKey(t))
+                            .filter((k) => k !== null)
+            )
+    );
+
+    if (shardKeys.length === 0) {
+      activeIds = [];
+      currentPage = 1;
+      await loadPage(1);
+      return;
+    }
+
+    // load all needed shards
+    const shardMap = new Map();
+    for (const key of shardKeys) {
+      const shard = await ensureShardLoaded(key);
+      if (shard) {
+        shardMap.set(key, shard);
+      }
+    }
+
+    if (shardMap.size === 0) {
+      activeIds = [];
+      currentPage = 1;
+      await loadPage(1);
+      return;
+    }
+
+    // scoreMap: id -> score
+    const scoreMap = new Map();
+
+    for (const term of tokens) {
+      const key = getShardKey(term);
+      if (!key) continue;
+
+      const shard = shardMap.get(key);
+      if (!shard) continue;
+
+      for (const [tokenRaw, ids] of Object.entries(shard)) {
+        const token = tokenRaw.toLowerCase();
+
+        let weight = 0;
+        if (token === term) {
+          weight = 100;           // exact word
+        } else if (token.startsWith(term)) {
+          weight = 10;           // prefix
+        } else if (token.includes(term)) {
+          weight = 1;           // looser contains
+        }
+
+        if (!weight) continue;
+
+        for (const id of ids) {
+          // 🚀 Only score IDs that survive month/institution filters
+          if (!baseIdsSet.has(id)) continue;
+
+          const prev = scoreMap.get(id) || 0;
+          scoreMap.set(id, prev + weight);
+        }
+      }
+    }
+
+    // Score-based ordering, but still respecting baseIds (date) within each score
+    const buckets = new Map(); // score -> [ids in baseIds order]
+
+    for (const id of baseIds) {
+      const score = scoreMap.get(id);
+      if (!score) continue; // id doesn't match any word
+      if (!buckets.has(score)) buckets.set(score, []);
+      buckets.get(score).push(id);
+    }
+
+    if (buckets.size === 0) {
+      activeIds = [];
+      currentPage = 1;
+      await loadPage(1);
+      return;
+    }
+
+    const sortedScores = [...buckets.keys()].sort((a, b) => b - a);
+    const filteredBySearch = [];
+    for (const score of sortedScores) {
+      filteredBySearch.push(...buckets.get(score));
+    }
+
+    activeIds = filteredBySearch;
+    currentPage = 1;
+    await loadPage(1);
+  }
+
+    // --- Paging + article loading ---
+
+  async function getArticleById(id) {
+    if (articleCache.has(id)) return articleCache.get(id);
+
+    const res = await fetch(`${ARTICLE_BASE_URL}/${id}.json`);
+    if (!res.ok) {
+      throw new Error(`Failed to load article ${id}: ${res.status}`);
+    }
+
+    const data = await res.json();
+    articleCache.set(id, data);
+    return data;
+  }
+
+  async function loadPage(page) {
+    const ids = activeIds;
+
+    if (!ids || ids.length === 0) {
+      articles = [];
+      currentPage = 1;
+      totalPages = 1;
+      gotoPage = 1;
+      return;
+    }
+
+    const newTotalPages = Math.max(1, Math.ceil(ids.length / pageSize));
+    if (page < 1) page = 1;
+    if (page > newTotalPages) page = newTotalPages;
+
+    currentPage = page;
+    totalPages = newTotalPages;
+    gotoPage = currentPage;
+
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    const pageIds = ids.slice(start, end);
+
+    loadingArticles = true;
+    error = null;
+
+    try {
+      const promises = pageIds.map((id) => getArticleById(id));
+
+      articles = await Promise.all(promises);
+    } catch (e) {
+      console.error(e);
+      error = e.message;
+    } finally {
+      loadingArticles = false;
+    }
+  }
+
+  async function toggleMonth(month, checked) {
+    if (checked) {
+      if (!selectedMonths.includes(month)) {
+        selectedMonths = [...selectedMonths, month];
+      }
+    } else {
+      selectedMonths = selectedMonths.filter((m) => m !== month);
+    }
+    currentPage = 1;
+    await applyFiltersAndSearch();
+  }
+
+  async function toggleInstitution(inst, checked) {
+    if (checked) {
+      if (!selectedInstitutions.includes(inst)) {
+        selectedInstitutions = [...selectedInstitutions, inst];
+      }
+    } else {
+      selectedInstitutions = selectedInstitutions.filter((i) => i !== inst);
+    }
+    currentPage = 1;
+    await applyFiltersAndSearch();
+  }
+
+  async function clearMonths() {
+    selectedMonths = [];
+    currentPage = 1;
+    await applyFiltersAndSearch();
+  }
+
+  async function clearInstitutions() {
+    selectedInstitutions = [];
+    currentPage = 1;
+    await applyFiltersAndSearch();
+  }
+
+  function handleSearchInput(event) {
+    searchTerm = event.target.value;
+
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    searchTimeout = setTimeout(() => {
+      applyFiltersAndSearch();
+    }, 300); // debounce
+  }
+
+  const isUnfiltered = () =>
+          selectedMonths.length === 0 &&
+          selectedInstitutions.length === 0 &&
+          !searchTerm.trim();
+
+  async function getFullDataset() {
+    if (fullDatasetCache) return fullDatasetCache;
+
+    const res = await fetch(FULL_DATA_URL);
+    if (!res.ok) {
+      throw new Error(`Failed to load full dataset: ${res.status}`);
+    }
+    fullDatasetCache = await res.json();
+    return fullDatasetCache;
+  }
+
   function cleanDataForExport(data) {
-    return data.map(item => {
+    return data.map((item) => {
       const { llm_response, scraper, ...cleanItem } = item;
       return cleanItem;
     });
   }
-  
+
   async function exportResults() {
-    downloading = true;
-
-    // Track CSV export in Umami
-    if (window.umami) {
-      window.umami.track('csv-export', {
-        rowCount: filteredData.length,
-        hasFilters: selectedSchools.length > 0 || selectedMonths.length > 0 || !!searchTerm
-      });
-    }
-
-    try {
-      const cleanData = cleanDataForExport(filteredData);
-      await downloadCSV(cleanData);
-    } catch (err) {
-      alert('Error exporting data: ' + err.message);
-    } finally {
-      downloading = false;
-    }
-  }
-  
-  async function downloadCSV(data) {
-    if (data.length === 0) {
+    if (!activeIds || activeIds.length === 0) {
       alert('No data to export');
       return;
     }
-    
-    // Get all unique keys from all objects
+
+    exporting = true;
+
+    try {
+      let articlesToExport;
+
+      if (isUnfiltered()) {
+        articlesToExport = await getFullDataset();
+      } else {
+        articlesToExport = [];
+        for (const id of activeIds) {
+          const article = await getArticleById(id);
+          articlesToExport.push(article);
+        }
+      }
+
+      const cleanData = cleanDataForExport(articlesToExport);
+      await downloadCSV(cleanData);
+    } catch (e) {
+      console.error(e);
+      alert('Error exporting data: ' + e.message);
+    } finally {
+      exporting = false;
+    }
+  }
+
+  async function downloadCSV(data) {
+    if (!data.length) {
+      alert('No data to export');
+      return;
+    }
+
     const allKeys = new Set();
-    data.forEach(item => {
-      Object.keys(item).forEach(key => allKeys.add(key));
+    data.forEach((item) => {
+      Object.keys(item).forEach((key) => allKeys.add(key));
     });
-    
+
     const headers = Array.from(allKeys);
-    
+
     function flattenValue(value) {
       if (value === null || value === undefined) {
         return '';
@@ -239,14 +549,12 @@
       }
       return str;
     }
-    
+
     const csvContent = [
       headers.join(','),
-      ...data.map(row => 
-        headers.map(header => flattenValue(row[header])).join(',')
-      )
+      ...data.map((row) => headers.map((header) => flattenValue(row[header])).join(','))
     ].join('\n');
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -258,34 +566,173 @@
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   }
-  
-  $: paginatedData = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-  
-  // Close dropdowns when clicking outside
-  function handleClickOutside(event) {
-    if (!event.target.closest('.multi-select-dropdown')) {
-      schoolDropdownOpen = false;
-      monthDropdownOpen = false;
-    }
-  }
-  
+
   onMount(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.multi-select-dropdown')) {
+        institutionDropdownOpen = false;
+        monthDropdownOpen = false;
+      }
+    };
+
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   });
+
+  function changePage(newPage) {
+    if (newPage < 1 || newPage > totalPages || loadingArticles) return;
+    loadPage(newPage);
+  }
+
+  function formatMonthLabel(key) {
+    if (!key || key === 'ALL') return 'All Months';
+    if (key === NO_DATE_KEY) return 'No Date';
+
+    const [yearStr, monthStr] = key.split('-');
+    const year = Number(yearStr);
+    const month = Number(monthStr);
+    if (!year || !month) return key;
+
+    const d = new Date(Date.UTC(year, month - 1, 1));
+    return d.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      timeZone: 'UTC'
+    });
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return 'Date unknown';
+    const d = new Date(dateStr);
+    if (!isFinite(d)) return 'Date unknown';
+    return d.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'UTC'
+    });
+  }
+
+  function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+  }
+
+  function highlight(text, term) {
+    if (!text) return '';
+    if (!term || !term.trim()) return escapeHtml(text);
+
+    const tokens = term.trim().split(/\s+/).filter(Boolean);
+    if (tokens.length === 0) return escapeHtml(text);
+
+    const pattern = tokens.map(escapeRegExp).join('|');
+    const regex = new RegExp(`(${pattern})`, 'ig');
+
+    const parts = text.split(regex);
+
+    return parts
+            .map((part, i) =>
+                    i % 2 === 1
+                            ? `<mark>${escapeHtml(part)}</mark>`
+                            : escapeHtml(part)
+            )
+            .join('');
+  }
+
+  /**
+   * Returns a snippet of `content`:
+   * - if no term: first `maxLen` chars
+   * - if term found: snippet centered around first occurrence, with some context
+   */
+  function getSnippet(content, term, maxLen = 250, context = 20) {
+    if (!content) return '';
+
+    const trimmed = term ? term.trim() : '';
+    const firstWord = trimmed.split(/\s+/).filter(Boolean)[0];
+
+    // No usable search word: just take the leading snippet, word-safe
+    if (!firstWord) {
+      let text = content.slice(0, maxLen);
+      const lastSpace = text.lastIndexOf(' ');
+      if (lastSpace > 0 && content.length > maxLen) {
+        text = text.slice(0, lastSpace);
+        return text + '…';
+      }
+      return content.length > maxLen ? text + '…' : text;
+    }
+
+    const lowerContent = content.toLowerCase();
+    const lowerTerm = firstWord.toLowerCase();
+
+    const matchIndex = lowerContent.indexOf(lowerTerm);
+
+    // Term not found: fallback to start
+    if (matchIndex === -1) {
+      let text = content.slice(0, maxLen);
+      const lastSpace = text.lastIndexOf(' ');
+      if (lastSpace > 0 && content.length > maxLen) {
+        text = text.slice(0, lastSpace);
+        return text + '…';
+      }
+      return content.length > maxLen ? text + '…' : text;
+    }
+
+    // raw window around the match
+    let rawStart = Math.max(0, matchIndex - context);
+    let rawEnd = Math.min(content.length, matchIndex + lowerTerm.length + context);
+
+    // Adjust start to the previous space (word boundary)
+    if (rawStart > 0) {
+      const prevSpace = content.lastIndexOf(' ', rawStart);
+      if (prevSpace !== -1) {
+        rawStart = prevSpace + 1;
+      }
+    }
+
+    // Adjust end to the next space (word boundary)
+    if (rawEnd < content.length) {
+      const nextSpace = content.indexOf(' ', rawEnd);
+      if (nextSpace !== -1) {
+        rawEnd = nextSpace;
+      }
+    }
+
+    // Ensure snippet length doesn't exceed maxLen too much
+    if (rawEnd - rawStart > maxLen) {
+      rawEnd = rawStart + maxLen;
+      const lastSpace = content.lastIndexOf(' ', rawEnd);
+      if (lastSpace > rawStart) {
+        rawEnd = lastSpace;
+      }
+    }
+
+    let snippet = content.slice(rawStart, rawEnd);
+
+    if (rawStart > 0) snippet = '…' + snippet;
+    if (rawEnd < content.length) snippet = snippet + '…';
+
+    return snippet;
+  }
+
 </script>
 
 <div class="database-container">
   <div class="container">
     <div class="content-wrapper">
       <h2>Database Search</h2>
-      
+
       <section class="intro">
         <p class="lead">
-          Search and filter through all institutional responses. Use the filters below to narrow results by institution, 
+          Search and filter through all institutional responses. Use the filters below to narrow results by institution,
           date, or keyword, then download your filtered results.
         </p>
       </section>
@@ -298,52 +745,56 @@
       {:else if error}
         <div class="error">
           <p><strong>Error loading data:</strong> {error}</p>
-          <button on:click={loadData} class="retry-btn">Retry</button>
+          <button on:click={loadInitialData} class="retry-btn">Retry</button>
         </div>
       {:else}
         <!-- Filters -->
         <section class="filters-section">
           <div class="filters-grid">
+
             <div class="filter-group">
               <label for="institution-dropdown">Filter by Institution</label>
               <div class="multi-select-dropdown">
-                <button 
-                  id="institution-dropdown"
-                  class="dropdown-toggle" 
-                  on:click|stopPropagation={() => { schoolDropdownOpen = !schoolDropdownOpen; monthDropdownOpen = false; }}
-                  type="button"
+                <button
+                        id="institution-dropdown"
+                        class="dropdown-toggle"
+                        on:click|stopPropagation={() => {
+                          institutionDropdownOpen = !institutionDropdownOpen;
+                          monthDropdownOpen = false;
+                        }}
+                        type="button"
                 >
-                  {selectedSchools.length === 0 
-                    ? 'All Institutions' 
-                    : `${selectedSchools.length} selected`}
-                  <span class="dropdown-arrow">{schoolDropdownOpen ? '▲' : '▼'}</span>
+                  {selectedInstitutions.length === 0
+                          ? 'All Institutions'
+                          : `${selectedInstitutions.length} selected`}
+                  <span class="dropdown-arrow">{institutionDropdownOpen ? '▲' : '▼'}</span>
                 </button>
-                
-                {#if schoolDropdownOpen}
+
+                {#if institutionDropdownOpen}
                   <div class="dropdown-menu">
                     <div class="dropdown-search">
-                      <input 
-                        type="text" 
-                        bind:value={schoolSearchTerm}
-                        placeholder="Search institutions..."
-                        on:click|stopPropagation
+                      <input
+                              type="text"
+                              bind:value={institutionSearchTerm}
+                              placeholder="Search institutions..."
+                              on:click|stopPropagation
                       />
                     </div>
                     <div class="dropdown-options">
-                      {#each filteredSchools as school}
+                      {#each filteredInstitutions as inst}
                         <label class="dropdown-option">
-                          <input 
-                            type="checkbox" 
-                            value={school}
-                            checked={selectedSchools.includes(school)}
-                            on:change={(e) => toggleSchool(school, e.target.checked)}
+                          <input
+                                  type="checkbox"
+                                  value={inst}
+                                  checked={selectedInstitutions.includes(inst)}
+                                  on:change={(e) => toggleInstitution(inst, e.target.checked)}
                           />
-                          <span>{school}</span>
+                          <span>{inst}</span>
                         </label>
                       {/each}
                     </div>
-                    {#if selectedSchools.length > 0}
-                      <button class="clear-selection" on:click={clearSchools} type="button">
+                    {#if selectedInstitutions.length > 0}
+                      <button class="clear-selection" on:click={clearInstitutions} type="button">
                         Clear Selection
                       </button>
                     {/if}
@@ -351,44 +802,58 @@
                 {/if}
               </div>
             </div>
-            
+
             <div class="filter-group">
               <label for="month-dropdown">Filter by Month</label>
               <div class="multi-select-dropdown">
-                <button 
-                  id="month-dropdown"
-                  class="dropdown-toggle" 
-                  on:click|stopPropagation={() => { monthDropdownOpen = !monthDropdownOpen; schoolDropdownOpen = false; }}
-                  type="button"
+                <button
+                        id="month-dropdown"
+                        class="dropdown-toggle"
+                        on:click|stopPropagation={() => {
+                          monthDropdownOpen = !monthDropdownOpen;
+                          institutionDropdownOpen = false;
+                        }}
+                        type="button"
                 >
-                  {selectedMonths.length === 0 
-                    ? 'All Months' 
-                    : `${selectedMonths.length} selected`}
+                  {selectedMonths.length === 0
+                          ? 'All Months'
+                          : `${selectedMonths.length} selected`}
                   <span class="dropdown-arrow">{monthDropdownOpen ? '▲' : '▼'}</span>
                 </button>
-                
+
                 {#if monthDropdownOpen}
                   <div class="dropdown-menu">
                     <div class="dropdown-search">
-                      <input 
-                        type="text" 
-                        bind:value={monthSearchTerm}
-                        placeholder="Search months..."
-                        on:click|stopPropagation
+                      <input
+                              type="text"
+                              bind:value={monthSearchTerm}
+                              placeholder="Search months..."
+                              on:click|stopPropagation
                       />
                     </div>
                     <div class="dropdown-options">
                       {#each filteredMonths as month}
                         <label class="dropdown-option">
-                          <input 
-                            type="checkbox" 
-                            value={month}
-                            checked={selectedMonths.includes(month)}
-                            on:change={(e) => toggleMonth(month, e.target.checked)}
+                          <input
+                                  type="checkbox"
+                                  value={month}
+                                  checked={selectedMonths.includes(month)}
+                                  on:change={(e) => toggleMonth(month, e.target.checked)}
                           />
-                          <span>{month}</span>
+                          <span>{formatMonthLabel(month)}</span>
                         </label>
                       {/each}
+                      {#if noDateIds.length && showNoDateOption}
+                        <label class="dropdown-option">
+                          <input
+                                  type="checkbox"
+                                  value={NO_DATE_KEY}
+                                  checked={selectedMonths.includes(NO_DATE_KEY)}
+                                  on:change={(e) => toggleMonth(NO_DATE_KEY, e.target.checked)}
+                          />
+                          <span>No Date</span>
+                        </label>
+                      {/if}
                     </div>
                     {#if selectedMonths.length > 0}
                       <button class="clear-selection" on:click={clearMonths} type="button">
@@ -400,24 +865,34 @@
               </div>
             </div>
           </div>
-          
+
           <div class="search-export-row">
             <div class="search-wrapper">
-              <input 
-                type="text" 
-                bind:value={searchTerm}
-                on:input={handleSearchInput}
-                placeholder="Search by keyword..."
-                class="search-input"
+              <input
+                      id="search-input"
+                      type="text"
+                      bind:value={searchTerm}
+                      on:input={handleSearchInput}
+                      placeholder="Search title, institution, or content..."
+                      class="search-input"
               />
+              {#if searchLoading}
+                <span class="search-status">Loading search index…</span>
+              {/if}
+              {#if searchError}
+                <span class="search-status error-text">Search error: {searchError}</span>
+              {/if}
             </div>
-            
-            <button on:click={exportResults} class="export-btn" disabled={downloading || filteredData.length === 0}>
-              {#if downloading}
+            <button
+                    on:click={exportResults}
+                    class="export-btn"
+                    disabled={exporting || loadingArticles || activeIds.length === 0}
+            >
+              {#if exporting}
                 <span class="btn-spinner"></span>
                 Exporting...
               {:else}
-                Export {filteredData.length.toLocaleString()} items to CSV
+                Export {activeIds.length.toLocaleString()} items to CSV
               {/if}
             </button>
           </div>
@@ -426,81 +901,143 @@
         <!-- Results -->
         <section class="results-section">
           <div class="results-header">
-            <p class="results-count">
-              Showing {filteredData.length.toLocaleString()} result{filteredData.length !== 1 ? 's' : ''}
-              {#if selectedSchools.length > 0 || selectedMonths.length > 0 || searchTerm}
-                <span class="filter-indicator">
-                  (filtered from {allData.length.toLocaleString()} total)
-                </span>
+            <h3>Results</h3>
+            <p class="results-meta">
+              {#if selectedMonths.length === 0 && selectedInstitutions.length === 0 && !searchTerm}
+                Showing {articles.length} article(s) — page {currentPage} of {totalPages}
+              {:else}
+                Showing {articles.length} article(s)
+                {#if selectedInstitutions.length === 1}
+                  from {selectedInstitutions[0]}
+                {:else if selectedInstitutions.length > 1}
+                  from {selectedInstitutions.length} institutions
+                {/if}
+                {#if selectedMonths.length === 0}
+                  across all months
+                {:else if selectedMonths.length === 1}
+                  {#if selectedMonths[0] === NO_DATE_KEY}
+                    with no date
+                  {:else}
+                    in {formatMonthLabel(selectedMonths[0])}
+                  {/if}
+                {:else}
+                  in {selectedMonths.length} month selections
+                  {#if selectedMonths.includes(NO_DATE_KEY)}
+                    (includes No Date)
+                  {/if}
+                {/if}
+                {#if searchTerm}
+                  matching “{searchTerm}”
+                {/if}
+                — page {currentPage} of {totalPages}
               {/if}
             </p>
           </div>
 
-          <div class="results-list">
-            {#each paginatedData as item}
-              <div class="result-card">
-                <div class="result-header">
-                  <h3 class="result-title">
-                    {#if item.url}
-                      <a href={item.url} target="_blank" rel="noopener noreferrer">{item.title || 'Untitled'}</a>
-                    {:else}
-                      {item.title || 'Untitled'}
-                    {/if}
-                  </h3>
-                  <span class="result-school">{item.org}</span>
-                </div>
-                
-                {#if item.date?.$date}
-                  <p class="result-date">
-                    {new Date(item.date.$date).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                  </p>
-                {/if}
-                
-                {#if item.content}
-                  <p class="result-excerpt">
-                    {item.content.substring(0, 250)}{item.content.length > 250 ? '...' : ''}
-                  </p>
-                {/if}
-              </div>
-            {/each}
-          </div>
+          {#if loadingArticles}
+            <div class="loading">
+              <div class="spinner"></div>
+              <p>Loading articles...</p>
+            </div>
+          {:else if !articles.length}
+            <p>No articles found.</p>
+          {:else}
+            <div class="results-list">
+              {#each articles as item}
+                <article class="result-card">
+                  <div class="result-header">
+                    <h4 class="result-title">
+                      {#if item.url}
+                        <a href={item.url} target="_blank" rel="noopener noreferrer">
+                          {@html highlight(getSnippet(item.title, searchTerm), searchTerm)}
+                        </a>
+                      {:else}
+                        {@html highlight(getSnippet(item.title, searchTerm), searchTerm)}
+                      {/if}
+                    </h4>
 
-          {#if totalPages > 1}
+                    {#if item.org}
+                      <span class="result-school">
+                        {@html highlight(getSnippet(item.org, searchTerm), searchTerm)}
+                      </span>
+                    {/if}
+
+                  </div>
+
+                  <p class="result-date">{formatDate(item.date)}</p>
+
+                  {#if item.content}
+                    <p class="result-excerpt">
+                      {@html highlight(getSnippet(item.content, searchTerm), searchTerm)}
+                    </p>
+                  {/if}
+
+
+                </article>
+              {/each}
+            </div>
+
             <div class="pagination">
-              <button 
-                class="page-btn" 
-                on:click={() => changePage(1)}
-                disabled={currentPage === 1}
+              <button
+                      class="page-btn"
+                      on:click={() => changePage(1)}
+                      disabled={currentPage === 1 || loadingArticles}
               >
                 First
               </button>
-              <button 
-                class="page-btn" 
-                on:click={() => changePage(currentPage - 1)}
-                disabled={currentPage === 1}
+              <button
+                      class="page-btn"
+                      on:click={() => changePage(currentPage - 1)}
+                      disabled={currentPage === 1 || loadingArticles}
               >
                 Previous
               </button>
-              
+
               <span class="page-info">
                 Page {currentPage} of {totalPages}
               </span>
-              
-              <button 
-                class="page-btn" 
-                on:click={() => changePage(currentPage + 1)}
-                disabled={currentPage === totalPages}
+
+              <!-- Jump to page -->
+              <label class="page-info">
+                Page
+                <input
+                        type="number"
+                        min="1"
+                        max={totalPages}
+                        class="goto-input"
+                        bind:value={gotoPage}
+                        on:change={(e) => {
+                          const target = Number(e.currentTarget.value);
+                          if (!Number.isNaN(target)) changePage(target);
+                        }}
+                />
+
+
+              <button
+                      type="button"
+                      class="page-btn"
+                      on:click={() => {
+                      const target = Number(gotoPage);
+                      if (!Number.isNaN(target)) {
+                        changePage(target);
+                      }
+                    }}>
+                                Go
+              </button>
+              </label>
+
+              <button
+                      class="page-btn"
+                      on:click={() => changePage(currentPage + 1)}
+                      disabled={currentPage === totalPages || loadingArticles}
               >
                 Next
               </button>
-              <button 
-                class="page-btn" 
-                on:click={() => changePage(totalPages)}
-                disabled={currentPage === totalPages}
+
+              <button
+                      class="page-btn"
+                      on:click={() => changePage(totalPages)}
+                      disabled={currentPage === totalPages || loadingArticles}
               >
                 Last
               </button>
@@ -531,9 +1068,9 @@
   h2 {
     font-size: 2.5rem;
     margin: 0 0 1.5rem;
-    color: #D6613A;
+    color: #d6613a;
     font-weight: 400;
-    font-family: "EB Garamond", serif;
+    font-family: 'EB Garamond', serif;
     text-align: center;
   }
 
@@ -552,14 +1089,15 @@
   }
 
   /* Loading States */
-  .loading, .error {
+  .loading,
+  .error {
     text-align: center;
     padding: 3rem 2rem;
   }
 
   .spinner {
     border: 4px solid #f3f3f3;
-    border-top: 4px solid #D6613A;
+    border-top: 4px solid #d6613a;
     border-radius: 50%;
     width: 50px;
     height: 50px;
@@ -568,8 +1106,12 @@
   }
 
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 
   .error {
@@ -580,24 +1122,22 @@
     margin-top: 1rem;
     padding: 0.5rem 1.5rem;
     background: white;
-    color: #D6613A;
-    border: 2px solid #D6613A;
+    color: #d6613a;
+    border: 2px solid #d6613a;
     border-radius: 4px;
     cursor: pointer;
     font-size: 1rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: 'Helvetica Neue', sans-serif;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: all 0.2s ease;
   }
-
   .retry-btn:hover {
-    background: #D6613A;
+    background: #d6613a;
     color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
   }
 
-  /* Filters Section */
   .filters-section {
     background: #f8f8f8;
     border: 1px solid #e0e0e0;
@@ -618,13 +1158,8 @@
     margin-bottom: 0.5rem;
     font-weight: 500;
     color: #222;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: 'Helvetica Neue', sans-serif;
     font-size: 0.9rem;
-  }
-
-  /* Multi-select dropdown */
-  .multi-select-dropdown {
-    position: relative;
   }
 
   .dropdown-toggle {
@@ -633,7 +1168,7 @@
     border: 1px solid #dee2e6;
     border-radius: 4px;
     font-size: 0.95rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: 'Helvetica Neue', sans-serif;
     background: white;
     cursor: pointer;
     text-align: left;
@@ -642,9 +1177,12 @@
     align-items: center;
     transition: border-color 0.2s;
   }
-
   .dropdown-toggle:hover {
-    border-color: #D6613A;
+    border-color: #d6613a;
+  }
+
+  .multi-select-dropdown {
+    position: relative;
   }
 
   .dropdown-arrow {
@@ -679,12 +1217,12 @@
     border: 1px solid #dee2e6;
     border-radius: 4px;
     font-size: 0.9rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: 'Helvetica Neue', sans-serif;
   }
 
   .dropdown-search input:focus {
     outline: none;
-    border-color: #D6613A;
+    border-color: #d6613a;
   }
 
   .dropdown-options {
@@ -700,16 +1238,16 @@
     cursor: pointer;
     transition: background 0.15s;
     font-size: 0.9rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: 'Helvetica Neue', sans-serif;
   }
 
   .dropdown-option:hover {
     background: #f8f8f8;
   }
 
-  .dropdown-option input[type="checkbox"] {
+  .dropdown-option input[type='checkbox'] {
     cursor: pointer;
-    accent-color: #D6613A;
+    accent-color: #d6613a;
   }
 
   .clear-selection {
@@ -721,13 +1259,38 @@
     color: #666;
     font-size: 0.85rem;
     cursor: pointer;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: 'Helvetica Neue', sans-serif;
     transition: all 0.2s;
   }
 
   .clear-selection:hover {
     background: #f8f8f8;
-    border-color: #D6613A;
+    border-color: #d6613a;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+  .search-input:focus {
+    outline: none;
+    border-color: #d6613a;
+    box-shadow: 0 0 0 3px rgba(214, 97, 58, 0.1);
+  }
+  .goto-input {
+    padding: 0.4rem 0.4rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+  .goto-input:focus {
+    outline: none;
+    border-color: #d6613a;
+    box-shadow: 0 0 0 3px rgba(214, 97, 58, 0.1);
   }
 
   .search-export-row {
@@ -742,32 +1305,28 @@
     min-width: 250px;
   }
 
-  .search-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    font-size: 0.95rem;
-    font-family: "Helvetica Neue", sans-serif;
+  .search-status {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.85rem;
+    color: #666;
   }
 
-  .search-input:focus {
-    outline: none;
-    border-color: #D6613A;
-    box-shadow: 0 0 0 3px rgba(214, 97, 58, 0.1);
+  .search-status.error-text {
+    color: #dc3545;
   }
 
   .export-btn {
     background: white;
-    color: #D6613A;
-    border: 2px solid #D6613A;
+    color: #d6613a;
+    border: 2px solid #d6613a;
     border-radius: 4px;
     padding: 0.7rem 1.5rem;
     font-size: 0.95rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: 'Helvetica Neue', sans-serif;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     white-space: nowrap;
     display: inline-flex;
@@ -776,7 +1335,7 @@
   }
 
   .export-btn:hover:not(:disabled) {
-    background: #D6613A;
+    background: #d6613a;
     color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
@@ -791,7 +1350,7 @@
   }
 
   .btn-spinner {
-    border: 2px solid #D6613A;
+    border: 2px solid #d6613a;
     border-top: 2px solid transparent;
     border-radius: 50%;
     width: 16px;
@@ -811,24 +1370,11 @@
     border-bottom: 2px solid #e0e0e0;
   }
 
-  .results-count {
-    font-family: "Helvetica Neue", sans-serif;
-    font-weight: 500;
-    color: #666;
-    font-size: 0.95rem;
-  }
-
-  .filter-indicator {
-    color: #888;
-    font-weight: 400;
-  }
-
   .results-list {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
   }
-
   .result-card {
     background: white;
     border: 1px solid #e0e0e0;
@@ -836,12 +1382,10 @@
     padding: 1.5rem;
     transition: all 0.2s ease;
   }
-
   .result-card:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-color: #D6613A;
+    border-color: #d6613a;
   }
-
   .result-header {
     display: flex;
     justify-content: space-between;
@@ -849,42 +1393,36 @@
     gap: 1rem;
     margin-bottom: 0.5rem;
   }
-
   .result-title {
     font-size: 1.25rem;
     font-weight: 500;
     color: #222;
     margin: 0;
-    font-family: "EB Garamond", serif;
+    font-family: 'EB Garamond', serif;
     flex: 1;
   }
-
   .result-title a {
-    color: #D6613A;
+    color: #d6613a;
     text-decoration: none;
   }
-
   .result-title a:hover {
     text-decoration: underline;
   }
-
   .result-school {
     background: #f0f0f0;
     padding: 0.25rem 0.75rem;
     border-radius: 4px;
     font-size: 0.85rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: 'Helvetica Neue', sans-serif;
     color: #666;
     white-space: nowrap;
   }
-
   .result-date {
     font-size: 0.9rem;
     color: #888;
     margin: 0.5rem 0;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: 'Helvetica Neue', sans-serif;
   }
-
   .result-excerpt {
     font-size: 0.95rem;
     line-height: 1.6;
@@ -892,7 +1430,6 @@
     margin: 1rem 0 0;
   }
 
-  /* Pagination */
   .pagination {
     display: flex;
     justify-content: center;
@@ -901,7 +1438,6 @@
     margin-top: 3rem;
     padding: 1.5rem 0;
   }
-
   .page-btn {
     padding: 0.5rem 1rem;
     border: 1px solid #dee2e6;
@@ -909,59 +1445,47 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.9rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: 'Helvetica Neue', sans-serif;
     transition: all 0.2s ease;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
-
   .page-btn:hover:not(:disabled) {
     background: #f8f9fa;
-    border-color: #D6613A;
+    border-color: #d6613a;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transform: translateY(-1px);
   }
-
   .page-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     box-shadow: none;
   }
-
   .page-info {
     padding: 0 1rem;
     font-weight: 500;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: 'Helvetica Neue', sans-serif;
     font-size: 0.95rem;
   }
+
 
   @media (max-width: 768px) {
     .container {
       padding: 0 1.5rem;
     }
-
     h2 {
       font-size: 2rem;
     }
-
     .filters-grid {
       grid-template-columns: 1fr;
     }
-
     .search-export-row {
       flex-direction: column;
       align-items: stretch;
     }
-
-    .export-btn {
-      width: 100%;
-      justify-content: center;
-    }
-
     .result-header {
       flex-direction: column;
       align-items: flex-start;
     }
-
     .result-school {
       align-self: flex-start;
     }
