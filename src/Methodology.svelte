@@ -16,6 +16,13 @@
   let showCalendarTooltip = false;
   let calendarContainer;
 
+  // FAQ accordion
+  let openFaqIndex = null;
+
+  function toggleFaq(index) {
+    openFaqIndex = openFaqIndex === index ? null : index;
+  }
+
   // AWS S3 configuration
   const S3_LIST_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/list.json';
   const S3_BUCKET_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
@@ -815,6 +822,35 @@
           <strong>Last Updated:</strong> November 18, 2025
         </p>
       </section>
+
+      <!-- FAQ Section -->
+      <section class="faq-section">
+        <h3>Frequently Asked Questions</h3>
+
+        <div class="faq-item">
+          <button class="faq-question" on:click={() => toggleFaq(0)}>
+            <span>What is available for any given school?</span>
+            <span class="faq-icon">{openFaqIndex === 0 ? '−' : '+'}</span>
+          </button>
+          {#if openFaqIndex === 0}
+            <div class="faq-answer">
+              <p>The headline, date published, full text and link to any given article.</p>
+            </div>
+          {/if}
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" on:click={() => toggleFaq(1)}>
+            <span>Why not farther back?</span>
+            <span class="faq-icon">{openFaqIndex === 1 ? '−' : '+'}</span>
+          </button>
+          {#if openFaqIndex === 1}
+            <div class="faq-answer">
+              <p>We aim to publish more data soon that goes farther back.</p>
+            </div>
+          {/if}
+        </div>
+      </section>
     </div>
   </div>
 </div>
@@ -1359,6 +1395,84 @@
 
     .month-grid {
       gap: 1px;
+    }
+  }
+
+  /* FAQ Section */
+  .faq-section {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: #fafafa;
+    border-radius: 8px;
+  }
+
+  .faq-section h3 {
+    font-family: "EB Garamond", serif;
+    font-size: 1.8rem;
+    color: #D6613A;
+    margin-bottom: 1.5rem;
+    margin-top: 0;
+    font-weight: 400;
+  }
+
+  .faq-item {
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 0.5rem;
+  }
+
+  .faq-item:last-child {
+    border-bottom: none;
+  }
+
+  .faq-question {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #444;
+    transition: color 0.2s ease;
+  }
+
+  .faq-question:hover {
+    color: #D6613A;
+  }
+
+  .faq-icon {
+    font-size: 1.25rem;
+    color: #D6613A;
+    font-weight: 400;
+    line-height: 1;
+    margin-left: 1rem;
+  }
+
+  .faq-answer {
+    padding: 0.5rem 0 1rem 0;
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .faq-answer p {
+    margin: 0;
+    color: #444;
+    line-height: 1.7;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 </style>
