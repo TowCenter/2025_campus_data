@@ -742,22 +742,32 @@
           capturing how higher education institutions respond to regulatory pressure through their official announcements and statements.
         </p>
 
-        <h4>Data Sources</h4>
+        <h4>Collection</h4>
+        <p>
+          This dataset was created using the Tow Center's scraper factory, a framework for bulk creating and managing web scrapers.
+          To select the universities in this dataset, we identified any higher education institution that the Department of Education
+          announced investigations into since Donald Trump came into office. We cross-referenced this with universities flagged for
+          federal oversight in the <a href="https://hechingerreport.org/which-schools-and-colleges-are-being-investigated-by-the-trump-administration/" target="_blank" rel="noopener noreferrer">Hechinger Report's investigation tracker</a>, which follows a similar collection method.
+        </p>
+        <p>
+          In order to select the websites from each school to scrape, we identified links to each institution's main news announcements,
+          press releases, provost office, president or chancellor office, board of trustees, international student office, and financial
+          office pages where article-style information was posted. Not all institutions maintain all of these page types, so when possible
+          we identified their equivalent offices. This approach resulted in a minimum of three web scrapers per institution and in some
+          cases up to seven.
+        </p>
+        <p>
+          We use a multi-step process to manually and automatically verify the data within each university's dataset to ensure it is
+          complete and not missing any links, texts or information prior to publication.
+        </p>
+        <p>
+          Currently the data is from Jan. 1, 2025 onwards, and is updated weekly. We plan on releasing more data with previous years
+          in the near future.
+        </p>
 
-        <h5>University Selection</h5>
-        <ul>
-          <li>
-            Universities flagged for federal oversight in the <a href="https://hechingerreport.org/which-schools-and-colleges-are-being-investigated-by-the-trump-administration/" target="_blank" rel="noopener noreferrer">Hechinger Report's investigation tracker</a>
-          </li>
-          <li>
-            Institutions subject to Department of Education investigation announcements
-          </li>
-          <li>
-            This equals out to 100+ total higher education institutions across the U.S.
-          </li>
-        </ul>
+        <h4>Sourcing</h4>
 
-        <h5>Content Types</h5>
+        <h5>Available Content Types</h5>
         <ul>
           <li>Official university press releases</li>
           <li>University news pages and portals</li>
@@ -766,33 +776,12 @@
           <li>Operational updates and campus communications</li>
         </ul>
 
-        <h4>Collection Methods</h4>
-
-        <h5>Technical Approach</h5>
-        <p>
-          Data collected using Scraper Factories pipeline deployed across university domains. The system adapts to varying
-          website formats while maintaining full compliance with robots.txt protocols, when available.
-        </p>
-
-        <h5>Temporal Scope</h5>
-        <ul>
-          <li>Current coverage: January 1, 2025 onwards</li>
-          <li>Planned expansion: Pre-2025 historical data for baseline comparisons</li>
-        </ul>
-
-        <h4>Quality Controls</h4>
-        <ul>
-          <li>English-language content only</li>
-          <li>Original publication dates preserved when available</li>
-          <li>Manual verification for undated content where possible</li>
-          <li>Cross-validation through spot-checking sample institutions</li>
-        </ul>
-
         <h4>Limitations & Exclusions</h4>
 
         <h5>Not Included</h5>
         <ul>
           <li>Private or internal communications</li>
+          <li>Information published in non latin characters</li>
           <li>Social media posts</li>
           <li>Routine academic announcements (course schedules, calendars)</li>
           <li>Individual department or faculty pages</li>
@@ -802,7 +791,7 @@
         <h5>Data Gaps</h5>
         <ul>
           <li>Some universities may block automated access to certain pages</li>
-          <li>Announcements without clear publication dates marked as undated</li>
+          <li>Announcements without clear publication dates are marked as undated, but we manually verify dates when possible. Original publication dates are preserved when available.</li>
           <li>Historical communications prior to January 2025 (collection in progress)</li>
         </ul>
 
@@ -815,11 +804,11 @@
         <h4>Access & Updates</h4>
         <p>
           This dataset is open-source and updated regularly as new university communications are published. For technical
-          questions about data collection methods or to report data quality issues, please contact our research team.
+          questions about data collection methods or to report data quality issues, please contact our team.
         </p>
 
         <p class="last-updated">
-          <strong>Last Updated:</strong> November 18, 2025
+          <strong>Last Updated:</strong> November 26, 2025
         </p>
       </section>
 
@@ -847,6 +836,30 @@
           {#if openFaqIndex === 1}
             <div class="faq-answer">
               <p>We aim to publish more data soon that goes farther back.</p>
+            </div>
+          {/if}
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" on:click={() => toggleFaq(2)}>
+            <span>What types of schools are included?</span>
+            <span class="faq-icon">{openFaqIndex === 2 ? '−' : '+'}</span>
+          </button>
+          {#if openFaqIndex === 2}
+            <div class="faq-answer">
+              <p>Post-secondary education institutions with degree-granting programs above the high school level that lead to a certificate or degree, including community colleges, technical or trade schools, universities, graduate programs, and vocational schools.</p>
+            </div>
+          {/if}
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" on:click={() => toggleFaq(3)}>
+            <span>What is not available?</span>
+            <span class="faq-icon">{openFaqIndex === 3 ? '−' : '+'}</span>
+          </button>
+          {#if openFaqIndex === 3}
+            <div class="faq-answer">
+              <p>Fill in answer here</p>
             </div>
           {/if}
         </div>
