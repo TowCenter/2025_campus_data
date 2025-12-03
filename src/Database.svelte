@@ -903,9 +903,6 @@
                       placeholder="Search title, institution, or content..."
                       class="search-input"
               />
-              {#if searchLoading}
-                <span class="search-status">Loading search index…</span>
-              {/if}
               {#if searchError}
                 <span class="search-status error-text">Search error: {searchError}</span>
               {/if}
@@ -962,6 +959,11 @@
           </div>
 
           {#if loadingArticles}
+            <div class="loading">
+              <div class="spinner"></div>
+              <p>Loading database...</p>
+            </div>
+          {:else if searchLoading}
             <div class="loading">
               <div class="spinner"></div>
               <p>Loading articles...</p>
