@@ -70,6 +70,7 @@
   // shardKey -> { token: [ids...] }
   const searchShardCache = new Map();
   let fullDatasetCache = null;
+  let fullDatasetMap = null;
 
   $: filteredInstitutions = institutionSearchTerm
           ? institutions.filter((inst) =>
@@ -275,117 +276,220 @@
 
   // Allow multi-word search
   function getSearchTokens(raw) {
-    return raw.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if (!raw) return { tokens: [], phrase: null, phraseQuoted: false };
+
+    const tokens = [];
+    let phrase = null;
+    let phraseQuoted = false;
+    const regex = /"([^"]+)"|(\S+)/g;
+    let match;
+    while ((match = regex.exec(raw))) {
+      if (match[1]) {
+        const phraseText = match[1].trim();
+        if (phraseText) {
+          phraseQuoted = true;
+          phrase = phraseText.toLowerCase();
+          tokens.push(...phrase.split(/\s+/).filter(Boolean));
+        }
+      } else if (match[2]) {
+        const value = match[2].trim();
+        if (value) tokens.push(value.toLowerCase());
+      }
+    }
+
+    if (!phrase && tokens.length > 1) {
+      phrase = tokens.join(' ');
+    }
+
+    return { tokens, phrase, phraseQuoted };
+  }
+
+  // Check for a phrase (adjacent words) in title/org/content, using cached articles
+  async function findPhraseMatches(ids, phrase) {
+    if (!phrase) return [];
+    const needle = phrase.toLowerCase();
+    const matches = [];
+    const articles = await Promise.all(
+      ids.map(async (id) => {
+        try {
+          const article = await getArticleById(id);
+          return { id, article };
+        } catch (e) {
+          console.error(e);
+          return null;
+        }
+      })
+    );
+
+    for (const item of articles) {
+      if (!item) continue;
+      const { id, article } = item;
+      const haystack = [article.title, article.org, article.content]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      if (haystack.includes(needle)) {
+        matches.push(id);
+      }
+    }
+    return matches;
   }
 
   async function applyFiltersAndSearch() {
+    loadingArticles = true; // block stale results while computing
+    articles = [];
+    error = null;
     const baseIds = getBaseIdsFromFilters();
     const baseIdsSet = new Set(baseIds);
-    const tokens = getSearchTokens(searchTerm);
+    const { tokens, phrase, phraseQuoted } = getSearchTokens(searchTerm);
 
-    // No search term: just filtered timeline
-    if (tokens.length === 0) {
-      activeIds = baseIds;
-      currentPage = 1;
-      await loadPage(1);
-      return;
-    }
-
-    // unique shard keys (one per first letter)
-    const shardKeys = Array.from(
-            new Set(
-                    tokens
-                            .map((t) => getShardKey(t))
-                            .filter((k) => k !== null)
-            )
-    );
-
-    if (shardKeys.length === 0) {
-      activeIds = [];
-      currentPage = 1;
-      await loadPage(1);
-      return;
-    }
-
-    // load all needed shards
-    const shardMap = new Map();
-    for (const key of shardKeys) {
-      const shard = await ensureShardLoaded(key);
-      if (shard) {
-        shardMap.set(key, shard);
+    try {
+      // No search term: just filtered timeline
+      if (tokens.length === 0) {
+        activeIds = baseIds;
+        currentPage = 1;
+        await loadPage(1);
+        return;
       }
-    }
 
-    if (shardMap.size === 0) {
-      activeIds = [];
-      currentPage = 1;
-      await loadPage(1);
-      return;
-    }
+      // unique shard keys (one per first letter)
+      const shardKeys = Array.from(
+              new Set(
+                      tokens
+                              .map((t) => getShardKey(t))
+                              .filter((k) => k !== null)
+              )
+      );
 
-    // scoreMap: id -> score
-    const scoreMap = new Map();
+      if (shardKeys.length === 0) {
+        activeIds = [];
+        currentPage = 1;
+        await loadPage(1);
+        return;
+      }
 
-    for (const term of tokens) {
-      const key = getShardKey(term);
-      if (!key) continue;
-
-      const shard = shardMap.get(key);
-      if (!shard) continue;
-
-      for (const [tokenRaw, ids] of Object.entries(shard)) {
-        const token = tokenRaw.toLowerCase();
-
-        let weight = 0;
-        if (token === term) {
-          weight = 100;           // exact word
-        } else if (token.startsWith(term)) {
-          weight = 10;           // prefix
-        } else if (token.includes(term)) {
-          weight = 1;           // looser contains
-        }
-
-        if (!weight) continue;
-
-        for (const id of ids) {
-          // 🚀 Only score IDs that survive month/institution filters
-          if (!baseIdsSet.has(id)) continue;
-
-          const prev = scoreMap.get(id) || 0;
-          scoreMap.set(id, prev + weight);
+      // load all needed shards
+      const shardMap = new Map();
+      for (const key of shardKeys) {
+        const shard = await ensureShardLoaded(key);
+        if (shard) {
+          shardMap.set(key, shard);
         }
       }
-    }
 
-    // Score-based ordering, but still respecting baseIds (date) within each score
-    const buckets = new Map(); // score -> [ids in baseIds order]
+      if (shardMap.size === 0) {
+        activeIds = [];
+        currentPage = 1;
+        await loadPage(1);
+        return;
+      }
 
-    for (const id of baseIds) {
-      const score = scoreMap.get(id);
-      if (!score) continue; // id doesn't match any word
-      if (!buckets.has(score)) buckets.set(score, []);
-      buckets.get(score).push(id);
-    }
+      // Exact token matches (case-insensitive)
+      const idsPerToken = [];
+      for (const term of tokens) {
+        const key = getShardKey(term);
+        const shard = key ? shardMap.get(key) : null;
+        const exactIds = [];
+        if (shard) {
+          for (const [tokenRaw, ids] of Object.entries(shard)) {
+            if (tokenRaw.toLowerCase() === term && Array.isArray(ids)) {
+              exactIds.push(...ids);
+            }
+          }
+        }
+        const filtered = exactIds.filter((id) => baseIdsSet.has(id));
+        idsPerToken.push(new Set(filtered));
+      }
 
-    if (buckets.size === 0) {
-      activeIds = [];
+      const tokenMatchCounts = idsPerToken.map((s) => s.size);
+
+      if (phraseQuoted) {
+        // Strict: all tokens must match
+        if (idsPerToken.length !== tokens.length || tokenMatchCounts.some((c) => c === 0)) {
+          activeIds = [];
+          currentPage = 1;
+          await loadPage(1);
+          return;
+        }
+
+        const intersectedSet = new Set(
+          baseIds.filter((id) => idsPerToken.every((set) => set.has(id)))
+        );
+
+        if (intersectedSet.size === 0) {
+          activeIds = [];
+          currentPage = 1;
+          await loadPage(1);
+          return;
+        }
+
+        let phraseIds = [];
+        if (phrase) {
+          const candidatesInOrder = baseIds.filter((id) => intersectedSet.has(id));
+          phraseIds = await findPhraseMatches(candidatesInOrder, phrase);
+        }
+
+        activeIds = phraseIds;
+        currentPage = 1;
+        await loadPage(1);
+        return;
+      }
+
+      // Unquoted: allow partial matches, rank by coverage; phrase-first if present
+      if (idsPerToken.every((s) => s.size === 0)) {
+        activeIds = [];
+        currentPage = 1;
+        await loadPage(1);
+        return;
+      }
+
+      // Count how many tokens each id matched
+      const matchCount = new Map();
+      idsPerToken.forEach((set) => {
+        for (const id of set) {
+          matchCount.set(id, (matchCount.get(id) || 0) + 1);
+        }
+      });
+
+      const candidates = baseIds.filter((id) => matchCount.has(id));
+      if (candidates.length === 0) {
+        activeIds = [];
+        currentPage = 1;
+        await loadPage(1);
+        return;
+      }
+
+      let phraseIds = [];
+      if (phrase) {
+        phraseIds = await findPhraseMatches(candidates, phrase);
+      }
+
+      const phraseSet = new Set(phraseIds);
+
+      const buckets = new Map(); // count -> ids in base order
+      for (const id of candidates) {
+        if (phraseSet.has(id)) continue; // already in phrase bucket
+        const count = matchCount.get(id) || 0;
+        if (count === 0) continue;
+        if (!buckets.has(count)) buckets.set(count, []);
+        buckets.get(count).push(id);
+      }
+
+      const sortedCounts = [...buckets.keys()].sort((a, b) => b - a);
+      const ordered = [...phraseIds];
+      for (const count of sortedCounts) {
+        ordered.push(...buckets.get(count));
+      }
+
+      activeIds = ordered;
       currentPage = 1;
       await loadPage(1);
-      return;
+    } finally {
+      loadingArticles = false;
     }
-
-    const sortedScores = [...buckets.keys()].sort((a, b) => b - a);
-    const filteredBySearch = [];
-    for (const score of sortedScores) {
-      filteredBySearch.push(...buckets.get(score));
-    }
-
-    activeIds = filteredBySearch;
-    currentPage = 1;
-    await loadPage(1);
   }
 
-    // --- Paging + article loading ---
+  // --- Paging + article loading ---
 
   async function getArticleById(id) {
     if (articleCache.has(id)) return articleCache.get(id);
@@ -427,9 +531,7 @@
     error = null;
 
     try {
-      const promises = pageIds.map((id) => getArticleById(id));
-
-      articles = await Promise.all(promises);
+      articles = await getArticlesByIds(pageIds);
     } catch (e) {
       console.error(e);
       error = e.message;
@@ -483,7 +585,7 @@
 
     searchTimeout = setTimeout(() => {
       applyFiltersAndSearch();
-    }, 300); // debounce
+    }, 1000); // debounce
   }
 
   const isUnfiltered = () =>
@@ -500,6 +602,83 @@
     }
     fullDatasetCache = await res.json();
     return fullDatasetCache;
+  }
+
+  function getIdFromArticle(article) {
+    return (
+            article?._id?.$oid ||
+            article?._id ||
+            article?.id ||
+            article?.Id ||
+            null
+    );
+  }
+
+  function buildFullDatasetMap(data) {
+    const map = new Map();
+    if (Array.isArray(data)) {
+      for (const item of data) {
+        const id = getIdFromArticle(item);
+        if (id) {
+          map.set(String(id), item);
+        }
+      }
+    }
+    fullDatasetMap = map;
+    return map;
+  }
+
+  async function ensureFullDatasetMap() {
+    if (fullDatasetMap) return fullDatasetMap;
+    const data = await getFullDataset();
+    return buildFullDatasetMap(data);
+  }
+
+  // Try to get articles from the full dataset map when available, otherwise fall back
+  async function getArticlesByIds(ids) {
+    if (!ids || ids.length === 0) return [];
+
+    // If the map exists, prefer it (fast path)
+    if (fullDatasetMap) {
+      console.log("yes???")
+      const missing = [];
+      const collected = [];
+      for (const id of ids) {
+        const fromMap = fullDatasetMap.get(String(id));
+        if (fromMap) {
+          collected.push(fromMap);
+        } else {
+          missing.push(id);
+        }
+      }
+      if (missing.length === 0) return collected;
+      const fetched = await Promise.all(missing.map((id) => getArticleById(id)));
+      collected.push(...fetched);
+      return collected;
+    }
+
+    // No map yet: if result set is small, just fetch in parallel
+    if (ids.length <= 1000) {
+      return Promise.all(ids.map((id) => getArticleById(id)));
+    }
+
+    // Large set and no map: build map once, then serve from it
+    const map = await ensureFullDatasetMap();
+    const collected = [];
+    const missing = [];
+    for (const id of ids) {
+      const fromMap = map.get(String(id));
+      if (fromMap) {
+        collected.push(fromMap);
+      } else {
+        missing.push(id);
+      }
+    }
+    if (missing.length) {
+      const fetched = await Promise.all(missing.map((id) => getArticleById(id)));
+      collected.push(...fetched);
+    }
+    return collected;
   }
 
   function cleanDataForExport(data) {
@@ -523,11 +702,7 @@
       if (isUnfiltered()) {
         articlesToExport = await getFullDataset();
       } else {
-        articlesToExport = [];
-        for (const id of activeIds) {
-          const article = await getArticleById(id);
-          articlesToExport.push(article);
-        }
+        articlesToExport = await getArticlesByIds(activeIds);
       }
 
       const cleanData = cleanDataForExport(articlesToExport);
@@ -650,11 +825,33 @@
     if (!text) return '';
     if (!term || !term.trim()) return escapeHtml(text);
 
-    const tokens = term.trim().split(/\s+/).filter(Boolean);
-    if (tokens.length === 0) return escapeHtml(text);
+    const { tokens, phrase, phraseQuoted } = getSearchTokens(term);
+    const patterns = [];
 
-    const pattern = tokens.map(escapeRegExp).join('|');
-    const regex = new RegExp(`(${pattern})`, 'ig');
+    if (phraseQuoted && phrase) {
+      const phrasePattern = `\\b${escapeRegExp(phrase)}\\b`;
+      const phraseRegex = new RegExp(phrasePattern, 'i');
+      if (phraseRegex.test(text)) {
+        patterns.push(phrasePattern);
+      }
+    } else {
+      const phrasePattern = phrase ? `\\b${escapeRegExp(phrase)}\\b` : null;
+      if (phrasePattern) {
+        const phraseRegex = new RegExp(phrasePattern, 'i');
+        if (phraseRegex.test(text)) {
+          patterns.push(phrasePattern);
+        }
+      }
+      if (patterns.length === 0) {
+        for (const t of tokens) {
+          patterns.push(`\\b${escapeRegExp(t)}\\b`);
+        }
+      }
+    }
+
+    if (patterns.length === 0) return escapeHtml(text);
+
+    const regex = new RegExp(`(${patterns.join('|')})`, 'ig');
 
     const parts = text.split(regex);
 
@@ -668,18 +865,15 @@
   }
 
   /**
-   * Returns a snippet of `content`:
+   * Returns a snippet of `content` using exact (word-boundary) matches:
    * - if no term: first `maxLen` chars
-   * - if term found: snippet centered around first occurrence, with some context
+   * - if term found: snippet centered around first whole-word/phrase occurrence
    */
-  function getSnippet(content, term, maxLen = 250, context = 20) {
+  function getSnippet(content, term, maxLen = 280, context = 120) {
     if (!content) return '';
 
-    const trimmed = term ? term.trim() : '';
-    const firstWord = trimmed.split(/\s+/).filter(Boolean)[0];
-
-    // No usable search word: just take the leading snippet, word-safe
-    if (!firstWord) {
+    const { tokens, phrase } = getSearchTokens(term || '');
+    function leadingSnippet() {
       let text = content.slice(0, maxLen);
       const lastSpace = text.lastIndexOf(' ');
       if (lastSpace > 0 && content.length > maxLen) {
@@ -690,24 +884,44 @@
     }
 
     const lowerContent = content.toLowerCase();
-    const lowerTerm = firstWord.toLowerCase();
 
-    const matchIndex = lowerContent.indexOf(lowerTerm);
-
-    // Term not found: fallback to start
-    if (matchIndex === -1) {
-      let text = content.slice(0, maxLen);
-      const lastSpace = text.lastIndexOf(' ');
-      if (lastSpace > 0 && content.length > maxLen) {
-        text = text.slice(0, lastSpace);
-        return text + '…';
+    // Helper to find earliest match from a list of patterns
+    function findFirstMatch(patternList) {
+      let found = null;
+      for (const pattern of patternList) {
+        const regex = new RegExp(pattern, 'i');
+        const m = lowerContent.match(regex);
+        if (m && m.index !== undefined) {
+          if (!found || m.index < found.index) {
+            found = { index: m.index, length: m[0].length };
+          }
+        }
       }
-      return content.length > maxLen ? text + '…' : text;
+      return found;
     }
+
+    const phrasePatterns = [];
+    if (phrase) {
+      phrasePatterns.push(`\\b${escapeRegExp(phrase)}\\b`);
+    }
+
+    const tokenPatterns = tokens.map((t) => `\\b${escapeRegExp(t)}\\b`);
+
+    // Prefer phrase match if present; otherwise fall back to token match
+    const phraseMatch = phrasePatterns.length ? findFirstMatch(phrasePatterns) : null;
+    const tokenMatch = !phraseMatch && tokenPatterns.length ? findFirstMatch(tokenPatterns) : null;
+    const match = phraseMatch || tokenMatch;
+
+    if (!match) {
+      return leadingSnippet();
+    }
+
+    const matchIndex = match.index;
+    const matchLength = match.length;
 
     // raw window around the match
     let rawStart = Math.max(0, matchIndex - context);
-    let rawEnd = Math.min(content.length, matchIndex + lowerTerm.length + context);
+    let rawEnd = Math.min(content.length, matchIndex + matchLength + context);
 
     // Adjust start to the previous space (word boundary)
     if (rawStart > 0) {
@@ -916,17 +1130,24 @@
 
           <div class="search-export-row">
             <div class="search-wrapper">
-              <input
-                      id="search-input"
-                      type="text"
-                      bind:value={searchTerm}
-                      on:input={handleSearchInput}
-                      placeholder="Search title, institution, or content..."
-                      class="search-input"
-              />
-              {#if searchLoading}
-                <span class="search-status">Loading search index…</span>
-              {/if}
+              <div class="search-input-row">
+                <input
+                        id="search-input"
+                        type="text"
+                        bind:value={searchTerm}
+                        on:input={handleSearchInput}
+                        placeholder="Search title, institution, or content..."
+                        class="search-input"
+                />
+                <div class="search-help" tabindex="0" aria-label="Search tips">
+                  <span class="search-help-label">i</span>
+                  <div class="search-help-tooltip">
+                    <p><strong>Single or multiple words</strong>: search with one word or a short phrase.</p>
+                    <p><strong>Exact match</strong>: match the exact word or phrase using double quotation marks, for example "campus safety".</p>
+                    <p><strong>Letters only</strong>: numbers and special characters are not supported in search.</p>
+                  </div>
+                </div>
+              </div>
               {#if searchError}
                 <span class="search-status error-text">Search error: {searchError}</span>
               {/if}
@@ -985,7 +1206,12 @@
           {#if loadingArticles}
             <div class="loading">
               <div class="spinner"></div>
-              <p>Loading articles...</p>
+              <p>Loading database...</p>
+            </div>
+          {:else if searchLoading}
+            <div class="loading">
+              <div class="spinner"></div>
+              <p>Loading database...</p>
             </div>
           {:else if !articles.length}
             <p>No articles found.</p>
@@ -997,10 +1223,10 @@
                     <h4 class="result-title">
                       {#if item.url}
                         <a href={item.url} target="_blank" rel="noopener noreferrer">
-                          {@html highlight(getSnippet(item.title, searchTerm), searchTerm)}
+                          {@html highlight(item.title, searchTerm)}
                         </a>
                       {:else}
-                        {@html highlight(getSnippet(item.title, searchTerm), searchTerm)}
+                        {@html highlight(item.title, searchTerm)}
                       {/if}
                     </h4>
 
@@ -1397,6 +1623,12 @@
     min-width: 250px;
   }
 
+  .search-input-row {
+    display: flex;
+    align-items: start;
+    gap: 0.5rem;
+  }
+
   .search-status {
     display: block;
     margin-top: 0.35rem;
@@ -1424,6 +1656,65 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  .search-help {
+    position: relative;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid #dee2e6;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    color: #444;
+    background: #f8f8f8;
+    cursor: pointer;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .search-help-label {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: #444;
+    white-space: nowrap;
+  }
+
+  .search-help-tooltip {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    width: 260px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: all 0.15s ease;
+    z-index: 10;
+  }
+
+  .search-help:hover .search-help-tooltip,
+  .search-help:focus-within .search-help-tooltip {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .search-help-tooltip p {
+    margin: 0 0 0.35rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #444;
+  }
+
+  .search-help-tooltip p:last-child {
+    margin-bottom: 0;
   }
 
   .export-btn:hover:not(:disabled) {
