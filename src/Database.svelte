@@ -6,9 +6,14 @@
   const ARTICLE_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/articles';
   const SEARCH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/search_index';
   const FULL_DATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
+  const METADATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/metadata.json';
 
   const NO_DATE_KEY = '_no_date';
   const NO_ORG_KEY = '_no_org';
+
+  // Metadata
+  let lastUpdated = null;
+  let totalRecordCount = 0;
 
   // monthIndex: { "YYYY-MM": ["id1","id2",...], "_no_date": ["idX",...] }
   let monthIndex = {};
@@ -99,15 +104,15 @@
   });
 
   async function loadInitialData() {
-    // if already initialized, don’t fetch again
+    // if already initialized, don't fetch again
     if (initialized) return;
 
     loading = true;
     error = null;
 
     try {
-      // load indexes in parallel
-      await Promise.all([loadMonthIndex(), loadInstitutionIndex()]);
+      // load indexes and metadata in parallel
+      await Promise.all([loadMonthIndex(), loadInstitutionIndex(), loadMetadata()]);
 
       // only set default filters on first successful load
       selectedMonths = [];
@@ -122,6 +127,20 @@
       error = e.message;
     } finally {
       loading = false;
+    }
+  }
+
+  async function loadMetadata() {
+    try {
+      const res = await fetch(METADATA_URL);
+      if (res.ok) {
+        const metadata = await res.json();
+        lastUpdated = metadata.last_updated || metadata.timestamp || null;
+        totalRecordCount = metadata.total_count || globalIds.length;
+      }
+    } catch (e) {
+      console.warn('Could not load metadata:', e);
+      // Don't throw - this is optional
     }
   }
 
@@ -730,6 +749,35 @@
     <div class="content-wrapper">
       <h2>Database Search</h2>
 
+      <!-- Metadata Header -->
+      <section class="database-meta">
+        <div class="meta-details">
+          {#if lastUpdated}
+            <div class="meta-item">
+              <span class="meta-label">Last Updated On</span>
+              <span class="meta-value">
+                {new Date(lastUpdated).toLocaleString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true,
+                  timeZone: 'America/New_York'
+                })} EST
+              </span>
+            </div>
+          {/if}
+
+          <div class="meta-item">
+            <span class="meta-label">Maintained By</span>
+            <span class="meta-value">
+              <a href="https://towcenter.columbia.edu/" target="_blank" rel="noopener noreferrer">Tow Center for Digital Journalism</a>
+            </span>
+          </div>
+        </div>
+      </section>
+
       <section class="intro">
         <p class="lead">
           Search and filter through all institutional responses. Use the filters below to narrow results by institution,
@@ -1068,10 +1116,54 @@
   h2 {
     font-size: 2.5rem;
     margin: 0 0 1.5rem;
-    color: #d6613a;
+    color: #254c6f;
     font-weight: 400;
     font-family: 'EB Garamond', serif;
     text-align: center;
+  }
+
+  .database-meta {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .meta-details {
+    display: flex;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .meta-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #888;
+    font-family: "Graphik Web", sans-serif;
+    font-weight: 600;
+  }
+
+  .meta-value {
+    font-size: 1rem;
+    color: #222;
+    font-family: "Lyon Text Web", serif;
+  }
+
+  .meta-value a {
+    color: #254c6f;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .meta-value a:hover {
+    color: #1a3547;
+    text-decoration: underline;
   }
 
   .intro {
@@ -1097,7 +1189,7 @@
 
   .spinner {
     border: 4px solid #f3f3f3;
-    border-top: 4px solid #d6613a;
+    border-top: 4px solid #254c6f;
     border-radius: 50%;
     width: 50px;
     height: 50px;
@@ -1122,8 +1214,8 @@
     margin-top: 1rem;
     padding: 0.5rem 1.5rem;
     background: white;
-    color: #d6613a;
-    border: 2px solid #d6613a;
+    color: #254c6f;
+    border: 2px solid #254c6f;
     border-radius: 4px;
     cursor: pointer;
     font-size: 1rem;
@@ -1132,7 +1224,7 @@
     transition: all 0.2s ease;
   }
   .retry-btn:hover {
-    background: #d6613a;
+    background: #254c6f;
     color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
@@ -1178,7 +1270,7 @@
     transition: border-color 0.2s;
   }
   .dropdown-toggle:hover {
-    border-color: #d6613a;
+    border-color: #254c6f;
   }
 
   .multi-select-dropdown {
@@ -1222,7 +1314,7 @@
 
   .dropdown-search input:focus {
     outline: none;
-    border-color: #d6613a;
+    border-color: #254c6f;
   }
 
   .dropdown-options {
@@ -1247,7 +1339,7 @@
 
   .dropdown-option input[type='checkbox'] {
     cursor: pointer;
-    accent-color: #d6613a;
+    accent-color: #254c6f;
   }
 
   .clear-selection {
@@ -1265,7 +1357,7 @@
 
   .clear-selection:hover {
     background: #f8f8f8;
-    border-color: #d6613a;
+    border-color: #254c6f;
   }
 
   .search-input {
@@ -1278,7 +1370,7 @@
   }
   .search-input:focus {
     outline: none;
-    border-color: #d6613a;
+    border-color: #254c6f;
     box-shadow: 0 0 0 3px rgba(214, 97, 58, 0.1);
   }
   .goto-input {
@@ -1289,7 +1381,7 @@
   }
   .goto-input:focus {
     outline: none;
-    border-color: #d6613a;
+    border-color: #254c6f;
     box-shadow: 0 0 0 3px rgba(214, 97, 58, 0.1);
   }
 
@@ -1318,8 +1410,8 @@
 
   .export-btn {
     background: white;
-    color: #d6613a;
-    border: 2px solid #d6613a;
+    color: #254c6f;
+    border: 2px solid #254c6f;
     border-radius: 4px;
     padding: 0.7rem 1.5rem;
     font-size: 0.95rem;
@@ -1335,7 +1427,7 @@
   }
 
   .export-btn:hover:not(:disabled) {
-    background: #d6613a;
+    background: #254c6f;
     color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
@@ -1350,7 +1442,7 @@
   }
 
   .btn-spinner {
-    border: 2px solid #d6613a;
+    border: 2px solid #254c6f;
     border-top: 2px solid transparent;
     border-radius: 50%;
     width: 16px;
@@ -1384,7 +1476,7 @@
   }
   .result-card:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-color: #d6613a;
+    border-color: #254c6f;
   }
   .result-header {
     display: flex;
@@ -1402,7 +1494,7 @@
     flex: 1;
   }
   .result-title a {
-    color: #d6613a;
+    color: #254c6f;
     text-decoration: none;
   }
   .result-title a:hover {
@@ -1451,7 +1543,7 @@
   }
   .page-btn:hover:not(:disabled) {
     background: #f8f9fa;
-    border-color: #d6613a;
+    border-color: #254c6f;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transform: translateY(-1px);
   }

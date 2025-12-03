@@ -1,0 +1,54 @@
+/* Tow Design System Fonts */
+
+/* Lyon Display Web - for headings */
+@font-face {
+  font-family: 'Lyon Display Web';
+  src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/LyonDisplay-Medium-Web.eot');
+  src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/LyonDisplay-Medium-Web.eot?#iefix') format('embedded-opentype'),
+       url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/LyonDisplay-Medium-Web.woff2') format('woff2'),
+       url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/LyonDisplay-Medium-Web.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+}
+
+/* Lyon Text Web - for body text */
+@font-face {
+  font-family: 'Lyon Text Web';
+  src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/LyonText-Regular-Web.eot');
+  src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/LyonText-Regular-Web.eot?#iefix') format('embedded-opentype'),
+       url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/LyonText-Regular-Web.woff2') format('woff2'),
+       url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/LyonText-Regular-Web.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Lyon Text Web';
+  src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/LyonText-Bold-Web.eot');
+  src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/LyonText-Bold-Web.eot?#iefix') format('embedded-opentype'),
+       url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/LyonText-Bold-Web.woff2') format('woff2'),
+       url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/LyonText-Bold-Web.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Graphik Web - for sans-serif elements */
+@font-face {
+  font-family: 'Graphik Web';
+  src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-Regular-Web.eot');
+  src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-Regular-Web.eot?#iefix') format('embedded-opentype'),
+       url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-Regular-Web.woff2') format('woff2'),
+       url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-Regular-Web.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Graphik Web';
+  src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-Bold-Web.eot');
+  src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-Bold-Web.eot?#iefix') format('embedded-opentype'),
+       url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-Bold-Web.woff2') format('woff2'),
+       url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-Bold-Web.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+}

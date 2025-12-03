@@ -514,9 +514,9 @@
   h2 {
     font-size: 2.5rem;
     margin: 0 0 1.5rem;
-    color: #D6613A;
+    color: #254c6f;
     font-weight: 400;
-    font-family: "EB Garamond", serif;
+    font-family: "Lyon Display Web", serif;
     text-align: center;
   }
 
@@ -525,7 +525,7 @@
     margin: 0 0 0.5rem;
     color: #222;
     font-weight: 500;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
 
   .intro {
@@ -554,7 +554,7 @@
 
   .last-updated strong {
     color: #222;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
 
   /* Loading States */
@@ -565,7 +565,7 @@
 
   .spinner {
     border: 4px solid #f3f3f3;
-    border-top: 4px solid #D6613A;
+    border-top: 4px solid #254c6f;
     border-radius: 50%;
     width: 50px;
     height: 50px;
@@ -585,19 +585,19 @@
   .retry-btn {
     margin-top: 1rem;
     padding: 0.5rem 1.5rem;
-    background: #D6613A;
+    background: #254c6f;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 1rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: all 0.2s ease;
   }
 
   .retry-btn:hover {
-    background: #c55532;
+    background: #1e3d57;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
   }
@@ -636,7 +636,7 @@
     gap: 0.5rem;
     cursor: pointer;
     font-size: 1rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
     color: #444;
   }
 
@@ -644,20 +644,20 @@
     width: 18px;
     height: 18px;
     cursor: pointer;
-    accent-color: #D6613A;
+    accent-color: #254c6f;
   }
 
   .btn-download {
     background: white;
-    color: #D6613A;
-    border: 2px solid #D6613A;
+    color: #254c6f;
+    border: 2px solid #254c6f;
     border-radius: 4px;
     padding: 0.7rem 2.5rem;
     font-size: 0.95rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -667,7 +667,7 @@
   }
 
   .btn-download:hover:not(:disabled) {
-    background: #D6613A;
+    background: #254c6f;
     color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
@@ -732,12 +732,12 @@
     border: 1px solid #dee2e6;
     border-radius: 6px;
     font-size: 1rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
 
   .search-box input:focus {
     outline: none;
-    border-color: #D6613A;
+    border-color: #254c6f;
     box-shadow: 0 0 0 3px rgba(214, 97, 58, 0.1);
   }
 
@@ -766,7 +766,7 @@
   .showing {
     color: #666;
     font-size: 0.95rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
 
   .table-wrapper {
@@ -792,7 +792,7 @@
     font-weight: 600;
     color: #222;
     font-size: 0.9rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
 
   th.sortable {
@@ -839,7 +839,7 @@
     width: 18px;
     height: 18px;
     cursor: pointer;
-    accent-color: #D6613A;
+    accent-color: #254c6f;
   }
 
   .school-name {
@@ -865,14 +865,14 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.9rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
     transition: all 0.2s ease;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
   .page-btn:hover:not(:disabled) {
     background: #f8f9fa;
-    border-color: #D6613A;
+    border-color: #254c6f;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transform: translateY(-1px);
   }
@@ -891,7 +891,7 @@
   .page-info {
     padding: 0 1rem;
     font-weight: 500;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
     font-size: 0.95rem;
   }
 

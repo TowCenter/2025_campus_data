@@ -42,7 +42,7 @@
     <div class="container">
       <div class="header-top">
         <a href="https://towcenter.columbia.edu/" target="_blank" rel="noopener noreferrer" class="logo-link">
-          <img src="/tow-logo.svg" alt="Tow Center for Digital Journalism" class="logo" />
+          <img src="/tow.png" alt="Tow Center for Digital Journalism" class="logo" />
         </a>
       </div>
       <div class="header-content">
@@ -89,7 +89,7 @@
   :global(body) {
     margin: 0;
     padding: 0;
-    font-family: "EB Garamond", serif;
+    font-family: "Lyon Text Web", serif;
     line-height: 1.7;
     color: #222;
     background: #ffffff;
@@ -143,10 +143,10 @@
   h1 {
     margin: 0 0 0.5rem;
     font-size: 2.8rem;
-    font-weight: 400;
-    color: #D6613A;
+    font-weight: 700;
+    color: #254c6f;
     letter-spacing: -0.02em;
-    font-family: "EB Garamond", serif;
+    font-family: "Lyon Display Web", serif;
   }
 
   .tagline {
@@ -154,7 +154,7 @@
     font-size: 1.1rem;
     color: #666;
     font-weight: 400;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
 
   nav {
@@ -174,7 +174,7 @@
     transition: all 0.2s;
     position: relative;
     bottom: -2px;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -183,12 +183,12 @@
 
 
   nav button:hover {
-    color: #D6613A;
+    color: #254c6f;
   }
 
   nav button.active {
-    color: #D6613A;
-    border-bottom-color: #D6613A;
+    color: #254c6f;
+    border-bottom-color: #254c6f;
   }
 
   .page-content {
@@ -204,7 +204,7 @@
     margin-top: 4rem;
     text-align: center;
     border-top: 1px solid #e0e0e0;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
 
   footer p {
@@ -213,7 +213,7 @@
   }
 
   .footer-links a {
-    color: #D6613A;
+    color: #254c6f;
     text-decoration: none;
   }
 

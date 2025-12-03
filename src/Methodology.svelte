@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import * as topojson from 'topojson-client';
+  import * as d3 from 'd3-geo';
 
   let mapContainer;
   let hoveredSchool = null;
@@ -154,7 +155,7 @@
     return acc;
   }, {});
   $: totalStates = Object.keys(stateGroups).length;
-  $: totalRecords = schoolsList.length;
+  $: totalRecords = allArticles.length;
 
   // Group schools by proximity and calculate offset positions
   function getSchoolPositions(schools) {
@@ -210,29 +211,20 @@
   }
 
   $: schoolPositions = getSchoolPositions(schoolData);
-  
-  // Convert lat/lng to SVG coordinates (simple linear projection)
+
+  // Create Albers USA projection for proper US map rendering
+  const projection = d3.geoAlbersUsa()
+    .scale(1300)
+    .translate([480, 300]);
+
+  // Convert lat/lng to SVG coordinates using Albers USA projection
   function projectCoordinates(lat, lng) {
-    // Handle Hawaii specially - position it in the lower left
-    if (lng < -140) {
-      // Hawaii inset position
-      const hawaiiScale = 3; // Make Hawaii bigger
-      const hawaiiX = 120 + (lng + 160) * hawaiiScale;
-      const hawaiiY = 500 + (25 - lat) * hawaiiScale;
-      return { x: hawaiiX, y: hawaiiY };
+    const coords = projection([lng, lat]);
+    if (!coords) {
+      // Return a default position if projection fails (e.g., for territories outside the US)
+      return { x: 0, y: 0 };
     }
-
-    // Continental US bounding box: -125 to -66 longitude, 24 to 50 latitude
-    const minLng = -125;
-    const maxLng = -66;
-    const minLat = 24;
-    const maxLat = 50;
-
-    // Map to SVG viewBox (960 x 600) with proper scaling
-    const x = ((lng - minLng) / (maxLng - minLng)) * 960;
-    const y = ((maxLat - lat) / (maxLat - minLat)) * 600;
-
-    return { x, y };
+    return { x: coords[0], y: coords[1] };
   }
   
   function handleDotHover(school, event) {
@@ -314,28 +306,13 @@
     }
   }
   
+  // Create a path generator using the Albers USA projection
+  const pathGenerator = d3.geoPath().projection(projection);
+
   // Convert GeoJSON to SVG path data using Albers USA projection
   function geoJSONToPath(feature) {
     if (!feature || !feature.geometry) return '';
-
-    const coordinates = feature.geometry.type === 'MultiPolygon'
-      ? feature.geometry.coordinates
-      : [feature.geometry.coordinates];
-
-    let pathData = '';
-
-    coordinates.forEach(polygon => {
-      polygon.forEach(ring => {
-        ring.forEach((point, i) => {
-          const [lng, lat] = point;
-          const projected = projectCoordinates(lat, lng);
-          pathData += i === 0 ? `M ${projected.x} ${projected.y} ` : `L ${projected.x} ${projected.y} `;
-        });
-        pathData += 'Z ';
-      });
-    });
-
-    return pathData;
+    return pathGenerator(feature) || '';
   }
 
   // Process articles data for charts
@@ -343,9 +320,21 @@
     const dateMap = {};
 
     articles.forEach(item => {
-      if (item.date?.$date) {
-        // Extract just the date part from UTC string (YYYY-MM-DD)
-        const dateStr = item.date.$date.split('T')[0];
+      let dateStr = null;
+
+      // Use the 'date' field for article publish date (NOT last_updated_at which is scraping date)
+      if (typeof item.date === 'string' && item.date) {
+        // Direct string format: "2025-03-31T00:00:00" or "2025-03-31"
+        dateStr = item.date.split('T')[0];
+      } else if (item.date?.$date) {
+        // MongoDB date format: { $date: "2025-03-31T00:00:00.000Z" }
+        dateStr = item.date.$date.split('T')[0];
+      } else if (item.date instanceof Date) {
+        // JavaScript Date object
+        dateStr = item.date.toISOString().split('T')[0];
+      }
+
+      if (dateStr) {
         dateMap[dateStr] = (dateMap[dateStr] || 0) + 1;
       }
     });
@@ -353,8 +342,8 @@
     return dateMap;
   }
 
-  // Convert daily article data to 7-day rolling sum
-  function processWeeklyRollingData(dateMap) {
+  // Convert article data to weekly bar chart data
+  function processWeeklyData(dateMap) {
     // Get all dates sorted, only from Jan 1, 2025 onwards
     const allDates = Object.keys(dateMap)
       .filter(dateStr => {
@@ -364,24 +353,30 @@
 
     if (allDates.length === 0) return [];
 
-    // Calculate 7-day rolling sum
-    const weeklyData = [];
-    for (let i = 0; i < allDates.length; i++) {
-      const currentDate = allDates[i];
+    // Group by ISO week (week starting Monday)
+    const weekMap = {};
 
-      // Sum the current day and previous 6 days (7 days total)
-      let sum = 0;
-      for (let j = Math.max(0, i - 6); j <= i; j++) {
-        sum += dateMap[allDates[j]] || 0;
-      }
+    allDates.forEach(dateStr => {
+      const date = new Date(dateStr + 'T00:00:00Z');
 
-      weeklyData.push([currentDate, { count: sum }]);
-    }
+      // Get Monday of this week (ISO week)
+      const dayOfWeek = date.getUTCDay();
+      const diff = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek; // Monday is day 1
+      const monday = new Date(date);
+      monday.setUTCDate(date.getUTCDate() + diff);
 
-    return weeklyData;
+      const weekKey = monday.toISOString().split('T')[0];
+      weekMap[weekKey] = (weekMap[weekKey] || 0) + (dateMap[dateStr] || 0);
+    });
+
+    // Return weekly counts sorted by week start date, only weeks starting in 2025
+    return Object.keys(weekMap)
+      .filter(weekKey => weekKey >= '2025-01-01')
+      .sort()
+      .map(weekKey => [weekKey, { count: weekMap[weekKey] }]);
   }
 
-  $: dailyBarData = processWeeklyRollingData(articlesByDate);
+  $: dailyBarData = processWeeklyData(articlesByDate);
 
   // Organize dates by month for calendar view with week grids
   function organizeByMonth(dateMap) {
@@ -501,7 +496,13 @@
             <div class="stat-label">States</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number">{totalRecords.toLocaleString()}</div>
+            <div class="stat-number">
+              {#if loadingArticles}
+                <span class="loading-text">Loading...</span>
+              {:else}
+                {totalRecords.toLocaleString()}
+              {/if}
+            </div>
             <div class="stat-label">Total Records</div>
           </div>
         </div>
@@ -589,25 +590,31 @@
         <section class="charts-section">
           <h3>Article Frequency Over Time</h3>
 
-          <!-- Area Chart -->
+          <!-- Bar Chart -->
           <div class="chart-container">
-            <h4>hed hed hed</h4>
-            <p class="chart-dek">dek dek dek</p>
-            <div class="area-chart-wrapper">
+            <h4>Weekly Article Count</h4>
+            <p class="chart-dek">Number of articles published each week (Total articles: {allArticles.length.toLocaleString()}, Weekly data points: {dailyBarData.length}, Date range: {dailyBarData.length > 0 ? `${dailyBarData[0][0]} to ${dailyBarData[dailyBarData.length - 1][0]}` : 'N/A'})</p>
+            <div class="bar-chart-wrapper">
                 {#if dailyBarData.length > 0}
                   {@const maxCount = Math.max(...dailyBarData.map(m => m[1].count), 1)}
-                  {@const chartHeight = 300}
+                  {@const chartHeight = 400}
                   {@const chartWidth = 800}
                   {@const leftMargin = 50}
-                  {@const bottomMargin = 30}
+                  {@const bottomMargin = 40}
                   {@const chartAreaWidth = chartWidth - leftMargin}
                   {@const chartAreaHeight = chartHeight - bottomMargin}
-                  {@const yAxisMax = 1600}
-                  {@const yAxisValues = [0, 400, 800, 1200, 1600]}
-                  {@const yAxisSteps = 4}
+                  {@const yAxisMax = (() => {
+                    const max = maxCount * 1.1;
+                    if (max <= 1000) return 1000;
+                    if (max <= 1500) return 1500;
+                    if (max <= 2000) return 2000;
+                    return Math.ceil(max / 500) * 500;
+                  })()}
+                  {@const yAxisSteps = 5}
+                  {@const yAxisValues = Array.from({length: yAxisSteps + 1}, (_, i) => (yAxisMax / yAxisSteps) * i)}
                   {@const formatNumber = (num) => {
                     if (num >= 1000) {
-                      return (num / 1000).toFixed(1) + 'k';
+                      return (num / 1000).toFixed(0) + 'k';
                     }
                     return num.toString();
                   }}
@@ -618,25 +625,15 @@
                   {@const minTimestamp = dateToTimestamp(dailyBarData[0][0])}
                   {@const maxTimestamp = dateToTimestamp(dailyBarData[dailyBarData.length - 1][0])}
                   {@const timeRange = maxTimestamp - minTimestamp || 1}
-                  {@const points = dailyBarData.map(([key, data], i) => {
+                  {@const barWidth = Math.max(1, chartAreaWidth / dailyBarData.length * 0.8)}
+                  {@const bars = dailyBarData.map(([key, data]) => {
                     const timestamp = dateToTimestamp(key);
                     const x = leftMargin + ((timestamp - minTimestamp) / timeRange) * chartAreaWidth;
-                    const y = (1 - (data.count / yAxisMax)) * (chartAreaHeight - 10) + 5;
-                    return { x, y, label: data.label, count: data.count, key };
+                    const barHeight = (data.count / yAxisMax) * (chartAreaHeight - 10);
+                    const zeroY = (chartAreaHeight - 10) * ((yAxisValues.length - 1) / (yAxisValues.length - 1)) + 5;
+                    const y = zeroY - barHeight;
+                    return { x, y, height: barHeight, count: data.count, date: key };
                   })}
-                  {@const pathD = (() => {
-                    if (points.length === 0) return '';
-                    let path = `M ${points[0].x} ${points[0].y}`;
-                    for (let i = 0; i < points.length - 1; i++) {
-                      const current = points[i];
-                      const next = points[i + 1];
-                      const controlX = current.x + (next.x - current.x) / 2;
-                      path += ` Q ${controlX} ${current.y}, ${controlX} ${(current.y + next.y) / 2}`;
-                      path += ` Q ${controlX} ${next.y}, ${next.x} ${next.y}`;
-                    }
-                    return path;
-                  })()}
-                  {@const areaD = `${pathD} L ${chartWidth} ${chartAreaHeight} L ${leftMargin} ${chartAreaHeight} Z`}
                   {@const monthLabels = (() => {
                     const labels = [];
                     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -649,8 +646,11 @@
                     let month = startMonth;
 
                     while (year < endYear || (year === endYear && month <= endMonth)) {
-                      const timestamp = Date.UTC(year, month - 1, 1);
-                      const x = leftMargin + ((timestamp - minTimestamp) / timeRange) * chartAreaWidth;
+                      // Position label at the middle of the month (day 15) for better visual alignment
+                      const timestamp = Date.UTC(year, month - 1, 15);
+                      // Calculate x position in SVG coordinates (same as bars)
+                      const relativePosition = (timestamp - minTimestamp) / timeRange;
+                      const x = leftMargin + (relativePosition * chartAreaWidth);
                       const monthIndex = month - 1;
                       const label = month === 1 ? `${monthNames[monthIndex]} ${year}` : monthNames[monthIndex];
                       labels.push({ x, label });
@@ -664,64 +664,106 @@
                     return labels;
                   })()}
 
-                  <div class="area-chart-container">
-                    <!-- Y-axis labels -->
-                    <div class="y-axis-labels">
-                      {#each yAxisValues.reverse() as value, i}
-                        <div class="y-axis-label">
-                          {formatNumber(value)}
-                        </div>
-                      {/each}
-                    </div>
+                  {@const reversedYAxisValues = [...yAxisValues].reverse()}
+                  {@const zeroLineY = chartAreaHeight - 5}
 
+                  <div class="bar-chart-container">
                     <!-- Chart SVG -->
-                    <div class="area-chart-svg-container">
-                      <svg viewBox="0 0 {chartWidth} {chartHeight}" class="area-chart-svg" preserveAspectRatio="none">
-                        <!-- Grid lines -->
-                        <g class="grid-lines">
-                          {#each yAxisValues as value, i}
-                            {@const y = (chartAreaHeight - 10) * (i / yAxisSteps) + 5}
-                            <line x1={leftMargin} y1={y} x2={chartWidth} y2={y} stroke="#e0e0e0" stroke-width="0.3" />
+                    <div class="bar-chart-svg-container">
+                      <svg viewBox="0 0 {chartWidth} {chartHeight}" class="bar-chart-svg">
+                        <!-- Y-axis labels -->
+                        <g class="y-axis-labels">
+                          {#each reversedYAxisValues as value, i}
+                            {@const y = (chartAreaHeight - 10) * (i / (yAxisValues.length - 1)) + 5}
+                            <text
+                              x="5"
+                              y={y}
+                              text-anchor="start"
+                              dominant-baseline="middle"
+                              class="y-axis-label"
+                            >
+                              {formatNumber(value)}
+                            </text>
                           {/each}
                         </g>
 
-                        <!-- Area fill -->
-                        <path
-                          d={areaD}
-                          fill="url(#areaGradient)"
-                          class="area-path"
+                        <!-- Grid lines (only show horizontal lines, very subtle) -->
+                        <g class="grid-lines">
+                          {#each reversedYAxisValues as value, i}
+                            {@const y = (chartAreaHeight - 10) * (i / (yAxisValues.length - 1)) + 5}
+                            {@const isZeroLine = value === 0}
+                            {#if !isZeroLine}
+                              <line
+                                x1={leftMargin}
+                                y1={y}
+                                x2={chartWidth}
+                                y2={y}
+                                stroke="#f0f0f0"
+                                stroke-width="0.5"
+                              />
+                            {/if}
+                          {/each}
+                        </g>
+
+                        <!-- Bars -->
+                        <g class="bars">
+                          {#each bars as bar}
+                            <rect
+                              x={bar.x - barWidth / 2}
+                              y={bar.y}
+                              width={barWidth}
+                              height={bar.height}
+                              fill="#254c6f"
+                              opacity="0.9"
+                              class="bar"
+                            >
+                              <title>{bar.date}: {bar.count.toLocaleString()} articles</title>
+                            </rect>
+                          {/each}
+                        </g>
+
+                        <!-- Zero baseline (drawn after bars to appear on top) -->
+                        <line
+                          x1="0"
+                          y1={zeroLineY}
+                          x2={chartWidth}
+                          y2={zeroLineY}
+                          stroke="#888"
+                          stroke-width="1.5"
                         />
 
-                        <!-- Line -->
-                        <path
-                          d={pathD}
-                          fill="none"
-                          stroke="#D6613A"
-                          stroke-width="2"
-                          class="area-line"
-                          vector-effect="non-scaling-stroke"
-                        />
+                        <!-- X-axis tick marks -->
+                        <g class="x-axis-ticks">
+                          {#each monthLabels as monthLabel}
+                            <line
+                              x1={monthLabel.x}
+                              y1={zeroLineY}
+                              x2={monthLabel.x}
+                              y2={zeroLineY + 5}
+                              stroke="#888"
+                              stroke-width="1"
+                            />
+                          {/each}
+                        </g>
 
-                        <!-- Gradient definition -->
-                        <defs>
-                          <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style="stop-color: rgba(214, 97, 58, 0.3); stop-opacity: 1" />
-                            <stop offset="100%" style="stop-color: rgba(214, 97, 58, 0.05); stop-opacity: 1" />
-                          </linearGradient>
-                        </defs>
+                        <!-- X-axis labels -->
+                        <g class="x-axis-labels">
+                          {#each monthLabels as monthLabel}
+                            <text
+                              x={monthLabel.x}
+                              y={chartAreaHeight + 20}
+                              text-anchor="middle"
+                              class="bar-label"
+                            >
+                              {monthLabel.label}
+                            </text>
+                          {/each}
+                        </g>
                       </svg>
-
-                      <!-- X-axis labels -->
-                      <div class="area-chart-labels">
-                        {#each monthLabels as monthLabel}
-                          {@const xPosition = (monthLabel.x / chartWidth) * 100}
-                          <span class="area-label" style="left: {xPosition}%">
-                            {monthLabel.label}
-                          </span>
-                        {/each}
-                      </div>
                     </div>
                   </div>
+                {:else}
+                  <p class="loading-text">No daily bar data available. Raw data keys: {Object.keys(articlesByDate).length}</p>
                 {/if}
               </div>
             </div>
@@ -729,6 +771,10 @@
       {:else if loadingArticles}
         <section class="charts-section">
           <p class="loading-text">Loading article data...</p>
+        </section>
+      {:else}
+        <section class="charts-section">
+          <p class="loading-text">No article data loaded. Articles: {allArticles.length}, Date keys: {Object.keys(articlesByDate).length}</p>
         </section>
       {/if}
 
@@ -907,9 +953,9 @@
 
   .stat-number {
     font-size: 2rem;
-    font-weight: 400;
-    color: #D6613A;
-    font-family: "EB Garamond", serif;
+    font-weight: 700;
+    color: #254c6f;
+    font-family: "Lyon Display Web", serif;
     line-height: 1;
     margin-bottom: 0.25rem;
   }
@@ -917,7 +963,7 @@
   .stat-label {
     font-size: 0.85rem;
     color: #666;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
     font-weight: 400;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -932,9 +978,9 @@
   .header-text h2 {
     font-size: 2.5rem;
     margin: 0 0 1rem;
-    color: #D6613A;
-    font-weight: 400;
-    font-family: "EB Garamond", serif;
+    color: #254c6f;
+    font-weight: 700;
+    font-family: "Lyon Display Web", serif;
   }
 
   .subhead {
@@ -968,7 +1014,7 @@
   }
 
   .school-dot {
-    fill: #D6613A;
+    fill: #254c6f;
     stroke: white;
     stroke-width: 2;
     cursor: pointer;
@@ -980,8 +1026,8 @@
   .school-dot:hover,
   .school-dot.hovered {
     r: 8;
-    fill: #c55532;
-    stroke: #D6613A;
+    fill: #1e3d57;
+    stroke: #254c6f;
     stroke-width: 3;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
   }
@@ -1013,7 +1059,7 @@
     color: #222;
     font-size: 1rem;
     margin-bottom: 0.25rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
 
   .tooltip-state {
@@ -1037,7 +1083,7 @@
     gap: 0.75rem;
     font-size: 0.9rem;
     color: #666;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
 
   .legend-dot {
@@ -1048,9 +1094,9 @@
   }
 
   .legend-dot.single {
-    background: #D6613A;
+    background: #254c6f;
     border: 2px solid white;
-    box-shadow: 0 0 0 1px #D6613A;
+    box-shadow: 0 0 0 1px #254c6f;
   }
 
   /* Charts Section */
@@ -1062,10 +1108,10 @@
 
   .charts-section h3 {
     font-size: 2rem;
-    color: #D6613A;
+    color: #254c6f;
     margin-bottom: 2rem;
-    font-family: "EB Garamond", serif;
-    font-weight: 400;
+    font-family: "Lyon Display Web", serif;
+    font-weight: 700;
     text-align: center;
   }
 
@@ -1084,30 +1130,30 @@
 
   .chart-container h4 {
     font-size: 1.1rem;
-    color: #D6613A;
+    color: #254c6f;
     margin-bottom: 0.5rem;
-    font-family: "EB Garamond", serif;
-    font-weight: 500;
+    font-family: "Lyon Display Web", serif;
+    font-weight: 700;
   }
 
   .chart-dek {
     font-size: 0.95rem;
     color: #666;
     margin-bottom: 1.5rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
     font-weight: 400;
     line-height: 1.5;
   }
 
-  /* Area Chart */
-  .area-chart-wrapper {
+  /* Bar Chart */
+  .bar-chart-wrapper {
     position: relative;
     width: 100%;
     padding: 0;
     background: transparent;
   }
 
-  .area-chart-container {
+  .bar-chart-container {
     display: flex;
     gap: 0.5rem;
     align-items: stretch;
@@ -1123,47 +1169,41 @@
   }
 
   .y-axis-label {
-    font-size: 0.65rem;
-    color: #888;
-    font-family: "Helvetica Neue", sans-serif;
-    text-align: right;
-    line-height: 1;
+    font-size: 11px;
+    fill: #888;
+    font-family: "Graphik Web", sans-serif;
   }
 
-  .area-chart-svg-container {
+  .bar-chart-svg-container {
     flex: 1;
     position: relative;
   }
 
-  .area-chart-svg {
+  .bar-chart-svg {
     width: 100%;
-    height: 220px;
+    height: auto;
     overflow: visible;
   }
 
-  .area-path {
-    transition: opacity 0.3s ease;
+  .bar {
+    transition: opacity 0.2s ease;
   }
 
-  .area-line {
-    stroke-linecap: round;
-    stroke-linejoin: round;
+  .bar:hover {
+    opacity: 1 !important;
   }
 
-  .area-chart-labels {
+  .bar-chart-labels {
     position: relative;
     width: 100%;
     height: 30px;
     margin-top: 0.5rem;
   }
 
-  .area-label {
-    position: absolute;
-    transform: translateX(-50%);
-    font-size: 0.7rem;
-    color: #666;
-    font-family: "Helvetica Neue", sans-serif;
-    white-space: nowrap;
+  .bar-label {
+    font-size: 11px;
+    fill: #666;
+    font-family: "Graphik Web", sans-serif;
   }
 
   /* Calendar Heatmap */
@@ -1185,8 +1225,8 @@
   .month-label {
     font-size: 0.7rem;
     font-weight: 600;
-    color: #D6613A;
-    font-family: "Helvetica Neue", sans-serif;
+    color: #254c6f;
+    font-family: "Graphik Web", sans-serif;
     text-align: center;
   }
 
@@ -1218,7 +1258,7 @@
   .calendar-day:not(.empty):not(.no-data):hover {
     transform: scale(1.2);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    border-color: #D6613A;
+    border-color: #254c6f;
     z-index: 10;
     border-width: 2px;
   }
@@ -1231,7 +1271,7 @@
     margin-top: 1rem;
     font-size: 0.75rem;
     color: #888;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
 
   .legend-scale {
@@ -1263,20 +1303,20 @@
 
   .methodology-content h3 {
     font-size: 1.8rem;
-    color: #D6613A;
+    color: #254c6f;
     margin-bottom: 1.5rem;
     margin-top: 0;
-    font-family: "EB Garamond", serif;
-    font-weight: 400;
+    font-family: "Lyon Display Web", serif;
+    font-weight: 700;
   }
 
   .methodology-content h4 {
     font-size: 1.3rem;
-    color: #D6613A;
+    color: #254c6f;
     margin-top: 2rem;
     margin-bottom: 0.75rem;
-    font-family: "EB Garamond", serif;
-    font-weight: 500;
+    font-family: "Lyon Display Web", serif;
+    font-weight: 700;
   }
 
   .methodology-content h5 {
@@ -1284,7 +1324,7 @@
     color: #444;
     margin-top: 1.5rem;
     margin-bottom: 0.5rem;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
     font-weight: 600;
   }
 
@@ -1305,14 +1345,14 @@
   }
 
   .methodology-content a {
-    color: #D6613A;
+    color: #254c6f;
     text-decoration: none;
     border-bottom: 1px solid rgba(214, 97, 58, 0.3);
     transition: border-color 0.2s;
   }
 
   .methodology-content a:hover {
-    border-bottom-color: #D6613A;
+    border-bottom-color: #254c6f;
   }
 
   .last-updated {
@@ -1388,11 +1428,11 @@
       font-size: 0.95rem;
     }
 
-    .area-chart-svg {
+    .bar-chart-svg {
       height: 180px;
     }
 
-    .area-label {
+    .bar-label {
       font-size: 0.6rem;
     }
 
@@ -1420,12 +1460,12 @@
   }
 
   .faq-section h3 {
-    font-family: "EB Garamond", serif;
+    font-family: "Lyon Display Web", serif;
     font-size: 1.8rem;
-    color: #D6613A;
+    color: #254c6f;
     margin-bottom: 1.5rem;
     margin-top: 0;
-    font-weight: 400;
+    font-weight: 700;
   }
 
   .faq-item {
@@ -1448,7 +1488,7 @@
     border: none;
     cursor: pointer;
     text-align: left;
-    font-family: "Helvetica Neue", sans-serif;
+    font-family: "Graphik Web", sans-serif;
     font-size: 1.1rem;
     font-weight: 600;
     color: #444;
@@ -1456,12 +1496,12 @@
   }
 
   .faq-question:hover {
-    color: #D6613A;
+    color: #254c6f;
   }
 
   .faq-icon {
     font-size: 1.25rem;
-    color: #D6613A;
+    color: #254c6f;
     font-weight: 400;
     line-height: 1;
     margin-left: 1rem;
