@@ -2,8 +2,26 @@
 /**  defaults  **/
 /*********************/
 
+html {
+    scrollbar-gutter: stable;
+}
+
 a {
     text-decoration: none;
+}
+
+.cell-link {
+    color: #DE5A35 !important;
+    /* text-decoration: underline !important; */
+    cursor: pointer;
+}
+
+.cell-link:visited {
+    color: #DE5A35 !important;
+}
+
+.cell-link:hover {
+    color: #c94a26 !important;
 }
 
 .fakeimg {
@@ -291,7 +309,6 @@ a {
 /* top nav */
 
 .top-nav-box {
-	border-bottom: 1px solid #999;
 	box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.10);
 }
 
@@ -312,14 +329,14 @@ a {
     -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
-    height: 80px; /* was 118 */
+    height: 100px; /* was 80 */
     /* border-bottom: 1px solid #999; */
     background: #fff;
 }
 
 .cjr-header__logo {
     display: block;
-    width: 76%; /* was 82 */
+    width: 65%; /* was 76 */
     height: auto;
 }
 
@@ -334,10 +351,19 @@ img.cjr-logo-mobile {
 	
 	img.cjr-logo-mobile {
         display: block;
-/* 		width: 50%; */
-		max-width: 110px; /* was 140 */
-		margin-left: 0px;
-		height: auto;
+        max-width: 110px;
+        margin-left: 0px;
+        height: auto;
+        padding: 0.5rem 0;
+    }
+
+    .cjr-header {
+        height: 60px;
+        padding: 0 1rem;
+    }
+
+    .cjr-header__logo {
+        width: auto;
     }
 }
 
@@ -704,6 +730,36 @@ h1.main-title {
 	}
 }
 
+@media screen and (max-width:768px) {
+	h1.main-title {
+		font-size: 36px;
+		margin: 0px 0px 20px 0px;
+		width: 100%;
+		line-height: 1.1;
+	}
+
+	.post-excerpt {
+		font-size: 18px;
+		line-height: 1.4;
+		margin: 20px 0px 20px 0px;
+	}
+
+	.post-excerpt p {
+		margin: 0;
+		padding: 0;
+	}
+
+	.meta, .meta a {
+		font-size: 12px;
+		margin-bottom: 28px;
+	}
+
+	header.col-sm-10 {
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+}
+
 .meta, .meta a {
     font-family: "Graphik Web", 'Helvetica', sans-serif;
 	font-style: normal;
@@ -721,6 +777,7 @@ h1.main-title {
     display: block;
 }
 
+.meta span.date em,
 .meta span.byline em {
     font-family: 'Lyon Text Web', 'Georgia', serif;
     text-transform: none;
@@ -891,7 +948,7 @@ h1.main-title {
     padding: 32px 0px 56px 0px;
     border-left: 2px solid #ec502e; */
 	margin: -28px 0px 0px 0px !important;
-    padding: 68px 0px 56px 0px;
+    padding: 50px 0px 40px 0px;
     border-left: unset;
     background: #fff;
 }
@@ -3482,6 +3539,15 @@ a > p {
     margin: 0px 0px 12px 0px;
 }
 
+@media screen and (max-width:768px) {
+    .tow-ccn-slug-image {
+        height: 28px;
+        margin: 0px 0px 8px 0px;
+        max-width: 100%;
+        width: auto;
+    }
+}
+
 .wp-block-audio {
 	margin: -28px 0px 28px 0px;
     padding: 68px 0px 28px 0px;
@@ -3908,6 +3974,22 @@ p.pullquote_full, p.pullquote-2015, p.pullquote_left {
         padding: 0px !important;
     }
 
+}
+
+/* Table list items - stacked badges */
+.list-item {
+    display: block !important;
+    margin: 0.3rem 0 !important;
+    padding: 0.3rem 0.3rem !important;
+    background-color: #f0f0f0 !important;
+    border-radius: 3px !important;
+    font-size: 0.7rem !important;
+    width: fit-content !important;
+}
+
+.list-item:last-child {
+    margin-right: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 
