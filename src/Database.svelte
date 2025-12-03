@@ -323,103 +323,107 @@
     const baseIdsSet = new Set(baseIds);
     const { tokens, phrase, phraseQuoted } = getSearchTokens(searchTerm);
 
-    // No search term: just filtered timeline
-    if (tokens.length === 0) {
-      activeIds = baseIds;
-      currentPage = 1;
-      await loadPage(1);
-      return;
-    }
-
-    // unique shard keys (one per first letter)
-    const shardKeys = Array.from(
-            new Set(
-                    tokens
-                            .map((t) => getShardKey(t))
-                            .filter((k) => k !== null)
-            )
-    );
-
-    if (shardKeys.length === 0) {
-      activeIds = [];
-      currentPage = 1;
-      await loadPage(1);
-      return;
-    }
-
-    // load all needed shards
-    const shardMap = new Map();
-    for (const key of shardKeys) {
-      const shard = await ensureShardLoaded(key);
-      if (shard) {
-        shardMap.set(key, shard);
-      }
-    }
-
-    if (shardMap.size === 0) {
-      activeIds = [];
-      currentPage = 1;
-      await loadPage(1);
-      return;
-    }
-
-    // Exact token matches only (case-insensitive), intersected across tokens
-    const idsPerToken = [];
-    for (const term of tokens) {
-      const key = getShardKey(term);
-      const shard = key ? shardMap.get(key) : null;
-      if (!shard) {
-        idsPerToken.push(new Set());
-        continue;
+    try {
+      // No search term: just filtered timeline
+      if (tokens.length === 0) {
+        activeIds = baseIds;
+        currentPage = 1;
+        await loadPage(1);
+        return;
       }
 
-      const exactIds = [];
-      for (const [tokenRaw, ids] of Object.entries(shard)) {
-        if (tokenRaw.toLowerCase() === term && Array.isArray(ids)) {
-          exactIds.push(...ids);
+      // unique shard keys (one per first letter)
+      const shardKeys = Array.from(
+              new Set(
+                      tokens
+                              .map((t) => getShardKey(t))
+                              .filter((k) => k !== null)
+              )
+      );
+
+      if (shardKeys.length === 0) {
+        activeIds = [];
+        currentPage = 1;
+        await loadPage(1);
+        return;
+      }
+
+      // load all needed shards
+      const shardMap = new Map();
+      for (const key of shardKeys) {
+        const shard = await ensureShardLoaded(key);
+        if (shard) {
+          shardMap.set(key, shard);
         }
       }
 
-      const filtered = exactIds.filter((id) => baseIdsSet.has(id));
-      idsPerToken.push(new Set(filtered));
-    }
+      if (shardMap.size === 0) {
+        activeIds = [];
+        currentPage = 1;
+        await loadPage(1);
+        return;
+      }
 
-    if (idsPerToken.length !== tokens.length || idsPerToken.some((s) => s.size === 0)) {
-      activeIds = [];
+      // Exact token matches only (case-insensitive), intersected across tokens
+      const idsPerToken = [];
+      for (const term of tokens) {
+        const key = getShardKey(term);
+        const shard = key ? shardMap.get(key) : null;
+        if (!shard) {
+          idsPerToken.push(new Set());
+          continue;
+        }
+
+        const exactIds = [];
+        for (const [tokenRaw, ids] of Object.entries(shard)) {
+          if (tokenRaw.toLowerCase() === term && Array.isArray(ids)) {
+            exactIds.push(...ids);
+          }
+        }
+
+        const filtered = exactIds.filter((id) => baseIdsSet.has(id));
+        idsPerToken.push(new Set(filtered));
+      }
+
+      if (idsPerToken.length !== tokens.length || idsPerToken.some((s) => s.size === 0)) {
+        activeIds = [];
+        currentPage = 1;
+        await loadPage(1);
+        return;
+      }
+
+      const intersectedSet = new Set(
+        baseIds.filter((id) => idsPerToken.every((set) => set.has(id)))
+      );
+
+      if (intersectedSet.size === 0) {
+        activeIds = [];
+        currentPage = 1;
+        await loadPage(1);
+        return;
+      }
+
+      let phraseIds = [];
+      if (phrase) {
+        const candidatesInOrder = baseIds.filter((id) => intersectedSet.has(id));
+        phraseIds = await findPhraseMatches(candidatesInOrder, phrase);
+      }
+
+      if (phraseQuoted) {
+        activeIds = phraseIds;
+      } else {
+        const phraseSet = new Set(phraseIds);
+        const orderedPhraseFirst = [
+          ...baseIds.filter((id) => phraseSet.has(id)),
+          ...baseIds.filter((id) => intersectedSet.has(id) && !phraseSet.has(id))
+        ];
+        activeIds = orderedPhraseFirst;
+      }
       currentPage = 1;
       await loadPage(1);
-      return;
+    } finally {
+      loadingArticles = false;
     }
-
-    const intersectedSet = new Set(
-      baseIds.filter((id) => idsPerToken.every((set) => set.has(id)))
-    );
-
-    if (intersectedSet.size === 0) {
-      activeIds = [];
-      currentPage = 1;
-      await loadPage(1);
-      return;
-    }
-
-    let phraseIds = [];
-    if (phrase) {
-      const candidatesInOrder = baseIds.filter((id) => intersectedSet.has(id));
-      phraseIds = await findPhraseMatches(candidatesInOrder, phrase);
-    }
-
-    if (phraseQuoted) {
-      activeIds = phraseIds;
-    } else {
-      const phraseSet = new Set(phraseIds);
-      const orderedPhraseFirst = [
-        ...baseIds.filter((id) => phraseSet.has(id)),
-        ...baseIds.filter((id) => intersectedSet.has(id) && !phraseSet.has(id))
-      ];
-      activeIds = orderedPhraseFirst;
-    }
-    currentPage = 1;
-    await loadPage(1);
   }
 
   // --- Paging + article loading ---
@@ -520,7 +524,7 @@
 
     searchTimeout = setTimeout(() => {
       applyFiltersAndSearch();
-    }, 300); // debounce
+    }, 1000); // debounce
   }
 
   const isUnfiltered = () =>
@@ -963,14 +967,24 @@
 
           <div class="search-export-row">
             <div class="search-wrapper">
-              <input
-                      id="search-input"
-                      type="text"
-                      bind:value={searchTerm}
-                      on:input={handleSearchInput}
-                      placeholder="Search title, institution, or content..."
-                      class="search-input"
-              />
+              <div class="search-input-row">
+                <input
+                        id="search-input"
+                        type="text"
+                        bind:value={searchTerm}
+                        on:input={handleSearchInput}
+                        placeholder="Search title, institution, or content..."
+                        class="search-input"
+                />
+                <div class="search-help" tabindex="0" aria-label="Search tips">
+                  <span class="search-help-label">i</span>
+                  <div class="search-help-tooltip">
+                    <p><strong>Single or multiple words</strong>: search with one word or a short phrase.</p>
+                    <p><strong>Double quotation mark</strong>: match the exact word or phrase, for example "campus" or "campus safety".</p>
+                    <p><strong>Numbers / special chars</strong>: cannot be used in the search text.</p>
+                  </div>
+                </div>
+              </div>
               {#if searchError}
                 <span class="search-status error-text">Search error: {searchError}</span>
               {/if}
@@ -1402,6 +1416,12 @@
     min-width: 250px;
   }
 
+  .search-input-row {
+    display: flex;
+    align-items: start;
+    gap: 0.5rem;
+  }
+
   .search-status {
     display: block;
     margin-top: 0.35rem;
@@ -1429,6 +1449,65 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  .search-help {
+    position: relative;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid #dee2e6;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    color: #444;
+    background: #f8f8f8;
+    cursor: pointer;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .search-help-label {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: #444;
+    white-space: nowrap;
+  }
+
+  .search-help-tooltip {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    width: 260px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: all 0.15s ease;
+    z-index: 10;
+  }
+
+  .search-help:hover .search-help-tooltip,
+  .search-help:focus-within .search-help-tooltip {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .search-help-tooltip p {
+    margin: 0 0 0.35rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #444;
+  }
+
+  .search-help-tooltip p:last-child {
+    margin-bottom: 0;
   }
 
   .export-btn:hover:not(:disabled) {
