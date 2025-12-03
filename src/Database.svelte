@@ -256,22 +256,32 @@
 
   // Allow multi-word search
   function getSearchTokens(raw) {
-    if (!raw) return { tokens: [], phrase: null };
+    if (!raw) return { tokens: [], phrase: null, phraseQuoted: false };
 
     const tokens = [];
+    let phrase = null;
+    let phraseQuoted = false;
     const regex = /"([^"]+)"|(\S+)/g;
     let match;
     while ((match = regex.exec(raw))) {
-      const value = (match[1] || match[2]).trim();
-      if (value) tokens.push(value.toLowerCase());
+      if (match[1]) {
+        const phraseText = match[1].trim();
+        if (phraseText) {
+          phraseQuoted = true;
+          phrase = phraseText.toLowerCase();
+          tokens.push(...phrase.split(/\s+/).filter(Boolean));
+        }
+      } else if (match[2]) {
+        const value = match[2].trim();
+        if (value) tokens.push(value.toLowerCase());
+      }
     }
 
-    const quoted = raw.match(/"([^"]+)"/);
-    const phrase =
-      quoted?.[1]?.trim().toLowerCase() ||
-      (tokens.length > 1 ? tokens.join(' ') : null);
+    if (!phrase && tokens.length > 1) {
+      phrase = tokens.join(' ');
+    }
 
-    return { tokens, phrase };
+    return { tokens, phrase, phraseQuoted };
   }
 
   // Check for a phrase (adjacent words) in title/org/content, using cached articles
@@ -279,8 +289,21 @@
     if (!phrase) return [];
     const needle = phrase.toLowerCase();
     const matches = [];
-    for (const id of ids) {
-      const article = await getArticleById(id);
+    const articles = await Promise.all(
+      ids.map(async (id) => {
+        try {
+          const article = await getArticleById(id);
+          return { id, article };
+        } catch (e) {
+          console.error(e);
+          return null;
+        }
+      })
+    );
+
+    for (const item of articles) {
+      if (!item) continue;
+      const { id, article } = item;
       const haystack = [article.title, article.org, article.content]
         .filter(Boolean)
         .join(' ')
@@ -293,9 +316,12 @@
   }
 
   async function applyFiltersAndSearch() {
+    loadingArticles = true; // block stale results while computing
+    articles = [];
+    error = null;
     const baseIds = getBaseIdsFromFilters();
     const baseIdsSet = new Set(baseIds);
-    const { tokens, phrase } = getSearchTokens(searchTerm);
+    const { tokens, phrase, phraseQuoted } = getSearchTokens(searchTerm);
 
     // No search term: just filtered timeline
     if (tokens.length === 0) {
@@ -382,13 +408,16 @@
       phraseIds = await findPhraseMatches(candidatesInOrder, phrase);
     }
 
-    const phraseSet = new Set(phraseIds);
-    const orderedPhraseFirst = [
-      ...baseIds.filter((id) => phraseSet.has(id)),
-      ...baseIds.filter((id) => intersectedSet.has(id) && !phraseSet.has(id))
-    ];
-
-    activeIds = orderedPhraseFirst;
+    if (phraseQuoted) {
+      activeIds = phraseIds;
+    } else {
+      const phraseSet = new Set(phraseIds);
+      const orderedPhraseFirst = [
+        ...baseIds.filter((id) => phraseSet.has(id)),
+        ...baseIds.filter((id) => intersectedSet.has(id) && !phraseSet.has(id))
+      ];
+      activeIds = orderedPhraseFirst;
+    }
     currentPage = 1;
     await loadPage(1);
   }
@@ -658,15 +687,28 @@
     if (!text) return '';
     if (!term || !term.trim()) return escapeHtml(text);
 
-    const { tokens, phrase } = getSearchTokens(term);
+    const { tokens, phrase, phraseQuoted } = getSearchTokens(term);
     const patterns = [];
 
-    if (phrase) {
-      patterns.push(`\\b${escapeRegExp(phrase)}\\b`);
-    }
-
-    for (const t of tokens) {
-      patterns.push(`\\b${escapeRegExp(t)}\\b`);
+    if (phraseQuoted && phrase) {
+      const phrasePattern = `\\b${escapeRegExp(phrase)}\\b`;
+      const phraseRegex = new RegExp(phrasePattern, 'i');
+      if (phraseRegex.test(text)) {
+        patterns.push(phrasePattern);
+      }
+    } else {
+      const phrasePattern = phrase ? `\\b${escapeRegExp(phrase)}\\b` : null;
+      if (phrasePattern) {
+        const phraseRegex = new RegExp(phrasePattern, 'i');
+        if (phraseRegex.test(text)) {
+          patterns.push(phrasePattern);
+        }
+      }
+      if (patterns.length === 0) {
+        for (const t of tokens) {
+          patterns.push(`\\b${escapeRegExp(t)}\\b`);
+        }
+      }
     }
 
     if (patterns.length === 0) return escapeHtml(text);
@@ -693,14 +735,6 @@
     if (!content) return '';
 
     const { tokens, phrase } = getSearchTokens(term || '');
-    const patterns = [];
-    if (phrase) {
-      patterns.push(`\\b${escapeRegExp(phrase)}\\b`);
-    }
-    for (const t of tokens) {
-      patterns.push(`\\b${escapeRegExp(t)}\\b`);
-    }
-
     function leadingSnippet() {
       let text = content.slice(0, maxLen);
       const lastSpace = text.lastIndexOf(' ');
@@ -711,20 +745,41 @@
       return content.length > maxLen ? text + '…' : text;
     }
 
-    if (patterns.length === 0) {
-      return leadingSnippet();
+    const lowerContent = content.toLowerCase();
+
+    // Helper to find earliest match from a list of patterns
+    function findFirstMatch(patternList) {
+      let found = null;
+      for (const pattern of patternList) {
+        const regex = new RegExp(pattern, 'i');
+        const m = lowerContent.match(regex);
+        if (m && m.index !== undefined) {
+          if (!found || m.index < found.index) {
+            found = { index: m.index, length: m[0].length };
+          }
+        }
+      }
+      return found;
     }
 
-    const regex = new RegExp(patterns.join('|'), 'i');
-    const lowerContent = content.toLowerCase();
-    const match = lowerContent.match(regex);
+    const phrasePatterns = [];
+    if (phrase) {
+      phrasePatterns.push(`\\b${escapeRegExp(phrase)}\\b`);
+    }
 
-    if (!match || match.index === undefined) {
+    const tokenPatterns = tokens.map((t) => `\\b${escapeRegExp(t)}\\b`);
+
+    // Prefer phrase match if present; otherwise fall back to token match
+    const phraseMatch = phrasePatterns.length ? findFirstMatch(phrasePatterns) : null;
+    const tokenMatch = !phraseMatch && tokenPatterns.length ? findFirstMatch(tokenPatterns) : null;
+    const match = phraseMatch || tokenMatch;
+
+    if (!match) {
       return leadingSnippet();
     }
 
     const matchIndex = match.index;
-    const matchLength = match[0].length;
+    const matchLength = match.length;
 
     // raw window around the match
     let rawStart = Math.max(0, matchIndex - context);
@@ -979,7 +1034,7 @@
           {:else if searchLoading}
             <div class="loading">
               <div class="spinner"></div>
-              <p>Loading articles...</p>
+              <p>Loading database...</p>
             </div>
           {:else if !articles.length}
             <p>No articles found.</p>
