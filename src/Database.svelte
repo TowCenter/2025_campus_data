@@ -65,6 +65,7 @@
   // shardKey -> { token: [ids...] }
   const searchShardCache = new Map();
   let fullDatasetCache = null;
+  let fullDatasetMap = null;
 
   $: filteredInstitutions = institutionSearchTerm
           ? institutions.filter((inst) =>
@@ -364,39 +365,75 @@
         return;
       }
 
-      // Exact token matches only (case-insensitive), intersected across tokens
+      // Exact token matches (case-insensitive)
       const idsPerToken = [];
       for (const term of tokens) {
         const key = getShardKey(term);
         const shard = key ? shardMap.get(key) : null;
-        if (!shard) {
-          idsPerToken.push(new Set());
-          continue;
-        }
-
         const exactIds = [];
-        for (const [tokenRaw, ids] of Object.entries(shard)) {
-          if (tokenRaw.toLowerCase() === term && Array.isArray(ids)) {
-            exactIds.push(...ids);
+        if (shard) {
+          for (const [tokenRaw, ids] of Object.entries(shard)) {
+            if (tokenRaw.toLowerCase() === term && Array.isArray(ids)) {
+              exactIds.push(...ids);
+            }
           }
         }
-
         const filtered = exactIds.filter((id) => baseIdsSet.has(id));
         idsPerToken.push(new Set(filtered));
       }
 
-      if (idsPerToken.length !== tokens.length || idsPerToken.some((s) => s.size === 0)) {
+      const tokenMatchCounts = idsPerToken.map((s) => s.size);
+
+      if (phraseQuoted) {
+        // Strict: all tokens must match
+        if (idsPerToken.length !== tokens.length || tokenMatchCounts.some((c) => c === 0)) {
+          activeIds = [];
+          currentPage = 1;
+          await loadPage(1);
+          return;
+        }
+
+        const intersectedSet = new Set(
+          baseIds.filter((id) => idsPerToken.every((set) => set.has(id)))
+        );
+
+        if (intersectedSet.size === 0) {
+          activeIds = [];
+          currentPage = 1;
+          await loadPage(1);
+          return;
+        }
+
+        let phraseIds = [];
+        if (phrase) {
+          const candidatesInOrder = baseIds.filter((id) => intersectedSet.has(id));
+          phraseIds = await findPhraseMatches(candidatesInOrder, phrase);
+        }
+
+        activeIds = phraseIds;
+        currentPage = 1;
+        await loadPage(1);
+        return;
+      }
+
+      // Unquoted: allow partial matches, rank by coverage; phrase-first if present
+      if (idsPerToken.every((s) => s.size === 0)) {
         activeIds = [];
         currentPage = 1;
         await loadPage(1);
         return;
       }
 
-      const intersectedSet = new Set(
-        baseIds.filter((id) => idsPerToken.every((set) => set.has(id)))
-      );
+      // Count how many tokens each id matched
+      const matchCount = new Map();
+      idsPerToken.forEach((set) => {
+        for (const id of set) {
+          matchCount.set(id, (matchCount.get(id) || 0) + 1);
+        }
+      });
 
-      if (intersectedSet.size === 0) {
+      const candidates = baseIds.filter((id) => matchCount.has(id));
+      if (candidates.length === 0) {
         activeIds = [];
         currentPage = 1;
         await loadPage(1);
@@ -405,20 +442,27 @@
 
       let phraseIds = [];
       if (phrase) {
-        const candidatesInOrder = baseIds.filter((id) => intersectedSet.has(id));
-        phraseIds = await findPhraseMatches(candidatesInOrder, phrase);
+        phraseIds = await findPhraseMatches(candidates, phrase);
       }
 
-      if (phraseQuoted) {
-        activeIds = phraseIds;
-      } else {
-        const phraseSet = new Set(phraseIds);
-        const orderedPhraseFirst = [
-          ...baseIds.filter((id) => phraseSet.has(id)),
-          ...baseIds.filter((id) => intersectedSet.has(id) && !phraseSet.has(id))
-        ];
-        activeIds = orderedPhraseFirst;
+      const phraseSet = new Set(phraseIds);
+
+      const buckets = new Map(); // count -> ids in base order
+      for (const id of candidates) {
+        if (phraseSet.has(id)) continue; // already in phrase bucket
+        const count = matchCount.get(id) || 0;
+        if (count === 0) continue;
+        if (!buckets.has(count)) buckets.set(count, []);
+        buckets.get(count).push(id);
       }
+
+      const sortedCounts = [...buckets.keys()].sort((a, b) => b - a);
+      const ordered = [...phraseIds];
+      for (const count of sortedCounts) {
+        ordered.push(...buckets.get(count));
+      }
+
+      activeIds = ordered;
       currentPage = 1;
       await loadPage(1);
     } finally {
@@ -468,9 +512,7 @@
     error = null;
 
     try {
-      const promises = pageIds.map((id) => getArticleById(id));
-
-      articles = await Promise.all(promises);
+      articles = await getArticlesByIds(pageIds);
     } catch (e) {
       console.error(e);
       error = e.message;
@@ -543,6 +585,83 @@
     return fullDatasetCache;
   }
 
+  function getIdFromArticle(article) {
+    return (
+            article?._id?.$oid ||
+            article?._id ||
+            article?.id ||
+            article?.Id ||
+            null
+    );
+  }
+
+  function buildFullDatasetMap(data) {
+    const map = new Map();
+    if (Array.isArray(data)) {
+      for (const item of data) {
+        const id = getIdFromArticle(item);
+        if (id) {
+          map.set(String(id), item);
+        }
+      }
+    }
+    fullDatasetMap = map;
+    return map;
+  }
+
+  async function ensureFullDatasetMap() {
+    if (fullDatasetMap) return fullDatasetMap;
+    const data = await getFullDataset();
+    return buildFullDatasetMap(data);
+  }
+
+  // Try to get articles from the full dataset map when available, otherwise fall back
+  async function getArticlesByIds(ids) {
+    if (!ids || ids.length === 0) return [];
+
+    // If the map exists, prefer it (fast path)
+    if (fullDatasetMap) {
+      console.log("yes???")
+      const missing = [];
+      const collected = [];
+      for (const id of ids) {
+        const fromMap = fullDatasetMap.get(String(id));
+        if (fromMap) {
+          collected.push(fromMap);
+        } else {
+          missing.push(id);
+        }
+      }
+      if (missing.length === 0) return collected;
+      const fetched = await Promise.all(missing.map((id) => getArticleById(id)));
+      collected.push(...fetched);
+      return collected;
+    }
+
+    // No map yet: if result set is small, just fetch in parallel
+    if (ids.length <= 1000) {
+      return Promise.all(ids.map((id) => getArticleById(id)));
+    }
+
+    // Large set and no map: build map once, then serve from it
+    const map = await ensureFullDatasetMap();
+    const collected = [];
+    const missing = [];
+    for (const id of ids) {
+      const fromMap = map.get(String(id));
+      if (fromMap) {
+        collected.push(fromMap);
+      } else {
+        missing.push(id);
+      }
+    }
+    if (missing.length) {
+      const fetched = await Promise.all(missing.map((id) => getArticleById(id)));
+      collected.push(...fetched);
+    }
+    return collected;
+  }
+
   function cleanDataForExport(data) {
     return data.map((item) => {
       const { llm_response, scraper, ...cleanItem } = item;
@@ -564,11 +683,7 @@
       if (isUnfiltered()) {
         articlesToExport = await getFullDataset();
       } else {
-        articlesToExport = [];
-        for (const id of activeIds) {
-          const article = await getArticleById(id);
-          articlesToExport.push(article);
-        }
+        articlesToExport = await getArticlesByIds(activeIds);
       }
 
       const cleanData = cleanDataForExport(articlesToExport);
@@ -980,8 +1095,8 @@
                   <span class="search-help-label">i</span>
                   <div class="search-help-tooltip">
                     <p><strong>Single or multiple words</strong>: search with one word or a short phrase.</p>
-                    <p><strong>Double quotation mark</strong>: match the exact word or phrase, for example "campus" or "campus safety".</p>
-                    <p><strong>Numbers / special chars</strong>: cannot be used in the search text.</p>
+                    <p><strong>Exact match</strong>: match the exact word or phrase using double quotation marks, for example "campus safety".</p>
+                    <p><strong>Letters only</strong>: numbers and special characters are not supported in search.</p>
                   </div>
                 </div>
               </div>
