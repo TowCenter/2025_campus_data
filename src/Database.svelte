@@ -256,13 +256,46 @@
 
   // Allow multi-word search
   function getSearchTokens(raw) {
-    return raw.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if (!raw) return { tokens: [], phrase: null };
+
+    const tokens = [];
+    const regex = /"([^"]+)"|(\S+)/g;
+    let match;
+    while ((match = regex.exec(raw))) {
+      const value = (match[1] || match[2]).trim();
+      if (value) tokens.push(value.toLowerCase());
+    }
+
+    const quoted = raw.match(/"([^"]+)"/);
+    const phrase =
+      quoted?.[1]?.trim().toLowerCase() ||
+      (tokens.length > 1 ? tokens.join(' ') : null);
+
+    return { tokens, phrase };
+  }
+
+  // Check for a phrase (adjacent words) in title/org/content, using cached articles
+  async function findPhraseMatches(ids, phrase) {
+    if (!phrase) return [];
+    const needle = phrase.toLowerCase();
+    const matches = [];
+    for (const id of ids) {
+      const article = await getArticleById(id);
+      const haystack = [article.title, article.org, article.content]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      if (haystack.includes(needle)) {
+        matches.push(id);
+      }
+    }
+    return matches;
   }
 
   async function applyFiltersAndSearch() {
     const baseIds = getBaseIdsFromFilters();
     const baseIdsSet = new Set(baseIds);
-    const tokens = getSearchTokens(searchTerm);
+    const { tokens, phrase } = getSearchTokens(searchTerm);
 
     // No search term: just filtered timeline
     if (tokens.length === 0) {
@@ -304,69 +337,63 @@
       return;
     }
 
-    // scoreMap: id -> score
-    const scoreMap = new Map();
-
+    // Exact token matches only (case-insensitive), intersected across tokens
+    const idsPerToken = [];
     for (const term of tokens) {
       const key = getShardKey(term);
-      if (!key) continue;
+      const shard = key ? shardMap.get(key) : null;
+      if (!shard) {
+        idsPerToken.push(new Set());
+        continue;
+      }
 
-      const shard = shardMap.get(key);
-      if (!shard) continue;
-
+      const exactIds = [];
       for (const [tokenRaw, ids] of Object.entries(shard)) {
-        const token = tokenRaw.toLowerCase();
-
-        let weight = 0;
-        if (token === term) {
-          weight = 100;           // exact word
-        } else if (token.startsWith(term)) {
-          weight = 10;           // prefix
-        } else if (token.includes(term)) {
-          weight = 1;           // looser contains
-        }
-
-        if (!weight) continue;
-
-        for (const id of ids) {
-          // 🚀 Only score IDs that survive month/institution filters
-          if (!baseIdsSet.has(id)) continue;
-
-          const prev = scoreMap.get(id) || 0;
-          scoreMap.set(id, prev + weight);
+        if (tokenRaw.toLowerCase() === term && Array.isArray(ids)) {
+          exactIds.push(...ids);
         }
       }
+
+      const filtered = exactIds.filter((id) => baseIdsSet.has(id));
+      idsPerToken.push(new Set(filtered));
     }
 
-    // Score-based ordering, but still respecting baseIds (date) within each score
-    const buckets = new Map(); // score -> [ids in baseIds order]
-
-    for (const id of baseIds) {
-      const score = scoreMap.get(id);
-      if (!score) continue; // id doesn't match any word
-      if (!buckets.has(score)) buckets.set(score, []);
-      buckets.get(score).push(id);
-    }
-
-    if (buckets.size === 0) {
+    if (idsPerToken.length !== tokens.length || idsPerToken.some((s) => s.size === 0)) {
       activeIds = [];
       currentPage = 1;
       await loadPage(1);
       return;
     }
 
-    const sortedScores = [...buckets.keys()].sort((a, b) => b - a);
-    const filteredBySearch = [];
-    for (const score of sortedScores) {
-      filteredBySearch.push(...buckets.get(score));
+    const intersectedSet = new Set(
+      baseIds.filter((id) => idsPerToken.every((set) => set.has(id)))
+    );
+
+    if (intersectedSet.size === 0) {
+      activeIds = [];
+      currentPage = 1;
+      await loadPage(1);
+      return;
     }
 
-    activeIds = filteredBySearch;
+    let phraseIds = [];
+    if (phrase) {
+      const candidatesInOrder = baseIds.filter((id) => intersectedSet.has(id));
+      phraseIds = await findPhraseMatches(candidatesInOrder, phrase);
+    }
+
+    const phraseSet = new Set(phraseIds);
+    const orderedPhraseFirst = [
+      ...baseIds.filter((id) => phraseSet.has(id)),
+      ...baseIds.filter((id) => intersectedSet.has(id) && !phraseSet.has(id))
+    ];
+
+    activeIds = orderedPhraseFirst;
     currentPage = 1;
     await loadPage(1);
   }
 
-    // --- Paging + article loading ---
+  // --- Paging + article loading ---
 
   async function getArticleById(id) {
     if (articleCache.has(id)) return articleCache.get(id);
