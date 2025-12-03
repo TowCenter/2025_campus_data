@@ -658,11 +658,20 @@
     if (!text) return '';
     if (!term || !term.trim()) return escapeHtml(text);
 
-    const tokens = term.trim().split(/\s+/).filter(Boolean);
-    if (tokens.length === 0) return escapeHtml(text);
+    const { tokens, phrase } = getSearchTokens(term);
+    const patterns = [];
 
-    const pattern = tokens.map(escapeRegExp).join('|');
-    const regex = new RegExp(`(${pattern})`, 'ig');
+    if (phrase) {
+      patterns.push(`\\b${escapeRegExp(phrase)}\\b`);
+    }
+
+    for (const t of tokens) {
+      patterns.push(`\\b${escapeRegExp(t)}\\b`);
+    }
+
+    if (patterns.length === 0) return escapeHtml(text);
+
+    const regex = new RegExp(`(${patterns.join('|')})`, 'ig');
 
     const parts = text.split(regex);
 
@@ -676,18 +685,23 @@
   }
 
   /**
-   * Returns a snippet of `content`:
+   * Returns a snippet of `content` using exact (word-boundary) matches:
    * - if no term: first `maxLen` chars
-   * - if term found: snippet centered around first occurrence, with some context
+   * - if term found: snippet centered around first whole-word/phrase occurrence
    */
-  function getSnippet(content, term, maxLen = 250, context = 20) {
+  function getSnippet(content, term, maxLen = 280, context = 120) {
     if (!content) return '';
 
-    const trimmed = term ? term.trim() : '';
-    const firstWord = trimmed.split(/\s+/).filter(Boolean)[0];
+    const { tokens, phrase } = getSearchTokens(term || '');
+    const patterns = [];
+    if (phrase) {
+      patterns.push(`\\b${escapeRegExp(phrase)}\\b`);
+    }
+    for (const t of tokens) {
+      patterns.push(`\\b${escapeRegExp(t)}\\b`);
+    }
 
-    // No usable search word: just take the leading snippet, word-safe
-    if (!firstWord) {
+    function leadingSnippet() {
       let text = content.slice(0, maxLen);
       const lastSpace = text.lastIndexOf(' ');
       if (lastSpace > 0 && content.length > maxLen) {
@@ -697,25 +711,24 @@
       return content.length > maxLen ? text + '…' : text;
     }
 
+    if (patterns.length === 0) {
+      return leadingSnippet();
+    }
+
+    const regex = new RegExp(patterns.join('|'), 'i');
     const lowerContent = content.toLowerCase();
-    const lowerTerm = firstWord.toLowerCase();
+    const match = lowerContent.match(regex);
 
-    const matchIndex = lowerContent.indexOf(lowerTerm);
-
-    // Term not found: fallback to start
-    if (matchIndex === -1) {
-      let text = content.slice(0, maxLen);
-      const lastSpace = text.lastIndexOf(' ');
-      if (lastSpace > 0 && content.length > maxLen) {
-        text = text.slice(0, lastSpace);
-        return text + '…';
-      }
-      return content.length > maxLen ? text + '…' : text;
+    if (!match || match.index === undefined) {
+      return leadingSnippet();
     }
+
+    const matchIndex = match.index;
+    const matchLength = match[0].length;
 
     // raw window around the match
     let rawStart = Math.max(0, matchIndex - context);
-    let rawEnd = Math.min(content.length, matchIndex + lowerTerm.length + context);
+    let rawEnd = Math.min(content.length, matchIndex + matchLength + context);
 
     // Adjust start to the previous space (word boundary)
     if (rawStart > 0) {
@@ -978,10 +991,10 @@
                     <h4 class="result-title">
                       {#if item.url}
                         <a href={item.url} target="_blank" rel="noopener noreferrer">
-                          {@html highlight(getSnippet(item.title, searchTerm), searchTerm)}
+                          {@html highlight(item.title, searchTerm)}
                         </a>
                       {:else}
-                        {@html highlight(getSnippet(item.title, searchTerm), searchTerm)}
+                        {@html highlight(item.title, searchTerm)}
                       {/if}
                     </h4>
 
