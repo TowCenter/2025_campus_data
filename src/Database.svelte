@@ -257,220 +257,108 @@
 
   // Allow multi-word search
   function getSearchTokens(raw) {
-    if (!raw) return { tokens: [], phrase: null, phraseQuoted: false };
-
-    const tokens = [];
-    let phrase = null;
-    let phraseQuoted = false;
-    const regex = /"([^"]+)"|(\S+)/g;
-    let match;
-    while ((match = regex.exec(raw))) {
-      if (match[1]) {
-        const phraseText = match[1].trim();
-        if (phraseText) {
-          phraseQuoted = true;
-          phrase = phraseText.toLowerCase();
-          tokens.push(...phrase.split(/\s+/).filter(Boolean));
-        }
-      } else if (match[2]) {
-        const value = match[2].trim();
-        if (value) tokens.push(value.toLowerCase());
-      }
-    }
-
-    if (!phrase && tokens.length > 1) {
-      phrase = tokens.join(' ');
-    }
-
-    return { tokens, phrase, phraseQuoted };
-  }
-
-  // Check for a phrase (adjacent words) in title/org/content, using cached articles
-  async function findPhraseMatches(ids, phrase) {
-    if (!phrase) return [];
-    const needle = phrase.toLowerCase();
-    const matches = [];
-    const articles = await Promise.all(
-      ids.map(async (id) => {
-        try {
-          const article = await getArticleById(id);
-          return { id, article };
-        } catch (e) {
-          console.error(e);
-          return null;
-        }
-      })
-    );
-
-    for (const item of articles) {
-      if (!item) continue;
-      const { id, article } = item;
-      const haystack = [article.title, article.org, article.content]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
-      if (haystack.includes(needle)) {
-        matches.push(id);
-      }
-    }
-    return matches;
+    return raw.trim().toLowerCase().split(/\s+/).filter(Boolean);
   }
 
   async function applyFiltersAndSearch() {
-    loadingArticles = true; // block stale results while computing
-    articles = [];
-    error = null;
     const baseIds = getBaseIdsFromFilters();
     const baseIdsSet = new Set(baseIds);
-    const { tokens, phrase, phraseQuoted } = getSearchTokens(searchTerm);
+    const tokens = getSearchTokens(searchTerm);
 
-    try {
-      // No search term: just filtered timeline
-      if (tokens.length === 0) {
-        activeIds = baseIds;
-        currentPage = 1;
-        await loadPage(1);
-        return;
-      }
-
-      // unique shard keys (one per first letter)
-      const shardKeys = Array.from(
-              new Set(
-                      tokens
-                              .map((t) => getShardKey(t))
-                              .filter((k) => k !== null)
-              )
-      );
-
-      if (shardKeys.length === 0) {
-        activeIds = [];
-        currentPage = 1;
-        await loadPage(1);
-        return;
-      }
-
-      // load all needed shards
-      const shardMap = new Map();
-      for (const key of shardKeys) {
-        const shard = await ensureShardLoaded(key);
-        if (shard) {
-          shardMap.set(key, shard);
-        }
-      }
-
-      if (shardMap.size === 0) {
-        activeIds = [];
-        currentPage = 1;
-        await loadPage(1);
-        return;
-      }
-
-      // Exact token matches (case-insensitive)
-      const idsPerToken = [];
-      for (const term of tokens) {
-        const key = getShardKey(term);
-        const shard = key ? shardMap.get(key) : null;
-        const exactIds = [];
-        if (shard) {
-          for (const [tokenRaw, ids] of Object.entries(shard)) {
-            if (tokenRaw.toLowerCase() === term && Array.isArray(ids)) {
-              exactIds.push(...ids);
-            }
-          }
-        }
-        const filtered = exactIds.filter((id) => baseIdsSet.has(id));
-        idsPerToken.push(new Set(filtered));
-      }
-
-      const tokenMatchCounts = idsPerToken.map((s) => s.size);
-
-      if (phraseQuoted) {
-        // Strict: all tokens must match
-        if (idsPerToken.length !== tokens.length || tokenMatchCounts.some((c) => c === 0)) {
-          activeIds = [];
-          currentPage = 1;
-          await loadPage(1);
-          return;
-        }
-
-        const intersectedSet = new Set(
-          baseIds.filter((id) => idsPerToken.every((set) => set.has(id)))
-        );
-
-        if (intersectedSet.size === 0) {
-          activeIds = [];
-          currentPage = 1;
-          await loadPage(1);
-          return;
-        }
-
-        let phraseIds = [];
-        if (phrase) {
-          const candidatesInOrder = baseIds.filter((id) => intersectedSet.has(id));
-          phraseIds = await findPhraseMatches(candidatesInOrder, phrase);
-        }
-
-        activeIds = phraseIds;
-        currentPage = 1;
-        await loadPage(1);
-        return;
-      }
-
-      // Unquoted: allow partial matches, rank by coverage; phrase-first if present
-      if (idsPerToken.every((s) => s.size === 0)) {
-        activeIds = [];
-        currentPage = 1;
-        await loadPage(1);
-        return;
-      }
-
-      // Count how many tokens each id matched
-      const matchCount = new Map();
-      idsPerToken.forEach((set) => {
-        for (const id of set) {
-          matchCount.set(id, (matchCount.get(id) || 0) + 1);
-        }
-      });
-
-      const candidates = baseIds.filter((id) => matchCount.has(id));
-      if (candidates.length === 0) {
-        activeIds = [];
-        currentPage = 1;
-        await loadPage(1);
-        return;
-      }
-
-      let phraseIds = [];
-      if (phrase) {
-        phraseIds = await findPhraseMatches(candidates, phrase);
-      }
-
-      const phraseSet = new Set(phraseIds);
-
-      const buckets = new Map(); // count -> ids in base order
-      for (const id of candidates) {
-        if (phraseSet.has(id)) continue; // already in phrase bucket
-        const count = matchCount.get(id) || 0;
-        if (count === 0) continue;
-        if (!buckets.has(count)) buckets.set(count, []);
-        buckets.get(count).push(id);
-      }
-
-      const sortedCounts = [...buckets.keys()].sort((a, b) => b - a);
-      const ordered = [...phraseIds];
-      for (const count of sortedCounts) {
-        ordered.push(...buckets.get(count));
-      }
-
-      activeIds = ordered;
+    // No search term: just filtered timeline
+    if (tokens.length === 0) {
+      activeIds = baseIds;
       currentPage = 1;
       await loadPage(1);
-    } finally {
-      loadingArticles = false;
+      return;
     }
+
+    // unique shard keys (one per first letter)
+    const shardKeys = Array.from(
+            new Set(
+                    tokens
+                            .map((t) => getShardKey(t))
+                            .filter((k) => k !== null)
+            )
+    );
+
+    if (shardKeys.length === 0) {
+      activeIds = [];
+      currentPage = 1;
+      await loadPage(1);
+      return;
+    }
+
+    // load all needed shards
+    const shardMap = new Map();
+    for (const key of shardKeys) {
+      const shard = await ensureShardLoaded(key);
+      if (shard) {
+        shardMap.set(key, shard);
+      }
+    }
+
+    if (shardMap.size === 0) {
+      activeIds = [];
+      currentPage = 1;
+      await loadPage(1);
+      return;
+    }
+
+    // Exact-match search; score by how many tokens an item matches, ordered by score then date
+    const scoreMap = new Map(); // id -> count of matched tokens
+
+    for (const term of tokens) {
+      const key = getShardKey(term);
+      if (!key) continue;
+
+      const shard = shardMap.get(key);
+      if (!shard) continue;
+
+      const ids = shard[term];
+      if (!Array.isArray(ids)) continue;
+
+      for (const id of ids) {
+        if (!baseIdsSet.has(id)) continue; // respect filters
+        const prev = scoreMap.get(id) || 0;
+        scoreMap.set(id, prev + 1);
+      }
+    }
+
+    if (scoreMap.size === 0) {
+      activeIds = [];
+      currentPage = 1;
+      await loadPage(1);
+      return;
+    }
+
+    const buckets = new Map(); // score -> ids in base order
+    for (const id of baseIds) {
+      const score = scoreMap.get(id);
+      if (!score) continue;
+      if (!buckets.has(score)) buckets.set(score, []);
+      buckets.get(score).push(id);
+    }
+
+    if (buckets.size === 0) {
+      activeIds = [];
+      currentPage = 1;
+      await loadPage(1);
+      return;
+    }
+
+    const sortedScores = [...buckets.keys()].sort((a, b) => b - a);
+    const filteredBySearch = [];
+    for (const score of sortedScores) {
+      filteredBySearch.push(...buckets.get(score));
+    }
+
+    activeIds = filteredBySearch;
+    currentPage = 1;
+    await loadPage(1);
   }
 
-  // --- Paging + article loading ---
+    // --- Paging + article loading ---
 
   async function getArticleById(id) {
     if (articleCache.has(id)) return articleCache.get(id);
@@ -512,7 +400,9 @@
     error = null;
 
     try {
-      articles = await getArticlesByIds(pageIds);
+      const promises = pageIds.map((id) => getArticleById(id));
+
+      articles = await Promise.all(promises);
     } catch (e) {
       console.error(e);
       error = e.message;
@@ -585,83 +475,6 @@
     return fullDatasetCache;
   }
 
-  function getIdFromArticle(article) {
-    return (
-            article?._id?.$oid ||
-            article?._id ||
-            article?.id ||
-            article?.Id ||
-            null
-    );
-  }
-
-  function buildFullDatasetMap(data) {
-    const map = new Map();
-    if (Array.isArray(data)) {
-      for (const item of data) {
-        const id = getIdFromArticle(item);
-        if (id) {
-          map.set(String(id), item);
-        }
-      }
-    }
-    fullDatasetMap = map;
-    return map;
-  }
-
-  async function ensureFullDatasetMap() {
-    if (fullDatasetMap) return fullDatasetMap;
-    const data = await getFullDataset();
-    return buildFullDatasetMap(data);
-  }
-
-  // Try to get articles from the full dataset map when available, otherwise fall back
-  async function getArticlesByIds(ids) {
-    if (!ids || ids.length === 0) return [];
-
-    // If the map exists, prefer it (fast path)
-    if (fullDatasetMap) {
-      console.log("yes???")
-      const missing = [];
-      const collected = [];
-      for (const id of ids) {
-        const fromMap = fullDatasetMap.get(String(id));
-        if (fromMap) {
-          collected.push(fromMap);
-        } else {
-          missing.push(id);
-        }
-      }
-      if (missing.length === 0) return collected;
-      const fetched = await Promise.all(missing.map((id) => getArticleById(id)));
-      collected.push(...fetched);
-      return collected;
-    }
-
-    // No map yet: if result set is small, just fetch in parallel
-    if (ids.length <= 1000) {
-      return Promise.all(ids.map((id) => getArticleById(id)));
-    }
-
-    // Large set and no map: build map once, then serve from it
-    const map = await ensureFullDatasetMap();
-    const collected = [];
-    const missing = [];
-    for (const id of ids) {
-      const fromMap = map.get(String(id));
-      if (fromMap) {
-        collected.push(fromMap);
-      } else {
-        missing.push(id);
-      }
-    }
-    if (missing.length) {
-      const fetched = await Promise.all(missing.map((id) => getArticleById(id)));
-      collected.push(...fetched);
-    }
-    return collected;
-  }
-
   function cleanDataForExport(data) {
     return data.map((item) => {
       const { llm_response, scraper, ...cleanItem } = item;
@@ -683,7 +496,11 @@
       if (isUnfiltered()) {
         articlesToExport = await getFullDataset();
       } else {
-        articlesToExport = await getArticlesByIds(activeIds);
+        articlesToExport = [];
+        for (const id of activeIds) {
+          const article = await getArticleById(id);
+          articlesToExport.push(article);
+        }
       }
 
       const cleanData = cleanDataForExport(articlesToExport);
@@ -802,39 +619,46 @@
             .replace(/'/g, '&#39;');
   }
 
+  function buildExactTokenRegex(term, flags = 'gi') {
+    const tokens = getSearchTokens(term);
+    if (!tokens.length) return null;
+
+    const patterns = tokens.map((token) => {
+      const escaped = escapeRegExp(token);
+      return /^[a-z0-9]+$/i.test(token) ? `\\b${escaped}\\b` : escaped;
+    });
+
+    return new RegExp(`(${patterns.join('|')})`, flags);
+  }
+
+  function buildPhraseRegex(term, flags = 'gi') {
+    const tokens = getSearchTokens(term);
+    if (tokens.length < 2) return null;
+
+    const parts = tokens.map((token) => {
+      const escaped = escapeRegExp(token);
+      return /^[a-z0-9]+$/i.test(token) ? `\\b${escaped}\\b` : escaped;
+    });
+
+    return new RegExp(`(${parts.join('\\s+')})`, flags);
+  }
+
   function highlight(text, term) {
     if (!text) return '';
-    if (!term || !term.trim()) return escapeHtml(text);
+    const phraseRegex = buildPhraseRegex(term, 'gi');
+    const tokenRegex = buildExactTokenRegex(term, 'gi');
+    if (!tokenRegex) return escapeHtml(text);
 
-    const { tokens, phrase, phraseQuoted } = getSearchTokens(term);
-    const patterns = [];
-
-    if (phraseQuoted && phrase) {
-      const phrasePattern = `\\b${escapeRegExp(phrase)}\\b`;
-      const phraseRegex = new RegExp(phrasePattern, 'i');
+    let chosenRegex = tokenRegex;
+    if (phraseRegex) {
+      phraseRegex.lastIndex = 0;
       if (phraseRegex.test(text)) {
-        patterns.push(phrasePattern);
+        chosenRegex = phraseRegex;
       }
-    } else {
-      const phrasePattern = phrase ? `\\b${escapeRegExp(phrase)}\\b` : null;
-      if (phrasePattern) {
-        const phraseRegex = new RegExp(phrasePattern, 'i');
-        if (phraseRegex.test(text)) {
-          patterns.push(phrasePattern);
-        }
-      }
-      if (patterns.length === 0) {
-        for (const t of tokens) {
-          patterns.push(`\\b${escapeRegExp(t)}\\b`);
-        }
-      }
+      phraseRegex.lastIndex = 0;
     }
 
-    if (patterns.length === 0) return escapeHtml(text);
-
-    const regex = new RegExp(`(${patterns.join('|')})`, 'ig');
-
-    const parts = text.split(regex);
+    const parts = text.split(chosenRegex);
 
     return parts
             .map((part, i) =>
@@ -846,15 +670,14 @@
   }
 
   /**
-   * Returns a snippet of `content` using exact (word-boundary) matches:
+   * Returns a snippet of `content`:
    * - if no term: first `maxLen` chars
-   * - if term found: snippet centered around first whole-word/phrase occurrence
+   * - if term found: snippet centered around first occurrence, with some context
    */
   function getSnippet(content, term, maxLen = 280, context = 120) {
     if (!content) return '';
 
-    const { tokens, phrase } = getSearchTokens(term || '');
-    function leadingSnippet() {
+    const leadingSnippet = () => {
       let text = content.slice(0, maxLen);
       const lastSpace = text.lastIndexOf(' ');
       if (lastSpace > 0 && content.length > maxLen) {
@@ -862,43 +685,33 @@
         return text + '…';
       }
       return content.length > maxLen ? text + '…' : text;
-    }
+    };
 
-    const lowerContent = content.toLowerCase();
+    const phraseRegex = buildPhraseRegex(term, 'i');
+    const tokenRegex = buildExactTokenRegex(term, 'i');
 
-    // Helper to find earliest match from a list of patterns
-    function findFirstMatch(patternList) {
-      let found = null;
-      for (const pattern of patternList) {
-        const regex = new RegExp(pattern, 'i');
-        const m = lowerContent.match(regex);
-        if (m && m.index !== undefined) {
-          if (!found || m.index < found.index) {
-            found = { index: m.index, length: m[0].length };
-          }
-        }
-      }
-      return found;
-    }
-
-    const phrasePatterns = [];
-    if (phrase) {
-      phrasePatterns.push(`\\b${escapeRegExp(phrase)}\\b`);
-    }
-
-    const tokenPatterns = tokens.map((t) => `\\b${escapeRegExp(t)}\\b`);
-
-    // Prefer phrase match if present; otherwise fall back to token match
-    const phraseMatch = phrasePatterns.length ? findFirstMatch(phrasePatterns) : null;
-    const tokenMatch = !phraseMatch && tokenPatterns.length ? findFirstMatch(tokenPatterns) : null;
-    const match = phraseMatch || tokenMatch;
-
-    if (!match) {
+    if (!phraseRegex && !tokenRegex) {
       return leadingSnippet();
     }
 
-    const matchIndex = match.index;
-    const matchLength = match.length;
+    const findMatch = (regex) => {
+      if (!regex) return null;
+      regex.lastIndex = 0;
+      const res = regex.exec(content);
+      return res && res[0] ? { index: res.index, length: res[0].length } : null;
+    };
+
+    // Prefer a full phrase match; otherwise fall back to first token match
+    const phraseMatch = findMatch(phraseRegex);
+    const tokenMatch = findMatch(tokenRegex);
+    const match = phraseMatch || tokenMatch;
+    const matchIndex = match ? match.index : -1;
+    const matchLength = match ? match.length : 0;
+
+    // Term not found: fallback to start
+    if (matchIndex === -1 || matchLength === 0) {
+      return leadingSnippet();
+    }
 
     // raw window around the match
     let rawStart = Math.max(0, matchIndex - context);
@@ -1184,7 +997,7 @@
 
                     {#if item.org}
                       <span class="result-school">
-                        {@html highlight(getSnippet(item.org, searchTerm), searchTerm)}
+                        {@html highlight(item.org, searchTerm)}
                       </span>
                     {/if}
 
