@@ -1169,9 +1169,9 @@
                 <div class="search-help" tabindex="0" aria-label="Search tips">
                   <span class="search-help-label">i</span>
                   <div class="search-help-tooltip">
-                    <p><strong>Single or multiple words</strong>: search with one word or several words; results rank higher when more of your words appear; multi-word searches do not require the words to appear together or in order.</p>
-                    <p><strong>Exact phrase</strong>: use double quotes ("") to match exact wording, for example "campus safety"; note that it may take longer to process.</p>
-                    <p><strong>Letters only</strong>: numbers and special characters are not supported in search.</p>
+                    <p class="search-help-tooltip-text"><strong>Single or multiple words</strong>: search with one word or several words; results rank higher when more of your words appear; multi-word searches do not require the words to appear together or in order.</p>
+                    <p class="search-help-tooltip-text"><strong>Exact phrase</strong>: use double quotes ("") to match exact wording, for example "campus safety"; note that it may take longer to process.</p>
+                    <p class="search-help-tooltip-text"><strong>Letters only</strong>: numbers and special characters are not supported in search.</p>
                   </div>
                 </div>
               </div>
@@ -1704,6 +1704,7 @@
     cursor: pointer;
     flex-shrink: 0;
     line-height: 1;
+    font-family: 'Helvetica Neue', sans-serif;
   }
 
   .search-help-label {
@@ -1717,7 +1718,7 @@
     position: absolute;
     top: 110%;
     right: 0;
-    width: 260px;
+    width: 300px;
     background: white;
     border: 1px solid #dee2e6;
     border-radius: 6px;
