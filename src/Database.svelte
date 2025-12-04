@@ -13,7 +13,6 @@
 
   // Metadata
   let lastUpdated = null;
-  let totalRecordCount = 0;
 
   // monthIndex: { "YYYY-MM": ["id1","id2",...], "_no_date": ["idX",...] }
   let monthIndex = {};
@@ -139,8 +138,7 @@
       const res = await fetch(METADATA_URL);
       if (res.ok) {
         const metadata = await res.json();
-        lastUpdated = metadata.last_updated || metadata.timestamp || null;
-        totalRecordCount = metadata.total_count || globalIds.length;
+        lastUpdated = metadata.completed_at;
       }
     } catch (e) {
       console.warn('Could not load metadata:', e);
