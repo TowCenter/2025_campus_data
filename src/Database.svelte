@@ -67,6 +67,9 @@
   let fullDatasetCache = null;
   let fullDatasetMap = null;
 
+  $: quotedPhraseDisplay = getQuotedPhrase(searchTerm);
+  $: exactMatchActive = Boolean(quotedPhraseDisplay);
+
   $: filteredInstitutions = institutionSearchTerm
           ? institutions.filter((inst) =>
                   inst.toLowerCase().includes(institutionSearchTerm.toLowerCase())
@@ -255,14 +258,75 @@
 
   // --- Core: apply filters + search, set activeIds, then page 1 ---
 
-  // Allow multi-word search
+  // Allow multi-word search; strip wrapping quotes from individual tokens
   function getSearchTokens(raw) {
-    return raw.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    return raw
+            .trim()
+            .toLowerCase()
+            .split(/\s+/)
+            .map((t) => t.replace(/^"+|"+$/g, ''))
+            .filter(Boolean);
+  }
+
+  // If the entire term is quoted, return the inner phrase
+  function getQuotedPhrase(raw) {
+    const trimmed = (raw || '').trim();
+    const match = trimmed.match(/^"(.*)"$/);
+    if (!match) return null;
+    const phrase = match[1].trim();
+    return phrase || null;
   }
 
   async function applyFiltersAndSearch() {
     const baseIds = getBaseIdsFromFilters();
     const baseIdsSet = new Set(baseIds);
+    const quotedPhrase = getQuotedPhrase(searchTerm);
+    const phraseTokens = quotedPhrase ? getSearchTokens(quotedPhrase) : [];
+    const useExactPhraseSearch = quotedPhrase && phraseTokens.length > 1;
+
+    if (useExactPhraseSearch) {
+      searchLoading = true;
+      searchError = null;
+
+      try {
+        const datasetMap = await ensureFullDatasetMap();
+        const phraseRegex = new RegExp(escapeRegExp(quotedPhrase), 'i');
+        const matchedIds = [];
+
+        for (const id of baseIds) {
+          let item;
+          try {
+            item = await getArticleForSearch(id, datasetMap);
+          } catch (e) {
+            console.error(e);
+            continue;
+          }
+
+          const haystacks = [item?.title, item?.org, item?.content];
+          const hasMatch = haystacks.some(
+                  (field) => typeof field === 'string' && phraseRegex.test(field)
+          );
+
+          if (hasMatch) {
+            matchedIds.push(id);
+          }
+        }
+
+        activeIds = matchedIds;
+        currentPage = 1;
+        await loadPage(1);
+      } catch (e) {
+        console.error(e);
+        searchError = e.message;
+        activeIds = [];
+        currentPage = 1;
+        await loadPage(1);
+      } finally {
+        searchLoading = false;
+      }
+      return;
+    }
+
     const tokens = getSearchTokens(searchTerm);
 
     // No search term: just filtered timeline
@@ -473,6 +537,38 @@
     }
     fullDatasetCache = await res.json();
     return fullDatasetCache;
+  }
+
+  function getItemId(item) {
+    if (!item) return null;
+    return item.id || item._id?.$oid || item._id || item.document_id || null;
+  }
+
+  async function ensureFullDatasetMap() {
+    if (fullDatasetMap) return fullDatasetMap;
+    const data = await getFullDataset();
+    const map = new Map();
+    if (Array.isArray(data)) {
+      data.forEach((item) => {
+        const id = getItemId(item);
+        if (id) {
+          map.set(id, item);
+        }
+      });
+    }
+    fullDatasetMap = map;
+    return fullDatasetMap;
+  }
+
+  async function getArticleForSearch(id, datasetMap) {
+    if (articleCache.has(id)) return articleCache.get(id);
+    if (datasetMap && datasetMap.has(id)) {
+      const item = datasetMap.get(id);
+      articleCache.set(id, item);
+      return item;
+    }
+    const article = await getArticleById(id);
+    return article;
   }
 
   function cleanDataForExport(data) {
@@ -1025,8 +1121,8 @@
                 <div class="search-help" tabindex="0" aria-label="Search tips">
                   <span class="search-help-label">i</span>
                   <div class="search-help-tooltip">
-                    <p><strong>Single or multiple words</strong>: search with one word or several words; results rank higher when more of your words appear.</p>
-                    <p><strong>Words can be separate</strong>: multi-word searches do not require the words to appear together or in order.</p>
+                    <p><strong>Single or multiple words</strong>: search with one word or several words; results rank higher when more of your words appear; multi-word searches do not require the words to appear together or in order.</p>
+                    <p><strong>Exact phrase</strong>: use double quotes ("") to match exact wording, for example "campus safety"; note that it may take longer to process.</p>
                     <p><strong>Letters only</strong>: numbers and special characters are not supported in search.</p>
                   </div>
                 </div>
@@ -1079,7 +1175,11 @@
                   {/if}
                 {/if}
                 {#if searchTerm}
-                  matching “{searchTerm}”
+                  {#if exactMatchActive}
+                    matching exact phrase “{quotedPhraseDisplay}”
+                  {:else}
+                    matching “{searchTerm}”
+                  {/if}
                 {/if}
                 — page {currentPage} of {totalPages}
               {/if}
