@@ -689,65 +689,183 @@
 
     const phraseRegex = buildPhraseRegex(term, 'i');
     const tokenRegex = buildExactTokenRegex(term, 'i');
+    const minContext = 30;
 
     if (!phraseRegex && !tokenRegex) {
       return leadingSnippet();
     }
 
-    const findMatch = (regex) => {
-      if (!regex) return null;
-      regex.lastIndex = 0;
-      const res = regex.exec(content);
-      return res && res[0] ? { index: res.index, length: res[0].length } : null;
+    const collectMatches = (regex) => {
+      if (!regex) return [];
+      const flags = regex.flags.includes('g') ? regex.flags : `${regex.flags}g`;
+      const globalRegex = new RegExp(regex.source, flags);
+      const matches = [];
+      let match;
+      while ((match = globalRegex.exec(content)) !== null) {
+        matches.push({ index: match.index, length: match[0].length, text: match[0] });
+        if (match[0].length === 0) {
+          globalRegex.lastIndex += 1;
+        }
+      }
+      return matches;
     };
 
-    // Prefer a full phrase match; otherwise fall back to first token match
-    const phraseMatch = findMatch(phraseRegex);
-    const tokenMatch = findMatch(tokenRegex);
-    const match = phraseMatch || tokenMatch;
-    const matchIndex = match ? match.index : -1;
-    const matchLength = match ? match.length : 0;
+    const adjustWindow = (start, end) => {
+      let s = Math.max(0, start);
+      let e = Math.min(content.length, end);
 
-    // Term not found: fallback to start
-    if (matchIndex === -1 || matchLength === 0) {
+      if (s > 0) {
+        const prevSpace = content.lastIndexOf(' ', s);
+        if (prevSpace !== -1) s = prevSpace + 1;
+      }
+
+      if (e < content.length) {
+        const nextSpace = content.indexOf(' ', e);
+        if (nextSpace !== -1) e = nextSpace;
+      }
+
+      return { start: s, end: e };
+    };
+
+    const buildSegment = (
+            start,
+            end,
+            allowLeadingEllipsis = true,
+            allowTrailingEllipsis = true
+    ) => {
+      const { start: s, end: e } = adjustWindow(start, end);
+      let segment = content.slice(s, e);
+      if (s > 0 && allowLeadingEllipsis) segment = '…' + segment;
+      if (e < content.length && allowTrailingEllipsis) segment = segment + '…';
+      return segment;
+    };
+
+    const trimToLength = (text, limit) => {
+      if (text.length <= limit) return text;
+      let trimmed = text.slice(0, Math.max(0, limit - 1));
+      const lastSpace = trimmed.lastIndexOf(' ');
+      if (lastSpace > 0 && lastSpace > trimmed.length - 20) {
+        trimmed = trimmed.slice(0, lastSpace);
+      }
+      return trimmed.replace(/…?$/, '') + '…';
+    };
+
+    const mergeMatchesToSegments = (matches, ctx) => {
+      const sorted = [...matches].sort((a, b) => a.index - b.index);
+      const merged = [];
+
+      let currentStart = sorted[0].index - ctx;
+      let currentEnd = sorted[0].index + sorted[0].length + ctx;
+
+      for (let i = 1; i < sorted.length; i++) {
+        const m = sorted[i];
+        const windowStart = m.index - ctx;
+        const windowEnd = m.index + m.length + ctx;
+
+        if (windowStart <= currentEnd) {
+          currentEnd = Math.max(currentEnd, windowEnd);
+        } else {
+          merged.push(adjustWindow(currentStart, currentEnd));
+          currentStart = windowStart;
+          currentEnd = windowEnd;
+        }
+      }
+
+      merged.push(adjustWindow(currentStart, currentEnd));
+      return merged;
+    };
+
+    const estimateLength = (segments) =>
+            segments.reduce((sum, seg, idx) => {
+              const len = seg.end - seg.start;
+              const leading = seg.start > 0 ? 1 : 0;
+              const trailing = seg.end < content.length ? 1 : 0;
+              const spacer = idx > 0 ? 1 : 0;
+              return sum + len + leading + trailing + spacer;
+            }, 0);
+
+    const phraseMatches = collectMatches(phraseRegex);
+    if (phraseMatches.length > 0) {
+      const { index, length } = phraseMatches[0];
+      let segment = buildSegment(index - context, index + length + context);
+      if (segment.length > maxLen) {
+        segment = trimToLength(segment, maxLen);
+      }
+      return segment;
+    }
+
+    const tokenMatches = collectMatches(tokenRegex);
+    if (!tokenMatches.length) {
       return leadingSnippet();
     }
 
-    // raw window around the match
-    let rawStart = Math.max(0, matchIndex - context);
-    let rawEnd = Math.min(content.length, matchIndex + matchLength + context);
+    const searchTokens = new Set(getSearchTokens(term).map((t) => t.toLowerCase()));
 
-    // Adjust start to the previous space (word boundary)
-    if (rawStart > 0) {
-      const prevSpace = content.lastIndexOf(' ', rawStart);
-      if (prevSpace !== -1) {
-        rawStart = prevSpace + 1;
-      }
+    let tokenContext = Math.min(
+            context,
+            Math.floor((maxLen / Math.max(tokenMatches.length, 1)) / 2)
+    );
+    tokenContext = Math.max(minContext, tokenContext);
+
+    let segments = mergeMatchesToSegments(tokenMatches, tokenContext);
+    while (segments.length > 1 && tokenContext > minContext) {
+      const estimated = estimateLength(segments);
+      if (estimated <= maxLen) break;
+
+      const nextContext = Math.max(minContext, Math.floor(tokenContext * 0.75));
+      if (nextContext === tokenContext) break;
+
+      tokenContext = nextContext;
+      segments = mergeMatchesToSegments(tokenMatches, tokenContext);
     }
 
-    // Adjust end to the next space (word boundary)
-    if (rawEnd < content.length) {
-      const nextSpace = content.indexOf(' ', rawEnd);
-      if (nextSpace !== -1) {
-        rawEnd = nextSpace;
+    const segmentTokens = segments.map(() => new Set());
+    tokenMatches.forEach((m) => {
+      const token = m.text ? m.text.toLowerCase() : '';
+      if (!searchTokens.has(token)) return;
+      const segIdx = segments.findIndex((seg) => m.index >= seg.start && m.index <= seg.end);
+      if (segIdx !== -1) {
+        segmentTokens[segIdx].add(token);
       }
+    });
+
+    const prioritized = [];
+    const extras = [];
+    const covered = new Set();
+    segments.forEach((seg, idx) => {
+      const tokens = segmentTokens[idx];
+      const hasNew = Array.from(tokens).some((t) => !covered.has(t));
+      if (hasNew) {
+        tokens.forEach((t) => covered.add(t));
+        prioritized.push({ seg, idx });
+      } else {
+        extras.push({ seg, idx });
+      }
+    });
+
+    const orderedSegments = [...prioritized, ...extras];
+
+    let remaining = maxLen;
+    const parts = [];
+
+    for (let i = 0; i < orderedSegments.length && remaining > 0; i++) {
+      const { seg } = orderedSegments[i];
+      const separator = parts.length ? ' ' : '';
+      const available = remaining - separator.length;
+      if (available <= 0) break;
+
+      let segmentText = buildSegment(seg.start, seg.end, true, true);
+      if (segmentText.length > available) {
+        segmentText = trimToLength(segmentText, available);
+      }
+
+      if (!segmentText) continue;
+
+      parts.push(segmentText);
+      remaining -= segmentText.length + separator.length;
     }
 
-    // Ensure snippet length doesn't exceed maxLen too much
-    if (rawEnd - rawStart > maxLen) {
-      rawEnd = rawStart + maxLen;
-      const lastSpace = content.lastIndexOf(' ', rawEnd);
-      if (lastSpace > rawStart) {
-        rawEnd = lastSpace;
-      }
-    }
-
-    let snippet = content.slice(rawStart, rawEnd);
-
-    if (rawStart > 0) snippet = '…' + snippet;
-    if (rawEnd < content.length) snippet = snippet + '…';
-
-    return snippet;
+    return parts.length ? parts.join(' ') : leadingSnippet();
   }
 
 </script>
@@ -907,8 +1025,8 @@
                 <div class="search-help" tabindex="0" aria-label="Search tips">
                   <span class="search-help-label">i</span>
                   <div class="search-help-tooltip">
-                    <p><strong>Single or multiple words</strong>: search with one word or a short phrase.</p>
-                    <p><strong>Exact match</strong>: match the exact word or phrase using double quotation marks, for example "campus safety".</p>
+                    <p><strong>Single or multiple words</strong>: search with one word or several words; results rank higher when more of your words appear.</p>
+                    <p><strong>Words can be separate</strong>: multi-word searches do not require the words to appear together or in order.</p>
                     <p><strong>Letters only</strong>: numbers and special characters are not supported in search.</p>
                   </div>
                 </div>
