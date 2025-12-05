@@ -93,17 +93,33 @@
                   ? true
                   : 'no date'.includes(monthSearchTerm.toLowerCase());
 
+  // Track time spent on Database page
+  let pageStartTime;
+
   onMount(async () => {
+    pageStartTime = Date.now();
+
     if (!initialized) {
       // First time visiting the tab: fetch everything
       await loadInitialData();
     } else {
       // Coming back to the tab: reuse existing data
-      loading = false;          // don’t show "Loading database..." again
+      loading = false;          // don't show "Loading database..." again
       error = null;
       // Optionally re-apply filters & search based on existing state:
       await applyFiltersAndSearch();
     }
+
+    // Track time on page when user leaves
+    return () => {
+      if (window.umami && pageStartTime) {
+        const timeSpent = Math.round((Date.now() - pageStartTime) / 1000); // seconds
+        window.umami.track('database-time-spent', {
+          seconds: timeSpent,
+          minutes: Math.round(timeSpent / 60)
+        });
+      }
+    };
   });
 
   async function loadInitialData() {
@@ -500,6 +516,16 @@
     } else {
       selectedMonths = selectedMonths.filter((m) => m !== month);
     }
+
+    // Track month filter usage
+    if (window.umami) {
+      window.umami.track('filter-month', {
+        action: checked ? 'add' : 'remove',
+        month: month,
+        total_selected: selectedMonths.length
+      });
+    }
+
     currentPage = 1;
     await applyFiltersAndSearch();
   }
@@ -512,6 +538,16 @@
     } else {
       selectedInstitutions = selectedInstitutions.filter((i) => i !== inst);
     }
+
+    // Track institution filter usage
+    if (window.umami) {
+      window.umami.track('filter-institution', {
+        action: checked ? 'add' : 'remove',
+        institution: inst,
+        total_selected: selectedInstitutions.length
+      });
+    }
+
     currentPage = 1;
     await applyFiltersAndSearch();
   }
@@ -536,6 +572,15 @@
     }
 
     searchTimeout = setTimeout(() => {
+      // Track search usage
+      if (window.umami && searchTerm.trim().length > 0) {
+        window.umami.track('search-query', {
+          query_length: searchTerm.trim().length,
+          has_quotes: searchTerm.includes('"'),
+          has_filters: selectedMonths.length > 0 || selectedInstitutions.length > 0
+        });
+      }
+
       applyFiltersAndSearch();
     }, 1000); // debounce
   }
@@ -665,6 +710,17 @@
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
     link.setAttribute('download', `university_responses_filtered_${new Date().toISOString().split('T')[0]}.csv`);
+
+    // Track download event in Umami
+    if (window.umami) {
+      window.umami.track('csv-download', {
+        items_count: data.length,
+        has_filters: !isUnfiltered(),
+        has_search: searchTerm.length > 0,
+        selected_months: selectedMonths.length,
+        selected_institutions: selectedInstitutions.length
+      });
+    }
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();

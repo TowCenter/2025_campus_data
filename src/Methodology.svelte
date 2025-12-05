@@ -21,7 +21,15 @@
   let openFaqIndex = null;
 
   function toggleFaq(index) {
+    const wasOpen = openFaqIndex === index;
     openFaqIndex = openFaqIndex === index ? null : index;
+
+    // Track FAQ interactions
+    if (window.umami && !wasOpen) {
+      window.umami.track('faq-opened', {
+        faq_index: index
+      });
+    }
   }
 
   // AWS S3 configuration
@@ -450,8 +458,13 @@
 
   $: monthlyData = organizeByMonth(articlesByDate);
 
+  // Track time spent on Methodology page
+  let pageStartTime;
+
   // Load S3 data for record count and US states map
   onMount(async () => {
+    pageStartTime = Date.now();
+
     try {
       // Load S3 data
       const response = await fetch(S3_LIST_URL);
@@ -478,6 +491,17 @@
       console.warn('Could not load data:', err);
       loadingArticles = false;
     }
+
+    // Track time on page when user leaves
+    return () => {
+      if (window.umami && pageStartTime) {
+        const timeSpent = Math.round((Date.now() - pageStartTime) / 1000); // seconds
+        window.umami.track('methodology-time-spent', {
+          seconds: timeSpent,
+          minutes: Math.round(timeSpent / 60)
+        });
+      }
+    };
   });
 </script>
 
