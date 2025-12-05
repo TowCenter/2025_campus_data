@@ -3,6 +3,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 
 export default defineConfig({
   plugins: [svelte()],
+  base: '/2025_Tow_university-response-tracker-/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
