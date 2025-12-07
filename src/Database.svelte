@@ -6,13 +6,12 @@
   const ARTICLE_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/articles';
   const SEARCH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/search_index';
   const FULL_DATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
-  const METADATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/metadata.json';
 
   const NO_DATE_KEY = '_no_date';
   const NO_ORG_KEY = '_no_org';
 
-  // Metadata
-  let lastUpdated = null;
+  // Metadata - manually update this date when data is refreshed
+  const lastUpdated = 'December 6, 2025';
 
   // monthIndex: { "YYYY-MM": ["id1","id2",...], "_no_date": ["idX",...] }
   let monthIndex = {};
@@ -130,8 +129,8 @@
     error = null;
 
     try {
-      // load indexes and metadata in parallel
-      await Promise.all([loadMonthIndex(), loadInstitutionIndex(), loadMetadata()]);
+      // load indexes in parallel
+      await Promise.all([loadMonthIndex(), loadInstitutionIndex()]);
 
       // only set default filters on first successful load
       selectedMonths = [];
@@ -149,18 +148,6 @@
     }
   }
 
-  async function loadMetadata() {
-    try {
-      const res = await fetch(METADATA_URL);
-      if (res.ok) {
-        const metadata = await res.json();
-        lastUpdated = metadata.completed_at;
-      }
-    } catch (e) {
-      console.warn('Could not load metadata:', e);
-      // Don't throw - this is optional
-    }
-  }
 
 
   async function loadMonthIndex() {
@@ -1047,22 +1034,10 @@
       <!-- Metadata Header -->
       <section class="database-meta">
         <div class="meta-details">
-          {#if lastUpdated}
-            <div class="meta-item">
-              <span class="meta-label">Last Updated On</span>
-              <span class="meta-value">
-                {new Date(lastUpdated).toLocaleString('en-US', {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                  hour: 'numeric',
-                  minute: '2-digit',
-                  hour12: true,
-                  timeZone: 'America/New_York'
-                })} EST
-              </span>
-            </div>
-          {/if}
+          <div class="meta-item">
+            <span class="meta-label">As of</span>
+            <span class="meta-value">{lastUpdated}</span>
+          </div>
 
           <div class="meta-item">
             <span class="meta-label">Maintained By</span>
@@ -1429,7 +1404,7 @@
     margin: 0 0 1.5rem;
     color: #254c6f;
     font-weight: 400;
-    font-family: 'EB Garamond', serif;
+    font-family: "Lyon Display Web", serif;
     text-align: center;
   }
 
@@ -1530,7 +1505,7 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 1rem;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: "Graphik Web", sans-serif;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: all 0.2s ease;
   }
@@ -1561,7 +1536,7 @@
     margin-bottom: 0.5rem;
     font-weight: 500;
     color: #222;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: "Graphik Web", sans-serif;
     font-size: 0.9rem;
   }
 
@@ -1571,7 +1546,7 @@
     border: 1px solid #dee2e6;
     border-radius: 4px;
     font-size: 0.95rem;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: "Graphik Web", sans-serif;
     background: white;
     cursor: pointer;
     text-align: left;
@@ -1620,7 +1595,7 @@
     border: 1px solid #dee2e6;
     border-radius: 4px;
     font-size: 0.9rem;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
 
   .dropdown-search input:focus {
@@ -1641,7 +1616,7 @@
     cursor: pointer;
     transition: background 0.15s;
     font-size: 0.9rem;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
 
   .dropdown-option:hover {
@@ -1662,7 +1637,7 @@
     color: #666;
     font-size: 0.85rem;
     cursor: pointer;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: "Graphik Web", sans-serif;
     transition: all 0.2s;
   }
 
@@ -1677,7 +1652,7 @@
     border: 1px solid #dee2e6;
     border-radius: 4px;
     font-size: 0.95rem;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
   .search-input:focus {
     outline: none;
@@ -1688,7 +1663,7 @@
     padding: 0.4rem 0.4rem;
     border: 1px solid #dee2e6;
     border-radius: 4px;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
   .goto-input:focus {
     outline: none;
@@ -1735,7 +1710,7 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: "Graphik Web", sans-serif;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     white-space: nowrap;
     display: inline-flex;
@@ -1758,7 +1733,7 @@
     cursor: pointer;
     flex-shrink: 0;
     line-height: 1;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
 
   .search-help-label {
@@ -1867,7 +1842,7 @@
     font-weight: 500;
     color: #222;
     margin: 0;
-    font-family: 'EB Garamond', serif;
+    font-family: "Lyon Display Web", serif;
     flex: 1;
   }
   .result-title a {
@@ -1882,7 +1857,7 @@
     padding: 0.25rem 0.75rem;
     border-radius: 4px;
     font-size: 0.85rem;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: "Graphik Web", sans-serif;
     color: #666;
     white-space: nowrap;
   }
@@ -1890,7 +1865,7 @@
     font-size: 0.9rem;
     color: #888;
     margin: 0.5rem 0;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: "Graphik Web", sans-serif;
   }
   .result-excerpt {
     font-size: 0.95rem;
@@ -1914,7 +1889,7 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.9rem;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: "Graphik Web", sans-serif;
     transition: all 0.2s ease;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
@@ -1932,7 +1907,7 @@
   .page-info {
     padding: 0 1rem;
     font-weight: 500;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: "Graphik Web", sans-serif;
     font-size: 0.95rem;
   }
 

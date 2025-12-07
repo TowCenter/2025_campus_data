@@ -629,16 +629,25 @@
                   {@const chartAreaHeight = chartHeight - bottomMargin}
                   {@const yAxisMax = (() => {
                     const max = maxCount * 1.1;
+                    if (max <= 500) return 500;
                     if (max <= 1000) return 1000;
                     if (max <= 1500) return 1500;
                     if (max <= 2000) return 2000;
+                    if (max <= 2500) return 2500;
                     return Math.ceil(max / 500) * 500;
                   })()}
-                  {@const yAxisSteps = 5}
+                  {@const yAxisSteps = (() => {
+                    if (yAxisMax <= 500) return 5;  // 0, 100, 200, 300, 400, 500
+                    if (yAxisMax <= 1000) return 5; // 0, 200, 400, 600, 800, 1000
+                    if (yAxisMax <= 2000) return 4; // 0, 500, 1000, 1500, 2000
+                    return 5;
+                  })()}
                   {@const yAxisValues = Array.from({length: yAxisSteps + 1}, (_, i) => (yAxisMax / yAxisSteps) * i)}
                   {@const formatNumber = (num) => {
+                    if (num === 0) return '0';
                     if (num >= 1000) {
-                      return (num / 1000).toFixed(0) + 'k';
+                      const k = num / 1000;
+                      return k % 1 === 0 ? k + 'k' : k.toFixed(1) + 'k';
                     }
                     return num.toString();
                   }}
@@ -748,7 +757,7 @@
 
                         <!-- Zero baseline (drawn after bars to appear on top) -->
                         <line
-                          x1="0"
+                          x1={leftMargin}
                           y1={zeroLineY}
                           x2={chartWidth}
                           y2={zeroLineY}
