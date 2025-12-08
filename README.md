@@ -7,7 +7,7 @@ A collection of Svelte components for journalism projects, developed by the Tow 
 ### From GitHub
 
 ```bash
-npm install github:TowCenter/tow-design-system
+npm install github:TowCenter/web-design-template
 ```
 
 ## Usage
@@ -35,7 +35,7 @@ import '@tow/design-system/tow.css';
 import '@tow/design-system/cjr.css';
 
 // Or import CSS URLs programmatically
-import { towCSS, cjrCSS } from '@tow/design-system';
+import { towCSS, cjrCSS } from '@tow/web-design-template';
 ```
 
 ### Example
