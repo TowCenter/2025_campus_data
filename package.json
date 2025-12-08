@@ -1,7 +1,7 @@
 {
   "name": "@tow/web-design-template",
   "version": "0.1.0",
-  "description": "Tow Center Design System - Svelte components for journalism projects",
+  "description": "Tow Center Design System - Svelte components for trackers/Tow projects",
   "type": "module",
   "svelte": "dist/index.js",
   "main": "dist/index.js",
@@ -57,6 +57,6 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TowCenter/web-design-template.git"
+    "url": "git+https://github.com/TowCenter/website-design-template.git"
   }
 }
