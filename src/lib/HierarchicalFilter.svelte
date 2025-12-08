@@ -5,7 +5,7 @@
 	/**
 	 * @typedef {Object} Props
 	 * @property {Array<Object>} [data=[]] - Dataset to extract interactions and types from
-	 * @property {string} [label='Type of Interaction'] - Label for the filter
+	 * @property {string} [label='Category'] - Label for the filter
 	 * @property {string[]} [selectedInteraction=[]] - Selected interactions
 	 * @property {string[]} [selectedType=[]] - Selected types
 	 * @property {(values: string[]) => void} [onInteractionChange=() => {}] - Callback when interactions change
@@ -15,7 +15,7 @@
 	/** @type {Props} */
 	let { 
 		data = [],
-		label = 'Type of Interaction',
+		label = 'Category',
 		selectedInteraction = [],
 		selectedType = [],
 		onInteractionChange = () => {},

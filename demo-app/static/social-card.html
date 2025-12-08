@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Card Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Graphik Web', 'Helvetica', sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .social-card {
+            width: 1200px;
+            height: 630px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 1px solid #e0e0e0;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 60px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+        }
+        
+        .brand {
+            font-size: 18px;
+            font-weight: 700;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        
+        .title {
+            font-size: 64px;
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            font-family: "Lyon Text Web", 'Georgia', serif;
+        }
+        
+        .description {
+            font-size: 28px;
+            color: #555;
+            line-height: 1.4;
+            max-width: 900px;
+            font-family: "Lyon Text Web", 'Georgia', serif;
+        }
+        
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+        
+        .tow-logo {
+            font-size: 16px;
+            font-weight: 600;
+            color: #254c6f;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .url {
+            font-size: 20px;
+            color: #888;
+            font-family: 'Graphik Web', 'Helvetica', sans-serif;
+        }
+        
+        .accent-line {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: linear-gradient(180deg, #e57373 0%, #64b5f6 50%, #81c784 100%);
+        }
+        
+        .tag-container {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .tag.lawsuit {
+            background-color: #f5c2c2;
+            color: #8b1a1a;
+        }
+        
+        .tag.deal {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .tag.grant {
+            background-color: #bbdefb;
+            color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="social-card">
+        <div class="accent-line"></div>
+        <div class="card-header">
+            <div>
+                <div class="brand">Platforms and Publishers</div>
+                <h1 class="title">AI Deals and Lawsuits</h1>
+                <p class="description">
+                    A tracker monitoring developments between news publishers and AI companies—including lawsuits, deals, and grants—based on publicly available information.
+                </p>
+                <div class="tag-container">
+                    <span class="tag lawsuit">Lawsuits</span>
+                    <span class="tag deal">Deals</span>
+                    <span class="tag grant">Grants</span>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="tow-logo">Tow Center for Digital Journalism</div>
+            <div class="url">tow.cjr.org/ai-deals-lawsuits</div>
+        </div>
+    </div>
+</body>
+</html>
+

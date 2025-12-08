@@ -330,6 +330,7 @@ a {
     -ms-flex-align: center;
     align-items: center;
     height: 100px; /* was 80 */
+    padding-bottom: 0.5rem;
     /* border-bottom: 1px solid #999; */
     background: #fff;
 }
@@ -359,7 +360,7 @@ img.cjr-logo-mobile {
 
     .cjr-header {
         height: 60px;
-        padding: 0 1rem;
+        padding: 0 1rem 0.5rem 1rem;
     }
 
     .cjr-header__logo {
@@ -712,6 +713,19 @@ input[type="search"]:focus {
 	margin-left: 2px;
 }
 
+.brand-title {
+	font-family: "Graphik Web", 'Helvetica', sans-serif;
+	font-style: normal;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 125%;
+	letter-spacing: 0.1em;
+	color: #999999;
+	text-transform: uppercase;
+	margin: 0px 0px 8px 0px;
+	width: 110%;
+}
+
 h1.main-title {
 	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
@@ -725,12 +739,20 @@ h1.main-title {
 }
 
 @media screen and (max-width:576px) {
+	.brand-title {
+		width: 100%;
+		font-size: 14px;
+	}
 	h1.main-title {
 		width: 100%;
 	}
 }
 
 @media screen and (max-width:768px) {
+	.brand-title {
+		font-size: 14px;
+		width: 100%;
+	}
 	h1.main-title {
 		font-size: 36px;
 		margin: 0px 0px 20px 0px;
@@ -741,7 +763,7 @@ h1.main-title {
 	.post-excerpt {
 		font-size: 18px;
 		line-height: 1.4;
-		margin: 20px 0px 20px 0px;
+		margin: 0px 0px 20px 0px;
 	}
 
 	.post-excerpt p {
@@ -751,6 +773,7 @@ h1.main-title {
 
 	.meta, .meta a {
 		font-size: 12px;
+		margin-top: 0;
 		margin-bottom: 28px;
 	}
 
@@ -770,11 +793,14 @@ h1.main-title {
 	color: #999999;
 	text-decoration: none;
 	text-transform: uppercase;
+	margin-top: 0;
 	margin-bottom: 48px;
 }
 
 .meta span.date {
     display: block;
+	margin-top: 0;
+	padding-top: 0;
 }
 
 .meta span.date em,
@@ -793,7 +819,7 @@ h1.main-title {
 	font-size: 20px;
 	line-height: 125%;
 	color: #222222;
-	margin: 28px 0px 28px 0px;
+	margin: 0px 0px 28px 0px;
     display: block;
 }
 
@@ -803,7 +829,7 @@ h1.main-title {
 
 @media screen and (max-width:576px) {
 	.post-excerpt {
-		margin: 28px 0px 28px 0px;
+		margin: 0px 0px 28px 0px;
 	}
 }
 
@@ -828,7 +854,7 @@ h1.main-title {
 	color: #222222;
 	width: 100%;
     margin: 0px 0px 0px 0px;
-	padding: 0px 0px 28px 20px;
+	padding: 0px 0px 28px 0px;
 }
 
 
@@ -842,6 +868,34 @@ h1.main-title {
 	color: #de5a35;
 }
 
+.entry-content > p .interaction-tag-inline {
+	display: inline-block;
+	padding: 0 0.4rem;
+	border-radius: 3px;
+	font-family: 'Graphik Web', 'Helvetica', sans-serif;
+	font-size: 0.65rem;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	white-space: nowrap;
+	margin: 0 0.2rem;
+}
+
+.entry-content > p .interaction-tag-inline.lawsuit {
+	background-color: #f5c2c2;
+	color: #8b1a1a;
+}
+
+.entry-content > p .interaction-tag-inline.deal {
+	background-color: #c8e6c9;
+	color: #2e7d32;
+}
+
+.entry-content > p .interaction-tag-inline.grant {
+	background-color: #bbdefb;
+	color: #1565c0;
+}
+
 .entry-content > p:first-of-type strong:first-of-type {
     font-family: "Graphik Web", 'Helvetica', sans-serif;
     font-weight: 700;
@@ -851,7 +905,7 @@ h1.main-title {
 
 .entry-content > p:last-of-type,
 .entry-content > p:last-child {
-    padding: 0px 0px 0px 20px;
+    /* padding: 0px 0px 0px 0px; */
 }
 
 

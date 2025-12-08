@@ -8,12 +8,11 @@
 	import Body from "../../../src/lib/Body.svelte";
 	import Filters from "../../../src/lib/Filters.svelte";
 	import CardView from "../../../src/lib/CardView.svelte";
-	// import templateData from "../../../src/lib/data/template-data.json";
+	import templateData from "../../../src/lib/data/template-data.json";
 	import { normalizeData, getLatestDate } from "../../../src/lib/data-utils.js";
 
-	// Start with empty data - add your data import and normalization here
-	const normalizedData = normalizeData([]);
-	// Example: const normalizedData = normalizeData(yourData);
+	// Normalize your data
+	const normalizedData = normalizeData(templateData);
 
 	// Define your column names (for display and filtering)
 	const tableColumns = [
@@ -28,7 +27,6 @@
 	let filterCategory = $state([]);
 	let filterStatus = $state([]);
 	let filterTags = $state([]);
-	let filterPublishers = $state([]);
 	let filteredData = $state([]);
 
 	// CSV Export function - customize columns based on your data
@@ -77,9 +75,7 @@
 		URL.revokeObjectURL(url);
 	}
 
-	// Update this when you add your data
-	const latestDate = getLatestDate([]);
-	// Example: const latestDate = getLatestDate(yourData);
+	const latestDate = getLatestDate(templateData);
 </script>
 
 <Head />
@@ -114,7 +110,7 @@
 		bind:filterInteraction={filterCategory}
 		bind:filterType={filterStatus}
 		bind:filterPlatform={filterTags}
-		bind:filterPublishers
+		bind:filterPublishers={[]}
 		filteredRowCount={filteredData.length}
 		onDownloadCSV={downloadToCSV}
 	/>
@@ -127,7 +123,7 @@
 		filterInteraction={filterCategory}
 		filterType={filterStatus}
 		filterPlatform={filterTags}
-		{filterPublishers}
+		filterPublishers={[]}
 		onFilteredDataChange={(data) => { filteredData = data; }}
 	/>
 </Article>
