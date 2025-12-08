@@ -1029,25 +1029,6 @@
 <div class="database-container">
   <div class="container">
     <div class="content-wrapper">
-      <h2>Database Search</h2>
-
-      <!-- Metadata Header -->
-      <section class="database-meta">
-        <div class="meta-details">
-          <div class="meta-item">
-            <span class="meta-label">As of</span>
-            <span class="meta-value">{lastUpdated}</span>
-          </div>
-
-          <div class="meta-item">
-            <span class="meta-label">Maintained By</span>
-            <span class="meta-value">
-              <a href="https://towcenter.columbia.edu/" target="_blank" rel="noopener noreferrer">Tow Center for Digital Journalism</a>
-            </span>
-          </div>
-        </div>
-      </section>
-
       <section class="intro">
         <p class="lead">
           Search and filter through all institutional responses. Use the filters below to narrow results by institution,
@@ -1555,6 +1536,12 @@
     align-items: center;
     transition: border-color 0.2s;
   }
+
+  /* Hide Bootstrap's default dropdown arrow */
+  .dropdown-toggle::after {
+    display: none !important;
+  }
+
   .dropdown-toggle:hover {
     border-color: #254c6f;
   }
