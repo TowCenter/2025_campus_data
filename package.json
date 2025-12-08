@@ -1,5 +1,5 @@
 {
-  "name": "@tow/web-design-template",
+  "name": "@tow/website-design-template",
   "version": "0.1.0",
   "description": "Tow Center Design System - Svelte components for trackers/Tow projects",
   "type": "module",
