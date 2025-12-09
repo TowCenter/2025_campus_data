@@ -4,6 +4,12 @@
   import Database from './Database.svelte';
 
   let currentPage = 'database';
+  const base = import.meta.env.BASE_URL || '/';
+  const basePath = base.endsWith('/') ? base.slice(0, -1) : base;
+  const routes = {
+    database: base,
+    methodology: `${basePath}/methodology`
+  };
 
   // Logo configuration
   const logoDesktopUrl = 'https://miro.medium.com/v2/resize:fit:1070/1*Bdt1nEsNDbLfk-w0b3dnqA.jpeg';
@@ -11,25 +17,36 @@
   const logoAlt = 'Columbia Journalism School and Tow Center for Digital Journalism';
   const logoLink = 'https://towcenter.columbia.edu/';
 
-  onMount(() => {
-    // Handle browser navigation
-    const path = window.location.pathname;
-    if (path.includes('methodology')) {
-      currentPage = 'methodology';
+  const normalizePath = (pathname) => {
+    if (basePath && pathname.startsWith(basePath)) {
+      return pathname.slice(basePath.length) || '/';
     }
+    return pathname;
+  };
+
+  const setPageFromPath = (pathname) => {
+    const normalizedPath = normalizePath(pathname);
+    currentPage = normalizedPath.includes('methodology') ? 'methodology' : 'database';
+  };
+
+  onMount(() => {
+    setPageFromPath(window.location.pathname);
+
+    const handlePopState = () => setPageFromPath(window.location.pathname);
+    window.addEventListener('popstate', handlePopState);
 
     // Track initial page view with Umami
     if (window.umami) {
       window.umami.track();
     }
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
   });
 
   function navigateTo(page) {
     currentPage = page;
-    const routes = {
-      database: '/',
-      methodology: '/methodology'
-    };
     window.history.pushState({}, '', routes[page]);
 
     // Track page view in Umami for SPA navigation
