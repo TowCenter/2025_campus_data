@@ -3,7 +3,12 @@
   import Methodology from './Methodology.svelte';
   import Database from './Database.svelte';
 
-  let currentPage = 'database';
+  // Logo configuration
+  const logoDesktopUrl = 'https://miro.medium.com/v2/resize:fit:1070/1*Bdt1nEsNDbLfk-w0b3dnqA.jpeg';
+  const logoMobileUrl = 'https://miro.medium.com/v2/resize:fit:1070/1*Bdt1nEsNDbLfk-w0b3dnqA.jpeg';
+  const logoAlt = 'Columbia Journalism School and Tow Center for Digital Journalism';
+  const logoLink = 'https://towcenter.columbia.edu/';
+
   const base = import.meta.env.BASE_URL || '/';
   const basePath = base.endsWith('/') ? base.slice(0, -1) : base;
   const routes = {
@@ -11,22 +16,33 @@
     methodology: `${basePath}/methodology`
   };
 
-  // Logo configuration
-  const logoDesktopUrl = 'https://miro.medium.com/v2/resize:fit:1070/1*Bdt1nEsNDbLfk-w0b3dnqA.jpeg';
-  const logoMobileUrl = 'https://miro.medium.com/v2/resize:fit:1070/1*Bdt1nEsNDbLfk-w0b3dnqA.jpeg';
-  const logoAlt = 'Columbia Journalism School and Tow Center for Digital Journalism';
-  const logoLink = 'https://towcenter.columbia.edu/';
-
-  const normalizePath = (pathname) => {
+  function normalizePath(pathname) {
     if (basePath && pathname.startsWith(basePath)) {
       return pathname.slice(basePath.length) || '/';
     }
     return pathname;
-  };
+  }
+
+  function getPageFromPath(pathname) {
+    const normalizedPath = normalizePath(pathname);
+    return normalizedPath.includes('methodology') ? 'methodology' : 'database';
+  }
+
+  const initialPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+  let currentPage = getPageFromPath(initialPath);
+  let databaseMounted = currentPage === 'database';
+  let methodologyMounted = currentPage === 'methodology';
+  let mobileNavOpen = false;
+
+  function ensureMounted(page) {
+    if (page === 'database') databaseMounted = true;
+    if (page === 'methodology') methodologyMounted = true;
+  }
 
   const setPageFromPath = (pathname) => {
-    const normalizedPath = normalizePath(pathname);
-    currentPage = normalizedPath.includes('methodology') ? 'methodology' : 'database';
+    currentPage = getPageFromPath(pathname);
+    ensureMounted(currentPage);
+    mobileNavOpen = false;
   };
 
   onMount(() => {
@@ -47,7 +63,9 @@
 
   function navigateTo(page) {
     currentPage = page;
+    ensureMounted(page);
     window.history.pushState({}, '', routes[page]);
+    mobileNavOpen = false;
 
     // Track page view in Umami for SPA navigation
     if (window.umami) {
@@ -98,6 +116,44 @@
   <!-- Body with sidebar nav matching template -->
   <div class="container-lg">
     <div class="row">
+      <div class="col-12 mobile-nav" aria-label="Page navigation">
+        <button
+          class="mobile-nav-toggle"
+          aria-expanded={mobileNavOpen}
+          aria-controls="mobile-nav-menu"
+          on:click={() => (mobileNavOpen = !mobileNavOpen)}
+          type="button"
+        >
+          <span class="hamburger" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+          <span class="mobile-nav-label">
+            {currentPage === 'database' ? 'Database' : 'Methodology'}
+          </span>
+        </button>
+        {#if mobileNavOpen}
+          <div id="mobile-nav-menu" class="mobile-nav-menu">
+            <button
+              class="mobile-nav-link"
+              aria-current={currentPage === 'database' ? 'page' : undefined}
+              on:click={() => navigateTo('database')}
+              type="button"
+            >
+              Database
+            </button>
+            <button
+              class="mobile-nav-link"
+              aria-current={currentPage === 'methodology' ? 'page' : undefined}
+              on:click={() => navigateTo('methodology')}
+              type="button"
+            >
+              Methodology
+            </button>
+          </div>
+        {/if}
+      </div>
       <div class="col-md-2 col-lg-2">
         <nav class="left-nav" aria-label="Page navigation">
           <ul>
@@ -123,10 +179,15 @@
         </nav>
       </div>
       <div class="col-md-10 col-lg-10 entry-content">
-        {#if currentPage === 'methodology'}
-          <Methodology />
-        {:else}
-          <Database />
+        {#if databaseMounted}
+          <div class="tab-panel" hidden={currentPage !== 'database'} aria-hidden={currentPage !== 'database'}>
+            <Database />
+          </div>
+        {/if}
+        {#if methodologyMounted}
+          <div class="tab-panel" hidden={currentPage !== 'methodology'} aria-hidden={currentPage !== 'methodology'}>
+            <Methodology />
+          </div>
         {/if}
       </div>
     </div>
@@ -242,6 +303,10 @@
     max-width: 100%;
   }
 
+  .tab-panel[hidden] {
+    display: none;
+  }
+
   /* Template header styles */
   .cjr-header {
     display: flex;
@@ -309,6 +374,70 @@
     }
   }
 
+  /* Mobile nav for tabs */
+  .mobile-nav {
+    display: none;
+    margin-bottom: 1.25rem;
+  }
+  .mobile-nav-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: #f8f8f8;
+    font-family: "Graphik Web", 'Helvetica', sans-serif;
+    font-weight: 600;
+    color: #254c6f;
+    cursor: pointer;
+    justify-content: center;
+  }
+  .mobile-nav-toggle:focus {
+    outline: 2px solid #254c6f;
+    outline-offset: 2px;
+  }
+  .hamburger {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .hamburger span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #254c6f;
+  }
+  .mobile-nav-menu {
+    margin-top: 0.75rem;
+    background: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .mobile-nav-link {
+    width: 100%;
+    text-align: left;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: white;
+    font-family: "Graphik Web", 'Helvetica', sans-serif;
+    font-size: 0.95rem;
+    color: #254c6f;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .mobile-nav-link:hover,
+  .mobile-nav-link[aria-current='page'] {
+    background: #e9eef4;
+    border-color: #254c6f;
+  }
+
   /* Left sidebar navigation matching template */
   .left-nav {
     position: static;
@@ -345,6 +474,9 @@
   }
 
   @media screen and (max-width: 768px) {
+    .mobile-nav {
+      display: block;
+    }
     .left-nav {
       display: none;
     }

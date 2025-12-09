@@ -1171,44 +1171,47 @@
                 {/if}
               </div>
             </div>
-          </div>
 
-          <div class="search-export-row">
-            <div class="search-wrapper">
-              <div class="search-input-row">
-                <input
-                        id="search-input"
-                        type="text"
-                        bind:value={searchTerm}
-                        on:input={handleSearchInput}
-                        placeholder="Search title, institution, or content..."
-                        class="search-input"
-                />
-                <div class="search-help" tabindex="0" aria-label="Search tips">
-                  <span class="search-help-label">i</span>
-                  <div class="search-help-tooltip">
-                    <p class="search-help-tooltip-text"><strong>Single or multiple words</strong>: search with one word or several words; results rank higher when more of your words appear; multi-word searches do not require the words to appear together or in order.</p>
-                    <p class="search-help-tooltip-text"><strong>Exact phrase</strong>: use double quotes ("") to match exact wording, for example "campus safety"; note that it may take longer to process.</p>
-                    <p class="search-help-tooltip-text"><strong>Letters only</strong>: numbers and special characters are not supported in search.</p>
+            <div class="filter-group search-export-group">
+              <label for="search-input">Search and Export</label>
+              <div class="search-export-row">
+                <div class="search-wrapper">
+                  <div class="search-input-row">
+                    <input
+                            id="search-input"
+                            type="text"
+                            bind:value={searchTerm}
+                            on:input={handleSearchInput}
+                            placeholder="Search title, institution, or content..."
+                            class="search-input"
+                    />
+                    <button class="search-help" type="button" aria-label="Search tips">
+                      <span class="search-help-label">i</span>
+                      <div class="search-help-tooltip">
+                        <p class="search-help-tooltip-text"><strong>Single or multiple words</strong>: search with one word or several words; results rank higher when more of your words appear; multi-word searches do not require the words to appear together or in order.</p>
+                        <p class="search-help-tooltip-text"><strong>Exact phrase</strong>: use double quotes ("") to match exact wording, for example "campus safety"; note that it may take longer to process.</p>
+                        <p class="search-help-tooltip-text"><strong>Letters only</strong>: numbers and special characters are not supported in search.</p>
+                      </div>
+                    </button>
                   </div>
+                  {#if searchError}
+                    <span class="search-status error-text">Search error: {searchError}</span>
+                  {/if}
                 </div>
+                <button
+                        on:click={exportResults}
+                        class="export-btn"
+                        disabled={exporting || loadingArticles || activeIds.length === 0}
+                >
+                  {#if exporting}
+                    <span class="btn-spinner"></span>
+                    Exporting...
+                  {:else}
+                    Export {activeIds.length.toLocaleString()} items to CSV
+                  {/if}
+                </button>
               </div>
-              {#if searchError}
-                <span class="search-status error-text">Search error: {searchError}</span>
-              {/if}
             </div>
-            <button
-                    on:click={exportResults}
-                    class="export-btn"
-                    disabled={exporting || loadingArticles || activeIds.length === 0}
-            >
-              {#if exporting}
-                <span class="btn-spinner"></span>
-                Exporting...
-              {:else}
-                Export {activeIds.length.toLocaleString()} items to CSV
-              {/if}
-            </button>
           </div>
         </section>
 
@@ -1278,13 +1281,11 @@
                         {@html highlight(item.title, searchTerm)}
                       {/if}
                     </h4>
-
                     {#if item.org}
                       <span class="result-school">
                         {@html highlight(item.org, searchTerm)}
                       </span>
                     {/if}
-
                   </div>
 
                   <p class="result-date">{formatDate(item.date)}</p>
@@ -1301,69 +1302,71 @@
             </div>
 
             <div class="pagination">
-              <button
-                      class="page-btn"
-                      on:click={() => changePage(1)}
-                      disabled={currentPage === 1 || loadingArticles}
-              >
-                First
-              </button>
-              <button
-                      class="page-btn"
-                      on:click={() => changePage(currentPage - 1)}
-                      disabled={currentPage === 1 || loadingArticles}
-              >
-                Previous
-              </button>
+              <div class="pagination-buttons">
+                <button
+                        class="page-btn"
+                        on:click={() => changePage(1)}
+                        disabled={currentPage === 1 || loadingArticles}
+                >
+                  First
+                </button>
+                <button
+                        class="page-btn"
+                        on:click={() => changePage(currentPage - 1)}
+                        disabled={currentPage === 1 || loadingArticles}
+                >
+                  Previous
+                </button>
 
-              <span class="page-info">
-                Page {currentPage} of {totalPages}
-              </span>
+                <div class="page-meta">
+                  <span class="page-info">Page {currentPage} / {totalPages}</span>
+                  <div class="page-jump">
+                    <label class="sr-only" for="goto-page">Go to page</label>
+                    <span class="page-info">Page</span>
+                    <input
+                            id="goto-page"
+                            type="number"
+                            min="1"
+                            max={totalPages}
+                            class="goto-input"
+                            bind:value={gotoPage}
+                            on:change={(e) => {
+                            const target = Number(e.currentTarget.value);
+                            if (!Number.isNaN(target)) changePage(target);
+                          }}
+                    />
+                    <button
+                            type="button"
+                            class="page-btn"
+                            on:click={() => {
+                          const target = Number(gotoPage);
+                          if (!Number.isNaN(target)) {
+                            changePage(target);
+                          }
+                        }}>
+                      Go
+                    </button>
+                  </div>
+                </div>
 
-              <!-- Jump to page -->
-              <label class="page-info">
-                Page
-                <input
-                        type="number"
-                        min="1"
-                        max={totalPages}
-                        class="goto-input"
-                        bind:value={gotoPage}
-                        on:change={(e) => {
-                          const target = Number(e.currentTarget.value);
-                          if (!Number.isNaN(target)) changePage(target);
-                        }}
-                />
+                <button
+                        class="page-btn"
+                        on:click={() => changePage(currentPage + 1)}
+                        disabled={currentPage === totalPages || loadingArticles}
+                >
+                  Next
+                </button>
+
+                <button
+                        class="page-btn"
+                        on:click={() => changePage(totalPages)}
+                        disabled={currentPage === totalPages || loadingArticles}
+                >
+                  Last
+                </button>
+              </div>
 
 
-              <button
-                      type="button"
-                      class="page-btn"
-                      on:click={() => {
-                      const target = Number(gotoPage);
-                      if (!Number.isNaN(target)) {
-                        changePage(target);
-                      }
-                    }}>
-                                Go
-              </button>
-              </label>
-
-              <button
-                      class="page-btn"
-                      on:click={() => changePage(currentPage + 1)}
-                      disabled={currentPage === totalPages || loadingArticles}
-              >
-                Next
-              </button>
-
-              <button
-                      class="page-btn"
-                      on:click={() => changePage(totalPages)}
-                      disabled={currentPage === totalPages || loadingArticles}
-              >
-                Last
-              </button>
             </div>
           {/if}
         </section>
@@ -1514,15 +1517,23 @@
   }
 
   .filters-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .search-export-group {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .search-wrapper {
+    display: inline-flex;
   }
 
   .filter-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
     font-weight: 500;
     color: #222;
     font-family: "Graphik Web", sans-serif;
@@ -1669,19 +1680,23 @@
   .search-export-row {
     display: flex;
     gap: 1rem;
-    align-items: center;
-    flex-wrap: wrap;
+    align-items: flex-end;
+    flex-wrap: nowrap;
   }
 
   .search-wrapper {
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 250px;
+    max-width: 100%;
+    min-height: 100%;
   }
 
   .search-input-row {
     display: flex;
     align-items: start;
     gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
   }
 
   .search-status {
@@ -1707,10 +1722,10 @@
     transition: all 0.2s ease;
     font-family: "Graphik Web", sans-serif;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    white-space: nowrap;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    flex: 0 0 auto;
   }
 
   .search-help {
@@ -1726,6 +1741,9 @@
     color: #444;
     background: #f8f8f8;
     cursor: pointer;
+    border: 1px solid #dee2e6;
+    appearance: none;
+    box-shadow: none;
     flex-shrink: 0;
     line-height: 1;
     font-family: "Graphik Web", sans-serif;
@@ -1742,7 +1760,7 @@
     position: absolute;
     top: 110%;
     right: 0;
-    width: 300px;
+    width: min(320px, 45vw);
     background: white;
     border: 1px solid #dee2e6;
     border-radius: 6px;
@@ -1753,6 +1771,7 @@
     transform: translateY(-4px);
     transition: all 0.15s ease;
     z-index: 10;
+    text-align: left;
   }
 
   .search-help:hover .search-help-tooltip,
@@ -1854,7 +1873,10 @@
     font-size: 0.85rem;
     font-family: "Graphik Web", sans-serif;
     color: #666;
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
+    display: inline-block;
+    max-width: 100%;
   }
   .result-date {
     font-size: 0.9rem;
@@ -1871,11 +1893,11 @@
 
   .pagination {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0.75rem;
     margin-top: 3rem;
     padding: 1.5rem 0;
+    align-items: center;
   }
   .page-btn {
     padding: 0.5rem 1rem;
@@ -1899,11 +1921,45 @@
     cursor: not-allowed;
     box-shadow: none;
   }
+  .pagination-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .page-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .page-meta .page-info {
+    white-space: nowrap;
+  }
+  .page-jump {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+  }
   .page-info {
-    padding: 0 1rem;
+    padding: 0 0.5rem;
     font-weight: 500;
     font-family: "Graphik Web", sans-serif;
     font-size: 0.95rem;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
 
@@ -1918,8 +1974,27 @@
       grid-template-columns: 1fr;
     }
     .search-export-row {
-      flex-direction: column;
+      flex-wrap: wrap;
       align-items: stretch;
+      flex-direction: column;
+    }
+    .search-wrapper {
+      min-width: 0;
+      width: 100%;
+    }
+    .export-btn {
+      width: 100%;
+      justify-content: center;
+    }
+    .pagination {
+      align-items: stretch;
+    }
+    .page-meta {
+      justify-content: center;
+    }
+    .page-jump {
+      flex: 0 1 auto;
+      justify-content: center;
     }
     .result-header {
       flex-direction: column;
