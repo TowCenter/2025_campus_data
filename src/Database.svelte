@@ -6,6 +6,7 @@
   const ARTICLE_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/articles';
   const SEARCH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/search_index';
   const FULL_DATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
+  const EXPORT_FULL_DATA_THRESHOLD = 1000;
 
   const NO_DATE_KEY = '_no_date';
   const NO_ORG_KEY = '_no_org';
@@ -636,16 +637,23 @@
     exporting = true;
 
     try {
+      const useFullDataset =
+              isUnfiltered() ||
+              activeIds.length > EXPORT_FULL_DATA_THRESHOLD ||
+              Boolean(fullDatasetCache);
       let articlesToExport;
 
-      if (isUnfiltered()) {
-        articlesToExport = await getFullDataset();
-      } else {
-        articlesToExport = [];
-        for (const id of activeIds) {
-          const article = await getArticleById(id);
-          articlesToExport.push(article);
+      if (useFullDataset) {
+        if (isUnfiltered()) {
+          articlesToExport = await getFullDataset();
+        } else {
+          const datasetMap = await ensureFullDatasetMap();
+          articlesToExport = activeIds
+                  .map((id) => datasetMap.get(id))
+                  .filter(Boolean);
         }
+      } else {
+        articlesToExport = await Promise.all(activeIds.map((id) => getArticleById(id)));
       }
 
       const cleanData = cleanDataForExport(articlesToExport);
