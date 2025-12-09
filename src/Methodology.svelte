@@ -35,10 +35,15 @@
   // AWS S3 configuration
   const S3_LIST_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/list.json';
   const S3_BUCKET_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
+  const MONTH_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index.json';
+  const INSTITUTION_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index.json';
   let schoolsList = [];
   let allArticles = [];
   let articlesByDate = {};
   let loadingArticles = false;
+  let indexTotalRecords = null;
+  let institutionIndex = {};
+  let institutionNames = [];
 
   // Your pre-geocoded school data
   let schoolData = [
@@ -155,7 +160,7 @@
   ];
   
   // Calculate statistics
-  $: totalSchools = schoolData.length;
+  $: totalSchools = institutionNames.length ? institutionNames.length : schoolData.length;
   $: stateGroups = schoolData.reduce((acc, school) => {
     if (school.state) {
       acc[school.state] = (acc[school.state] || 0) + 1;
@@ -163,7 +168,7 @@
     return acc;
   }, {});
   $: totalStates = Object.keys(stateGroups).length;
-  $: totalRecords = allArticles.length;
+  $: totalRecords = indexTotalRecords ?? allArticles.length;
 
   // Group schools by proximity and calculate offset positions
   function getSchoolPositions(schools) {
@@ -461,11 +466,36 @@
   // Track time spent on Methodology page
   let pageStartTime;
 
+  async function loadMonthIndex() {
+    const res = await fetch(MONTH_INDEX_URL);
+    if (!res.ok) return null;
+    const data = await res.json();
+    let total = 0;
+    Object.keys(data).forEach((key) => {
+      const arr = data[key];
+      if (Array.isArray(arr)) total += arr.length;
+    });
+    indexTotalRecords = total;
+    return data;
+  }
+
+  async function loadInstitutionIndex() {
+    const res = await fetch(INSTITUTION_INDEX_URL);
+    if (!res.ok) return null;
+    const data = await res.json();
+    institutionIndex = data;
+    institutionNames = Object.keys(data).filter((k) => k !== '_no_org');
+    return data;
+  }
+
   // Load S3 data for record count and US states map
   onMount(async () => {
     pageStartTime = Date.now();
 
     try {
+      // Kick off lightweight index loads first for fast counts
+      const indexPromise = Promise.all([loadMonthIndex(), loadInstitutionIndex()]);
+
       // Load S3 data
       const response = await fetch(S3_LIST_URL);
       if (response.ok) {
@@ -479,12 +509,19 @@
         statesGeoJSON = topojson.feature(topology, topology.objects.states);
       }
 
-      // Load article data for charts
+      // Wait for indexes (they update totals immediately)
+      await indexPromise;
+
+      // Load article data for charts (heavier)
       loadingArticles = true;
       const articlesResponse = await fetch(S3_BUCKET_URL);
       if (articlesResponse.ok) {
         allArticles = await articlesResponse.json();
         articlesByDate = processArticleData(allArticles);
+        // If indexTotalRecords failed, fall back to full count
+        if (indexTotalRecords === null) {
+          indexTotalRecords = allArticles.length;
+        }
       }
       loadingArticles = false;
     } catch (err) {
@@ -521,7 +558,9 @@
           </div>
           <div class="stat-card">
             <div class="stat-number">
-              {#if loadingArticles}
+              {#if indexTotalRecords !== null}
+                {indexTotalRecords.toLocaleString()}
+              {:else if loadingArticles}
                 <span class="loading-text">Loading...</span>
               {:else}
                 {totalRecords.toLocaleString()}
@@ -1058,7 +1097,6 @@
 
   .school-dot:hover,
   .school-dot.hovered {
-    r: 8;
     fill: #1e3d57;
     stroke: #254c6f;
     stroke-width: 3;
