@@ -1207,7 +1207,7 @@
                     <span class="btn-spinner"></span>
                     Exporting...
                   {:else}
-                    Export {activeIds.length.toLocaleString()} items to CSV
+                    Export {activeIds.length.toLocaleString()} items
                   {/if}
                 </button>
               </div>
@@ -1445,7 +1445,6 @@
   }
 
   .intro {
-    text-align: center;
     margin-bottom: 3rem;
     max-width: 700px;
     margin-left: auto;
@@ -1494,7 +1493,6 @@
     background: white;
     color: #254c6f;
     border: 2px solid #254c6f;
-    border-radius: 4px;
     cursor: pointer;
     font-size: 1rem;
     font-family: "Graphik Web", sans-serif;
@@ -1511,14 +1509,16 @@
   .filters-section {
     background: #f8f8f8;
     border: 1px solid #e0e0e0;
-    border-radius: 8px;
     padding: 2rem;
     margin-bottom: 2rem;
   }
 
   .filters-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
     gap: 1.5rem;
     margin-bottom: 0.5rem;
+    align-items: start;
   }
 
   .search-export-group {
@@ -1528,7 +1528,10 @@
   }
 
   .search-wrapper {
-    display: inline-flex;
+    flex: 1 1 auto;
+    min-width: 250px;
+    max-width: 100%;
+    min-height: 100%;
   }
 
   .filter-group label {
@@ -1544,7 +1547,6 @@
     width: 100%;
     padding: 0.75rem;
     border: 1px solid #dee2e6;
-    border-radius: 4px;
     font-size: 0.95rem;
     font-family: "Graphik Web", sans-serif;
     background: white;
@@ -1582,7 +1584,6 @@
     margin-top: 0.25rem;
     background: white;
     border: 1px solid #dee2e6;
-    border-radius: 4px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     max-height: 300px;
@@ -1599,7 +1600,6 @@
     width: 100%;
     padding: 0.5rem;
     border: 1px solid #dee2e6;
-    border-radius: 4px;
     font-size: 0.9rem;
     font-family: "Graphik Web", sans-serif;
   }
@@ -1638,7 +1638,6 @@
     padding: 0.5rem 0.75rem;
     margin: 0.5rem;
     border: 1px solid #dee2e6;
-    border-radius: 4px;
     background: white;
     color: #666;
     font-size: 0.85rem;
@@ -1656,7 +1655,6 @@
     width: 100%;
     padding: 0.8rem 1rem;
     border: 1px solid #dee2e6;
-    border-radius: 4px;
     font-size: 0.95rem;
     font-family: "Graphik Web", sans-serif;
   }
@@ -1680,7 +1678,7 @@
   .search-export-row {
     display: flex;
     gap: 1rem;
-    align-items: flex-end;
+    align-items: center;
     flex-wrap: nowrap;
   }
 
@@ -1711,10 +1709,9 @@
   }
 
   .export-btn {
-    background: white;
-    color: #254c6f;
-    border: 2px solid #254c6f;
-    border-radius: 4px;
+    background: #254c6f;
+    color: #ffffff;
+    border: 0;
     padding: 0.7rem 1.5rem;
     font-size: 0.95rem;
     font-weight: 500;
@@ -1763,7 +1760,6 @@
     width: min(320px, 45vw);
     background: white;
     border: 1px solid #dee2e6;
-    border-radius: 6px;
     padding: 0.75rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     opacity: 0;
@@ -1836,7 +1832,6 @@
   .result-card {
     background: white;
     border: 1px solid #e0e0e0;
-    border-radius: 6px;
     padding: 1.5rem;
     transition: all 0.2s ease;
   }
