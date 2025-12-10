@@ -311,7 +311,7 @@
 
       try {
         const datasetMap = await ensureFullDatasetMap();
-        const phraseRegex = new RegExp(escapeRegExp(quotedPhrase), 'i');
+        const phraseRegex = new RegExp(`(^|\\b)${escapeRegExp(quotedPhrase)}(\\b|$)`, 'i');
         const matchedIds = [];
 
         for (const id of baseIds) {
@@ -1259,11 +1259,17 @@
             <div class="loading">
               <div class="spinner"></div>
               <p>Loading database...</p>
+              {#if exactMatchActive}
+                <p class="loading-note">Exact phrase searches take longer. Thanks for your patience.</p>
+              {/if}
             </div>
           {:else if searchLoading}
             <div class="loading">
               <div class="spinner"></div>
               <p>Loading database...</p>
+              {#if exactMatchActive}
+                <p class="loading-note">Exact phrase searches take longer. Thanks for your patience.</p>
+              {/if}
             </div>
           {:else if !articles.length}
             <p>No articles found.</p>
@@ -1472,6 +1478,13 @@
     height: 50px;
     animation: spin 1s linear infinite;
     margin: 0 auto 1rem;
+  }
+
+  .loading-note {
+    margin: 0;
+    color: #666;
+    font-size: 0.95rem;
+    text-align: center;
   }
 
   @keyframes spin {
