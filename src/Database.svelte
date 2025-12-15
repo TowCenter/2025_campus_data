@@ -1,13 +1,43 @@
 <script>
+  /**
+   * Database Component
+   *
+   * This component displays the searchable, filterable database of university responses.
+   * Data is stored in AWS S3 and loaded incrementally for performance.
+   *
+   * Data Architecture:
+   * - month_index.json: Maps months to article IDs for chronological filtering
+   * - institution_index.json: Maps institutions to article IDs for institution filtering
+   * - articles/: Individual JSON files per article, loaded on demand
+   * - search_index/: Pre-built search indices for fast keyword matching
+   * - data.json: Full dataset, loaded only for large exports or exact phrase searches
+   *
+   * Key Features:
+   * - Multi-select month and institution filters
+   * - Full-text search with exact phrase matching (using quotes)
+   * - Pagination with configurable page size
+   * - CSV export functionality
+   * - Lazy loading of article data for performance
+   *
+   * Svelte 5 Migration Notes:
+   * - All event handlers converted from on:click to onclick
+   * - Event modifiers (preventDefault, stopPropagation) are now explicit calls
+   * - All other Svelte features (bind:, reactive statements, etc.) work unchanged
+   */
+
   import { onMount } from 'svelte';
 
+  // AWS S3 data URLs - all data is hosted in a public S3 bucket
   const MONTH_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index.json';
   const INSTITUTION_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index.json';
   const ARTICLE_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/articles';
   const SEARCH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/search_index';
   const FULL_DATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
+
+  // Performance threshold: if export exceeds this many items, load full dataset at once
   const EXPORT_FULL_DATA_THRESHOLD = 1000;
 
+  // Special keys for items without dates or organizations
   const NO_DATE_KEY = '_no_date';
   const NO_ORG_KEY = '_no_org';
 
@@ -1052,7 +1082,7 @@
       {:else if error}
         <div class="error">
           <p><strong>Error loading data:</strong> {error}</p>
-          <button on:click={loadInitialData} class="retry-btn">Retry</button>
+          <button onclick={loadInitialData} class="retry-btn">Retry</button>
         </div>
       {:else}
         <!-- Filters -->
@@ -1065,7 +1095,8 @@
                 <button
                         id="institution-dropdown"
                         class="dropdown-toggle"
-                        on:click|stopPropagation={() => {
+                        onclick={(e) => {
+                          e.stopPropagation();
                           institutionDropdownOpen = !institutionDropdownOpen;
                           monthDropdownOpen = false;
                         }}
@@ -1084,7 +1115,7 @@
                               type="text"
                               bind:value={institutionSearchTerm}
                               placeholder="Search institutions..."
-                              on:click|stopPropagation
+                              onclick={(e) => e.stopPropagation()}
                       />
                     </div>
                     <div class="dropdown-options">
@@ -1094,14 +1125,14 @@
                                   type="checkbox"
                                   value={inst}
                                   checked={selectedInstitutions.includes(inst)}
-                                  on:change={(e) => toggleInstitution(inst, e.target.checked)}
+                                  onchange={(e) => toggleInstitution(inst, e.target.checked)}
                           />
                           <span>{inst}</span>
                         </label>
                       {/each}
                     </div>
                     {#if selectedInstitutions.length > 0}
-                      <button class="clear-selection" on:click={clearInstitutions} type="button">
+                      <button class="clear-selection" onclick={clearInstitutions} type="button">
                         Clear Selection
                       </button>
                     {/if}
@@ -1116,7 +1147,8 @@
                 <button
                         id="month-dropdown"
                         class="dropdown-toggle"
-                        on:click|stopPropagation={() => {
+                        onclick={(e) => {
+                          e.stopPropagation();
                           monthDropdownOpen = !monthDropdownOpen;
                           institutionDropdownOpen = false;
                         }}
@@ -1135,7 +1167,7 @@
                               type="text"
                               bind:value={monthSearchTerm}
                               placeholder="Search months..."
-                              on:click|stopPropagation
+                              onclick={(e) => e.stopPropagation()}
                       />
                     </div>
                     <div class="dropdown-options">
@@ -1145,7 +1177,7 @@
                                   type="checkbox"
                                   value={month}
                                   checked={selectedMonths.includes(month)}
-                                  on:change={(e) => toggleMonth(month, e.target.checked)}
+                                  onchange={(e) => toggleMonth(month, e.target.checked)}
                           />
                           <span>{formatMonthLabel(month)}</span>
                         </label>
@@ -1156,14 +1188,14 @@
                                   type="checkbox"
                                   value={NO_DATE_KEY}
                                   checked={selectedMonths.includes(NO_DATE_KEY)}
-                                  on:change={(e) => toggleMonth(NO_DATE_KEY, e.target.checked)}
+                                  onchange={(e) => toggleMonth(NO_DATE_KEY, e.target.checked)}
                           />
                           <span>No Date</span>
                         </label>
                       {/if}
                     </div>
                     {#if selectedMonths.length > 0}
-                      <button class="clear-selection" on:click={clearMonths} type="button">
+                      <button class="clear-selection" onclick={clearMonths} type="button">
                         Clear Selection
                       </button>
                     {/if}
@@ -1181,7 +1213,7 @@
                             id="search-input"
                             type="text"
                             bind:value={searchTerm}
-                            on:input={handleSearchInput}
+                            oninput={handleSearchInput}
                             placeholder="Search title, institution, or content..."
                             class="search-input"
                     />
@@ -1199,7 +1231,7 @@
                   {/if}
                 </div>
                 <button
-                        on:click={exportResults}
+                        onclick={exportResults}
                         class="export-btn"
                         disabled={exporting || loadingArticles || activeIds.length === 0}
                 >
@@ -1311,14 +1343,14 @@
               <div class="pagination-buttons">
                 <button
                         class="page-btn"
-                        on:click={() => changePage(1)}
+                        onclick={() => changePage(1)}
                         disabled={currentPage === 1 || loadingArticles}
                 >
                   First
                 </button>
                 <button
                         class="page-btn"
-                        on:click={() => changePage(currentPage - 1)}
+                        onclick={() => changePage(currentPage - 1)}
                         disabled={currentPage === 1 || loadingArticles}
                 >
                   Previous
@@ -1336,7 +1368,7 @@
                             max={totalPages}
                             class="goto-input"
                             bind:value={gotoPage}
-                            on:change={(e) => {
+                            onchange={(e) => {
                             const target = Number(e.currentTarget.value);
                             if (!Number.isNaN(target)) changePage(target);
                           }}
@@ -1344,7 +1376,7 @@
                     <button
                             type="button"
                             class="page-btn"
-                            on:click={() => {
+                            onclick={() => {
                           const target = Number(gotoPage);
                           if (!Number.isNaN(target)) {
                             changePage(target);
@@ -1357,7 +1389,7 @@
 
                 <button
                         class="page-btn"
-                        on:click={() => changePage(currentPage + 1)}
+                        onclick={() => changePage(currentPage + 1)}
                         disabled={currentPage === totalPages || loadingArticles}
                 >
                   Next
@@ -1365,7 +1397,7 @@
 
                 <button
                         class="page-btn"
-                        on:click={() => changePage(totalPages)}
+                        onclick={() => changePage(totalPages)}
                         disabled={currentPage === totalPages || loadingArticles}
                 >
                   Last

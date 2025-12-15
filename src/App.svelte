@@ -1,14 +1,34 @@
 <script>
+  /**
+   * Main Application Component
+   *
+   * This component serves as the root of the University Response Tracker application.
+   * It manages client-side routing between Database and Methodology pages, implements
+   * a single-page application (SPA) pattern, and integrates with Umami analytics.
+   *
+   * Key features:
+   * - Client-side routing with browser history API
+   * - Lazy component mounting for performance
+   * - Mobile-responsive navigation
+   * - Analytics tracking integration
+   *
+   * Svelte 5 Migration Notes:
+   * - All event handlers use the new onclick syntax (not on:click)
+   * - Event modifiers like preventDefault are now explicit function calls
+   */
+
   import { onMount } from 'svelte';
   import Methodology from './Methodology.svelte';
   import Database from './Database.svelte';
 
-  // Logo configuration
+  // Logo configuration for Tow Center branding
   const logoDesktopUrl = 'https://miro.medium.com/v2/resize:fit:1070/1*Bdt1nEsNDbLfk-w0b3dnqA.jpeg';
   const logoMobileUrl = 'https://miro.medium.com/v2/resize:fit:1070/1*Bdt1nEsNDbLfk-w0b3dnqA.jpeg';
   const logoAlt = 'Columbia Journalism School and Tow Center for Digital Journalism';
   const logoLink = 'https://towcenter.columbia.edu/';
 
+  // Base path configuration for GitHub Pages deployment
+  // The BASE_URL is set in vite.config.js and typically points to '/2025_campus_data/'
   const base = import.meta.env.BASE_URL || '/';
   const basePath = base.endsWith('/') ? base.slice(0, -1) : base;
   const routes = {
@@ -16,6 +36,10 @@
     methodology: `${basePath}/methodology`
   };
 
+  /**
+   * Normalize pathname by removing the base path prefix
+   * This ensures consistent routing regardless of deployment context
+   */
   function normalizePath(pathname) {
     if (basePath && pathname.startsWith(basePath)) {
       return pathname.slice(basePath.length) || '/';
@@ -23,44 +47,70 @@
     return pathname;
   }
 
+  /**
+   * Determine which page to display based on the current pathname
+   * Returns 'methodology' if the path includes that keyword, otherwise 'database'
+   */
   function getPageFromPath(pathname) {
     const normalizedPath = normalizePath(pathname);
     return normalizedPath.includes('methodology') ? 'methodology' : 'database';
   }
 
+  // Initialize page state based on current URL
   const initialPath = typeof window !== 'undefined' ? window.location.pathname : '/';
   let currentPage = getPageFromPath(initialPath);
+
+  // Track which components have been mounted for lazy loading optimization
   let databaseMounted = currentPage === 'database';
   let methodologyMounted = currentPage === 'methodology';
   let mobileNavOpen = false;
 
+  /**
+   * Ensure a component is mounted before displaying it
+   * Components are mounted once and kept in memory for fast switching
+   */
   function ensureMounted(page) {
     if (page === 'database') databaseMounted = true;
     if (page === 'methodology') methodologyMounted = true;
   }
 
+  /**
+   * Update the current page based on pathname
+   * Used for both initial load and browser back/forward navigation
+   */
   const setPageFromPath = (pathname) => {
     currentPage = getPageFromPath(pathname);
     ensureMounted(currentPage);
     mobileNavOpen = false;
   };
 
+  /**
+   * Initialize routing and analytics on component mount
+   * Sets up popstate listener for browser back/forward buttons
+   */
   onMount(() => {
     setPageFromPath(window.location.pathname);
 
     const handlePopState = () => setPageFromPath(window.location.pathname);
     window.addEventListener('popstate', handlePopState);
 
-    // Track initial page view with Umami
+    // Track initial page view with Umami analytics
     if (window.umami) {
       window.umami.track();
     }
 
+    // Cleanup function removes event listener when component unmounts
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
   });
 
+  /**
+   * Navigate to a specific page programmatically
+   * Updates browser history and triggers analytics tracking
+   *
+   * Note: Uses Svelte 5 syntax - no event modifiers, explicit handling required
+   */
   function navigateTo(page) {
     currentPage = page;
     ensureMounted(page);
@@ -109,7 +159,35 @@
       <p class="headline-category">TOW CENTER FOR DIGITAL JOURNALISM</p>
       <h1 class="main-title">University Response Tracker</h1>
       <p class="last-updated"><em>Last updated on</em> December 6, 2025</p>
-      <p class="byline">By [Byline Name]</p>
+
+      <!-- Credits and Acknowledgements Section -->
+      <details class="credits-section">
+        <summary class="credits-title">Credits and Acknowledgements</summary>
+        <div class="credits-content">
+
+          <details class="credit-dropdown">
+            <summary>Research</summary>
+            <div class="credit-list">
+              <!-- Names will be added here -->
+            </div>
+          </details>
+
+          <details class="credit-dropdown">
+            <summary>Development</summary>
+            <div class="credit-list">
+              <!-- Names will be added here -->
+            </div>
+          </details>
+
+          <details class="credit-dropdown">
+            <summary>Design</summary>
+            <div class="credit-list">
+              <!-- Names will be added here -->
+            </div>
+          </details>
+
+        </div>
+      </details>
     </header>
   </div>
 
@@ -121,7 +199,7 @@
           class="mobile-nav-toggle"
           aria-expanded={mobileNavOpen}
           aria-controls="mobile-nav-menu"
-          on:click={() => (mobileNavOpen = !mobileNavOpen)}
+          onclick={() => (mobileNavOpen = !mobileNavOpen)}
           type="button"
         >
           <span class="hamburger" aria-hidden="true">
@@ -138,7 +216,7 @@
             <button
               class="mobile-nav-link"
               aria-current={currentPage === 'database' ? 'page' : undefined}
-              on:click={() => navigateTo('database')}
+              onclick={() => navigateTo('database')}
               type="button"
             >
               Database
@@ -146,7 +224,7 @@
             <button
               class="mobile-nav-link"
               aria-current={currentPage === 'methodology' ? 'page' : undefined}
-              on:click={() => navigateTo('methodology')}
+              onclick={() => navigateTo('methodology')}
               type="button"
             >
               Methodology
@@ -161,7 +239,7 @@
               <a
                 href="#database"
                 class:active={currentPage === 'database'}
-                on:click|preventDefault={() => navigateTo('database')}
+                onclick={(e) => { e.preventDefault(); navigateTo('database'); }}
               >
                 Database
               </a>
@@ -170,7 +248,7 @@
               <a
                 href="#methodology"
                 class:active={currentPage === 'methodology'}
-                on:click|preventDefault={() => navigateTo('methodology')}
+                onclick={(e) => { e.preventDefault(); navigateTo('methodology'); }}
               >
                 Methodology
               </a>
