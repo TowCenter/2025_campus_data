@@ -162,30 +162,26 @@
 
       <!-- Credits and Acknowledgements Section -->
       <details class="credits-section">
-        <summary class="credits-title">Credits and Acknowledgements</summary>
-        <div class="credits-content">
-
-          <details class="credit-dropdown">
-            <summary>Research</summary>
-            <div class="credit-list">
-              <!-- Names will be added here -->
+        <summary class="credits-heading">
+          <em>Credit and Acknowledgements</em>
+        </summary>
+        <div class="credits-box">
+          <div class="credits-inner">
+            <div class="credits-item">
+              <span class="credits-label">Compiled and Maintained By:</span>
+              <a href="#">[Name]</a>
             </div>
-          </details>
-
-          <details class="credit-dropdown">
-            <summary>Development</summary>
-            <div class="credit-list">
-              <!-- Names will be added here -->
+            <div class="credits-item">
+              <span class="credits-label">Design and Development:</span>
+              <a href="#">[Name]</a>
             </div>
-          </details>
-
-          <details class="credit-dropdown">
-            <summary>Design</summary>
-            <div class="credit-list">
-              <!-- Names will be added here -->
+            <div class="credits-acknowledgement">
+              <span class="credits-label">Acknowledgements:</span>
+              <p>
+                <!-- Add acknowledgement text here -->
+              </p>
             </div>
-          </details>
-
+          </div>
         </div>
       </details>
     </header>
@@ -577,6 +573,125 @@
     .headline-header {
       padding-left: 1rem;
       padding-right: 1rem;
+    }
+  }
+
+  /* Credits and Acknowledgements Section */
+  .credits-section {
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .credits-heading {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0;
+    padding: 0;
+  }
+
+  .credits-heading::-webkit-details-marker {
+    display: none;
+  }
+
+  .credits-heading::marker {
+    display: none;
+  }
+
+  .credits-heading::before {
+    content: '+';
+    font-family: "Graphik Web", 'Helvetica', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: #254c6f;
+    display: inline-block;
+    width: 1.25rem;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+
+  .credits-section[open] .credits-heading::before {
+    content: '−';
+  }
+
+  .credits-heading em {
+    font-family: "Lyon Text Web", 'Georgia', serif;
+    font-size: 1.125rem;
+    font-style: italic;
+    color: #333;
+  }
+
+  .credits-box {
+    background-color: #f8f8f8;
+    border-left: 3px solid #254c6f;
+    padding: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .credits-section:not([open]) .credits-box {
+    display: none;
+  }
+
+  .credits-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .credits-item {
+    font-family: "Graphik Web", 'Helvetica', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .credits-label {
+    font-weight: 600;
+    color: #254c6f;
+    margin-right: 0.5rem;
+  }
+
+  .credits-item a,
+  .credits-acknowledgement a {
+    color: #254c6f;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .credits-item a:hover,
+  .credits-acknowledgement a:hover {
+    color: #1a3547;
+    text-decoration: underline;
+  }
+
+  .credits-acknowledgement {
+    font-family: "Graphik Web", 'Helvetica', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .credits-acknowledgement p {
+    margin: 0.5rem 0 0 0;
+    color: #555;
+  }
+
+  @media screen and (max-width: 768px) {
+    .credits-section {
+      margin-top: 1.5rem;
+    }
+
+    .credits-heading {
+      font-size: 1rem;
+    }
+
+    .credits-box {
+      padding: 1rem;
+    }
+
+    .credits-item,
+    .credits-acknowledgement {
+      font-size: 0.85rem;
     }
   }
 </style>
