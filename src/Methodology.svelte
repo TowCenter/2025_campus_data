@@ -33,135 +33,69 @@
   }
 
   // AWS S3 configuration
-  const S3_LIST_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/list.json';
+  const LOCATION_DATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/location.json';
   const S3_BUCKET_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
   const MONTH_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index.json';
   const INSTITUTION_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index.json';
-  let schoolsList = [];
+  let schoolData = [];
   let allArticles = [];
   let articlesByDate = {};
   let loadingArticles = false;
   let indexTotalRecords = null;
   let institutionIndex = {};
   let institutionNames = [];
-
-  // Your pre-geocoded school data
-  let schoolData = [
-    { name: "Grand Valley State University", lat: 42.9641221, lng: -85.8890404, state: "Michigan" },
-    { name: "University of Rhode Island", lat: 41.4862328, lng: -71.5306788, state: "Rhode Island" },
-    { name: "University of California Berkeley", lat: 37.8712141, lng: -122.255463, state: "California" },
-    { name: "Whitman College", lat: 46.0708191, lng: -118.3295895, state: "Washington" },
-    { name: "Johns Hopkins University", lat: 39.3299013, lng: -76.6205177, state: "Maryland" },
-    { name: "University of Kentucky", lat: 38.0306511, lng: -84.5039697, state: "Kentucky" },
-    { name: "Yale University", lat: 41.3163244, lng: -72.9223431, state: "Connecticut" },
-    { name: "Fashion Institute of Technology", lat: 40.7472624, lng: -73.9950292, state: "New York" },
-    { name: "Ithaca College", lat: 42.4199229, lng: -76.4969344, state: "New York" },
-    { name: "State University of New York Rockland", lat: 41.1489458, lng: -73.9830029, state: "New York" },
-    { name: "University of Michigan", lat: 42.277145, lng: -83.7382071, state: "Michigan" },
-    { name: "Binghamton University", lat: 42.0971204, lng: -75.9116546, state: "New York" },
-    { name: "SUNY binghamton", lat: 42.1128178, lng: -75.9542403, state: "New York" },
-    { name: "University of Hawaii at Manoa", lat: 21.2968676, lng: -157.8174491, state: "Hawaii" },
-    { name: "Santa Monica College", lat: 34.0167898, lng: -118.4709157, state: "California" },
-    { name: "American University", lat: 38.9380155, lng: -77.088922, state: "Washington DC" },
-    { name: "University of Kansas", lat: 38.9543439, lng: -95.2557961, state: "Kansas" },
-    { name: "University of Delaware", lat: 39.6809151, lng: -75.7523313, state: "Delaware" },
-    { name: "Pomona College", lat: 34.0977461, lng: -117.711806, state: "California" },
-    { name: "University of Miami", lat: 25.7169568, lng: -80.2798198, state: "Florida" },
-    { name: "Illinois Wesleyan University", lat: 40.4908891, lng: -88.9906541, state: "Illinois" },
-    { name: "University of Southern Florida", lat: 28.0622334, lng: -82.4135057, state: "Florida" },
-    { name: "University of South Florida", lat: 28.0622334, lng: -82.4135057, state: "Florida" },
-    { name: "University of Oregon", lat: 44.0448302, lng: -123.0726055, state: "Oregon" },
-    { name: "University of North Dakota", lat: 47.922891, lng: -97.0768014, state: "North Dakota" },
-    { name: "University of Pennsylvania", lat: 39.9515013, lng: -75.1910161, state: "Pennsylvania" },
-    { name: "Emory University", lat: 33.7973735, lng: -84.3252791, state: "Georgia" },
-    { name: "Duke University", lat: 36.0014258, lng: -78.9382286, state: "North Carolina" },
-    { name: "University of California Davis", lat: 38.5382322, lng: -121.7617125, state: "California" },
-    { name: "Sarah Lawrence College", lat: 40.93459, lng: -73.8455821, state: "New York" },
-    { name: "Cal Poly Humboldt", lat: 40.7450055, lng: -123.8695086, state: "California" },
-    { name: "Georgetown University", lat: 38.9076089, lng: -77.0722585, state: "Washington DC" },
-    { name: "California State University Sacramento", lat: 38.560824, lng: -121.423993, state: "California" },
-    { name: "Montana State University", lat: 45.6673524, lng: -111.0546211, state: "Montana" },
-    { name: "Massachusetts Institute of Technology", lat: 42.360091, lng: -71.09416, state: "Massachusetts" },
-    { name: "University of Notre Dame", lat: 41.7051917, lng: -86.2351655, state: "Indiana" },
-    { name: "Rice University", lat: 29.7168363, lng: -95.4035531, state: "Texas" },
-    { name: "University of North Carolina", lat: 35.9049122, lng: -79.0469134, state: "North Carolina" },
-    { name: "Tulane University", lat: 29.9407282, lng: -90.1203167, state: "Louisiana" },
-    { name: "George Mason University", lat: 38.8314578, lng: -77.3117471, state: "Virginia" },
-    { name: "San Jose State University", lat: 37.3351874, lng: -121.8810715, state: "California" },
-    { name: "University of California", lat: 36.778261, lng: -119.4179324, state: "California" },
-    { name: "Drexel University", lat: 39.9566127, lng: -75.1899441, state: "Pennsylvania" },
-    { name: "New York University", lat: 40.7295134, lng: -73.9964609, state: "New York" },
-    { name: "University of Virginia", lat: 38.0335529, lng: -78.5079772, state: "Virginia" },
-    { name: "Scripps College", lat: 34.1039624, lng: -117.7101787, state: "California" },
-    { name: "Tufts University", lat: 42.4085371, lng: -71.1182729, state: "Massachusetts" },
-    { name: "Middlebury College", lat: 44.0081076, lng: -73.1760412, state: "Vermont" },
-    { name: "University of Washington", lat: 47.6567171, lng: -122.3066181, state: "Washington" },
-    { name: "Western Carolina University", lat: 35.3090108, lng: -83.1863612, state: "North Carolina" },
-    { name: "University of Wyoming", lat: 41.3147175, lng: -105.5690288, state: "Wyoming" },
-    { name: "UNC Chapel Hill", lat: 35.9049122, lng: -79.0469134, state: "North Carolina" },
-    { name: "Purchase College", lat: 41.0400135, lng: -73.7144477, state: "New York" },
-    { name: "Northwestern University", lat: 42.0564594, lng: -87.675267, state: "Illinois" },
-    { name: "Brown University", lat: 41.8267718, lng: -71.4025482, state: "Rhode Island" },
-    { name: "West Michigan University", lat: 42.2837337, lng: -85.6102506, state: "Michigan" },
-    { name: "University of New Mexico", lat: 35.0907712, lng: -106.6210407, state: "New Mexico" },
-    { name: "Emerson College", lat: 42.352123, lng: -71.065877, state: "Massachusetts" },
-    { name: "Lehigh University", lat: 40.6054003, lng: -75.3771764, state: "Pennsylvania" },
-    { name: "Washington State University", lat: 46.7328316, lng: -117.1500266, state: "Washington" },
-    { name: "Portland State University", lat: 45.5111153, lng: -122.6833385, state: "Oregon" },
-    { name: "University of Minnesota, Twin Cities", lat: 44.9753541, lng: -93.2330739, state: "Minnesota" },
-    { name: "University of Massachusetts", lat: 42.3865581, lng: -72.5314278, state: "Massachusetts" },
-    { name: "University of Chicago", lat: 41.7904484, lng: -87.6003953, state: "Illinois" },
-    { name: "Lafayette College", lat: 40.6984713, lng: -75.2101079, state: "Pennsylvania" },
-    { name: "University of Oklahoma", lat: 35.1987162, lng: -97.4448963, state: "Oklahoma" },
-    { name: "Union College", lat: 42.8179321, lng: -73.9294347, state: "New York" },
-    { name: "Haverford College", lat: 40.0074423, lng: -75.3051299, state: "Pennsylvania" },
-    { name: "University of Arkansas", lat: 36.0686895, lng: -94.1748471, state: "Arkansas" },
-    { name: "Stanford University", lat: 37.42766, lng: -122.17006, state: "California" },
-    { name: "Arizona State University", lat: 33.4229975, lng: -111.9278306, state: "Arizona" },
-    { name: "Wellesley College", lat: 42.2935733, lng: -71.3059277, state: "Massachusetts" },
-    { name: "Vanderbilt University", lat: 36.1447034, lng: -86.8026551, state: "Tennessee" },
-    { name: "Indiana University", lat: 39.1682449, lng: -86.5230073, state: "Indiana" },
-    { name: "University of Southern California", lat: 34.0223519, lng: -118.285117, state: "California" },
-    { name: "Temple University", lat: 39.9811911, lng: -75.1553563, state: "Pennsylvania" },
-    { name: "University of Alabama", lat: 33.2114385, lng: -87.5401002, state: "Alabama" },
-    { name: "Harvard University", lat: 42.3744368, lng: -71.1182488, state: "Massachusetts" },
-    { name: "Muhlenberg College", lat: 40.5981933, lng: -75.5081076, state: "Pennsylvania" },
-    { name: "Chapman University", lat: 33.7943211, lng: -117.8518422, state: "California" },
-    { name: "Eastern Washington University", lat: 47.4906616, lng: -117.5847877, state: "Washington" },
-    { name: "University of Louisville", lat: 38.2157954, lng: -85.7614322, state: "Kentucky" },
-    { name: "Georgia Institute of Technology", lat: 33.7779791, lng: -84.3979638, state: "Georgia" },
-    { name: "Cornell University", lat: 42.4534492, lng: -76.4735027, state: "New York" },
-    { name: "Swarthmore College", lat: 39.903833, lng: -75.3526567, state: "Pennsylvania" },
-    { name: "The Ohio State University", lat: 40.0060889, lng: -83.0282624, state: "Ohio" },
-    { name: "University of Denver", lat: 39.6766174, lng: -104.9618965, state: "Colorado" },
-    { name: "Washington University in St. Louis", lat: 38.6487895, lng: -90.3107962, state: "Missouri" },
-    { name: "University of North Texas", lat: 33.2090389, lng: -97.153439, state: "Texas" },
-    { name: "University of Utah", lat: 40.7649368, lng: -111.8421021, state: "Utah" },
-    { name: "Wagner College", lat: 40.6149557, lng: -74.0943823, state: "New York" },
-    { name: "University of Texas Arlington", lat: 32.7292117, lng: -97.1151971, state: "Texas" },
-    { name: "Carnegie Mellon University", lat: 40.4432027, lng: -79.9428499, state: "Pennsylvania" },
-    { name: "Columbia University", lat: 40.8075355, lng: -73.9625727, state: "New York" },
-    { name: "University of Wisconsin Madison", lat: 43.0755143, lng: -89.4154526, state: "Wisconsin" },
-    { name: "Rutgers University", lat: 40.5017645, lng: -74.4479342, state: "New Jersey" },
-    { name: "University of Tampa", lat: 27.9468757, lng: -82.4672266, state: "Florida" },
-    { name: "Towson University", lat: 39.3919027, lng: -76.6124675, state: "Maryland" },
-    { name: "Boston University", lat: 42.3504997, lng: -71.1053991, state: "Massachusetts" },
-    { name: "University of Colorado", lat: 40.0073499, lng: -105.2659871, state: "Colorado" },
-    { name: "University of Cincinnati", lat: 39.1329219, lng: -84.5149504, state: "Ohio" },
-    { name: "Princeton University", lat: 40.3430942, lng: -74.6550739, state: "New Jersey" },
-    { name: "The New School", lat: 40.7354925, lng: -73.9971361, state: "New York" },
-    { name: "Western Michigan University", lat: 42.2837337, lng: -85.6102506, state: "Michigan" },
-    { name: "Clemson University", lat: 34.6749926, lng: -82.8406184, state: "South Carolina" },
-    { name: "Boise State University", lat: 43.6023364, lng: -116.2009765, state: "Idaho" },
-    { name: "Pacific Lutheran University", lat: 47.1451931, lng: -122.4436669, state: "Washington" },
-    { name: "University of California Santa Barbara", lat: 34.4139629, lng: -119.848947, state: "California" },
-    { name: "University of Tennessee", lat: 35.9544013, lng: -83.9294564, state: "Tennessee" },
-    { name: "New England College of Optometry", lat: 42.3519, lng: -71.0868, state: "Massachusetts" }
-  ];
+  let institutionIndexLoaded = false;
+  let institutionIndexLoadFailed = false;
+  let locationDataLoaded = false;
+  let locationDataLoadFailed = false;
   
+  // Filter school locations to only those in our dataset (institution index)
+  $: institutionNameSet = new Set(
+    (institutionNames || []).map(name => name.toLowerCase().trim())
+  );
+
+  $: locationNameSet = new Set(
+    (schoolData || [])
+      .map(school => school?.name?.toLowerCase().trim())
+      .filter(Boolean)
+  );
+
+  $: visibleSchools = (() => {
+    if (institutionNameSet.size > 0) {
+      return schoolData.filter((school) => {
+        const name = school?.name;
+        if (!name) return false;
+        return institutionNameSet.has(name.toLowerCase().trim());
+      });
+    }
+    if (institutionIndexLoaded && institutionIndexLoadFailed) {
+      return schoolData; // fallback if we could not load the index
+    }
+    return []; // wait for index before showing anything
+  })();
+
+  $: missingLocations = (() => {
+    if (!institutionIndexLoaded) return [];
+    if (!locationDataLoaded && !locationDataLoadFailed) return [];
+    if (!institutionNames.length) return [];
+    return institutionNames.filter(name => {
+      const normalized = name?.toLowerCase().trim();
+      return normalized && !locationNameSet.has(normalized);
+    });
+  })();
+
+  $: if (missingLocations.length > 0) {
+    console.warn('Institutions missing location data:', missingLocations);
+  }
+
   // Calculate statistics
-  $: totalSchools = institutionNames.length ? institutionNames.length : schoolData.length;
-  $: stateGroups = schoolData.reduce((acc, school) => {
+  $: totalSchools = (() => {
+    if (institutionNames.length) return institutionNames.length;
+    if (visibleSchools.length) return visibleSchools.length;
+    if (schoolData.length) return schoolData.length;
+    return 0;
+  })();
+  $: stateGroups = visibleSchools.reduce((acc, school) => {
     if (school.state) {
       acc[school.state] = (acc[school.state] || 0) + 1;
     }
@@ -223,7 +157,7 @@
     return result;
   }
 
-  $: schoolPositions = getSchoolPositions(schoolData);
+  $: schoolPositions = getSchoolPositions(visibleSchools);
 
   // Create Albers USA projection for proper US map rendering
   const projection = d3.geoAlbersUsa()
@@ -466,6 +400,30 @@
   // Track time spent on Methodology page
   let pageStartTime;
 
+  // Load pre-geocoded school locations from S3
+  async function loadSchoolLocations() {
+    try {
+      const res = await fetch(LOCATION_DATA_URL);
+      if (!res.ok) throw new Error('Failed to load school locations');
+      const data = await res.json();
+      if (!Array.isArray(data)) throw new Error('Unexpected school locations format');
+
+      schoolData = data
+        .filter(item => item && typeof item.lat === 'number' && typeof item.lng === 'number' && item.name)
+        .map(item => ({
+          name: item.name,
+          lat: item.lat,
+          lng: item.lng,
+          state: item.state || 'Unknown'
+        }));
+    } catch (err) {
+      console.warn('Could not load school locations:', err);
+      locationDataLoadFailed = true;
+    } finally {
+      locationDataLoaded = true;
+    }
+  }
+
   async function loadMonthIndex() {
     const res = await fetch(MONTH_INDEX_URL);
     if (!res.ok) return null;
@@ -480,12 +438,20 @@
   }
 
   async function loadInstitutionIndex() {
-    const res = await fetch(INSTITUTION_INDEX_URL);
-    if (!res.ok) return null;
-    const data = await res.json();
-    institutionIndex = data;
-    institutionNames = Object.keys(data).filter((k) => k !== '_no_org');
-    return data;
+    try {
+      const res = await fetch(INSTITUTION_INDEX_URL);
+      if (!res.ok) throw new Error('Failed to load institution index');
+      const data = await res.json();
+      institutionIndex = data;
+      institutionNames = Object.keys(data).filter((k) => k !== '_no_org');
+      return data;
+    } catch (err) {
+      console.warn('Could not load institution index:', err);
+      institutionIndexLoadFailed = true;
+      return null;
+    } finally {
+      institutionIndexLoaded = true;
+    }
   }
 
   // Load S3 data for record count and US states map
@@ -495,12 +461,7 @@
     try {
       // Kick off lightweight index loads first for fast counts
       const indexPromise = Promise.all([loadMonthIndex(), loadInstitutionIndex()]);
-
-      // Load S3 data
-      const response = await fetch(S3_LIST_URL);
-      if (response.ok) {
-        schoolsList = await response.json();
-      }
+      const locationsPromise = loadSchoolLocations();
 
       // Load US states TopoJSON data
       const topoResponse = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json');
@@ -509,8 +470,8 @@
         statesGeoJSON = topojson.feature(topology, topology.objects.states);
       }
 
-      // Wait for indexes (they update totals immediately)
-      await indexPromise;
+      // Wait for indexes and school locations to finish
+      await Promise.all([indexPromise, locationsPromise]);
 
       // Load article data for charts (heavier)
       loadingArticles = true;
@@ -639,6 +600,22 @@
           {/if}
         </div>
         
+        {#if missingLocations.length > 0}
+          <div class="data-warning" role="status">
+            <div class="warning-title">Missing location data</div>
+            <div class="warning-text">
+              {missingLocations.length} institution(s) are in the dataset but missing coordinates in location.
+            </div>
+            <div class="warning-list">
+              {#if missingLocations.length <= 5}
+                Missing: {missingLocations.join(', ')}
+              {:else}
+                Examples: {missingLocations.slice(0, 5).join(', ')}, +{missingLocations.length - 5} more
+              {/if}
+            </div>
+          </div>
+        {/if}
+
         <!-- Map Legend -->
         <div class="map-legend">
           <div class="legend-item">
@@ -1168,6 +1145,32 @@
     background: #254c6f;
     border: 2px solid white;
     box-shadow: 0 0 0 1px #254c6f;
+  }
+
+  .data-warning {
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid #f0c36d;
+    background: #fff8e6;
+    border-radius: 10px;
+    color: #5c3b0a;
+    font-family: "Graphik Web", sans-serif;
+  }
+
+  .warning-title {
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    color: #8a5a0a;
+  }
+
+  .warning-text {
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+  }
+
+  .warning-list {
+    font-size: 0.9rem;
+    color: #7a4f06;
   }
 
   /* Charts Section */
