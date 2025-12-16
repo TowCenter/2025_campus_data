@@ -36,6 +36,10 @@
     methodology: `${basePath}/methodology`
   };
 
+  // Metadata configuration for dynamic "Last updated" date
+  const metadataUrl = 'https://2025-campus-data.s3.amazonaws.com/metadata.json';
+  let lastUpdatedDisplay = null;
+
   /**
    * Normalize pathname by removing the base path prefix
    * This ensures consistent routing regardless of deployment context
@@ -85,11 +89,34 @@
   };
 
   /**
+   * Format ISO date strings into "Month D, YYYY"
+   */
+  const formatDate = (isoString) =>
+    new Intl.DateTimeFormat('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    }).format(new Date(isoString));
+
+  /**
+   * Fetch latest metadata from S3 to populate the "Last updated" label
+   */
+  const fetchLastUpdated = async () => {
+    const response = await fetch(metadataUrl, { cache: 'no-cache' });
+    const metadataText = await response.text();
+    const metadata = JSON.parse(metadataText.replace(/,\s*([}\]])/g, '$1'));
+
+    const completedAt = metadata?.completed_at;
+    lastUpdatedDisplay = completedAt ? formatDate(completedAt) : null;
+  };
+
+  /**
    * Initialize routing and analytics on component mount
    * Sets up popstate listener for browser back/forward buttons
    */
   onMount(() => {
     setPageFromPath(window.location.pathname);
+    fetchLastUpdated();
 
     const handlePopState = () => setPageFromPath(window.location.pathname);
     window.addEventListener('popstate', handlePopState);
@@ -158,7 +185,9 @@
     <header class="headline-header">
       <p class="headline-category">TOW CENTER FOR DIGITAL JOURNALISM</p>
       <h1 class="main-title">University Response Tracker</h1>
-      <p class="last-updated"><em>Last updated on</em> December 6, 2025</p>
+      <p class="last-updated">
+        <em>Last updated on</em> {lastUpdatedDisplay}
+      </p>
 
       <!-- Credits and Acknowledgements Section -->
       <details class="credits-section">
