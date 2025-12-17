@@ -90,9 +90,11 @@
 
   // Calculate statistics
   $: totalSchools = (() => {
-    if (institutionNames.length) return institutionNames.length;
+    if (!institutionIndexLoaded && !institutionIndexLoadFailed) {
+      return 0;
+    }
     if (visibleSchools.length) return visibleSchools.length;
-    if (schoolData.length) return schoolData.length;
+    if (institutionIndexLoadFailed && schoolData.length) return schoolData.length;
     return 0;
   })();
   $: stateGroups = visibleSchools.reduce((acc, school) => {
