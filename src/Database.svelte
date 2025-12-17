@@ -103,6 +103,21 @@
 
   $: quotedPhraseDisplay = getQuotedPhrase(searchTerm);
   $: exactMatchActive = Boolean(quotedPhraseDisplay);
+  $: searchMatchDescription = (() => {
+    const trimmedTerm = (searchTerm || '').trim();
+    if (!trimmedTerm) return '';
+
+    if (exactMatchActive && quotedPhraseDisplay) {
+      return `matching exact phrase “${quotedPhraseDisplay}”`;
+    }
+
+    const tokens = getSearchTokens(trimmedTerm);
+    if (tokens.length > 1) {
+      return `matching ${tokens.map((t) => `"${t}"`).join(' OR ')}`;
+    }
+
+    return `matching “${trimmedTerm}”`;
+  })();
 
   $: filteredInstitutions = institutionSearchTerm
           ? institutions.filter((inst) =>
@@ -1275,12 +1290,8 @@
                     (includes No Date)
                   {/if}
                 {/if}
-                {#if searchTerm}
-                  {#if exactMatchActive}
-                    matching exact phrase “{quotedPhraseDisplay}”
-                  {:else}
-                    matching “{searchTerm}”
-                  {/if}
+                {#if searchMatchDescription}
+                  {searchMatchDescription}
                 {/if}
                 — page {currentPage} of {totalPages}
               {/if}

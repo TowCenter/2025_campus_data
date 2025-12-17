@@ -107,7 +107,7 @@
   // Group schools by proximity and calculate offset positions
   function getSchoolPositions(schools) {
     const positions = new Map();
-    const proximityThreshold = 15; // pixels - schools within this distance are considered overlapping
+    const proximityThreshold = 10; // pixels - schools within this distance are considered overlapping
 
     schools.forEach(school => {
       const coords = projectCoordinates(school.lat, school.lng);
