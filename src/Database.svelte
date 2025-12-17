@@ -26,6 +26,8 @@
    */
 
   import { onMount } from 'svelte';
+  import TimelineSidebar from './TimelineSidebar.svelte';
+  import MonthlyBarChart from './MonthlyBarChart.svelte';
 
   // AWS S3 data URLs - all data is hosted in a public S3 bucket
   const MONTH_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index.json';
@@ -595,6 +597,17 @@
     selectedInstitutions = [];
     currentPage = 1;
     await applyFiltersAndSearch();
+  }
+
+  // Timeline month click handler
+  async function handleTimelineMonthClick(monthKey) {
+    // Set selected months to only this month
+    selectedMonths = [monthKey];
+    currentPage = 1;
+    await applyFiltersAndSearch();
+
+    // Scroll to top of results
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function handleSearchInput(event) {
@@ -1262,6 +1275,14 @@
           </div>
         </section>
 
+        <!-- Monthly Bar Chart -->
+        {#if !loading && monthIndex && Object.keys(monthIndex).length > 0}
+          <MonthlyBarChart
+            {activeIds}
+            {monthIndex}
+          />
+        {/if}
+
         <!-- Results -->
         <section class="results-section">
           <div class="results-header">
@@ -1421,6 +1442,16 @@
         </section>
       {/if}
     </div>
+
+    <!-- Timeline Sidebar -->
+    {#if !loading && !error}
+      <TimelineSidebar
+        {monthIndex}
+        {activeIds}
+        currentMonth={selectedMonths.length === 1 ? selectedMonths[0] : null}
+        onMonthClick={handleTimelineMonthClick}
+      />
+    {/if}
   </div>
 </div>
 
@@ -1431,13 +1462,18 @@
   }
 
   .container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 0 3rem;
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 0;
   }
 
   .content-wrapper {
-    padding: 2rem 0 4rem;
+    padding: 2rem 1.5rem 4rem 1.5rem;
+    flex: 1;
+    min-width: 0;
   }
 
   h2 {
@@ -1565,13 +1601,13 @@
   .filters-section {
     background: #f8f8f8;
     border: 1px solid #e0e0e0;
-    padding: 2rem;
+    padding: 1.5rem;
     margin-bottom: 2rem;
   }
 
   .filters-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(260px, 1fr));
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
     gap: 1.5rem;
     margin-bottom: 0.5rem;
     align-items: start;
@@ -1585,9 +1621,9 @@
 
   .search-wrapper {
     flex: 1 1 auto;
-    min-width: 250px;
+    min-width: 0;
     max-width: 100%;
-    min-height: 100%;
+    width: 100%;
   }
 
   .filter-group label {
@@ -1740,9 +1776,9 @@
 
   .search-wrapper {
     flex: 1 1 auto;
-    min-width: 250px;
+    min-width: 0;
     max-width: 100%;
-    min-height: 100%;
+    width: 100%;
   }
 
   .search-input-row {
@@ -2017,6 +2053,11 @@
   @media (max-width: 768px) {
     .container {
       padding: 0 1.5rem;
+      flex-direction: column;
+    }
+
+    .container :global(.timeline-sidebar) {
+      display: none;
     }
     h2 {
       font-size: 2rem;
