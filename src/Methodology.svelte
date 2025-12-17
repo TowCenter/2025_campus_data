@@ -93,8 +93,7 @@
     if (!institutionIndexLoaded && !institutionIndexLoadFailed) {
       return 0;
     }
-    if (visibleSchools.length) return visibleSchools.length;
-    if (institutionIndexLoadFailed && schoolData.length) return schoolData.length;
+    if (institutionNames.length) return institutionNames.length;
     return 0;
   })();
   $: stateGroups = visibleSchools.reduce((acc, school) => {
