@@ -94,12 +94,13 @@
   }
 
   // Regenerate timeline when monthIndex or activeIds change
-  $: if (monthIndex && Object.keys(monthIndex).length > 0) {
-    generateTimeline();
-  }
-
-  $: if (activeIds) {
-    generateTimeline();
+  $: {
+    // Reference both variables so Svelte tracks them
+    monthIndex;
+    activeIds;
+    if (monthIndex && Object.keys(monthIndex).length > 0) {
+      generateTimeline();
+    }
   }
 </script>
 

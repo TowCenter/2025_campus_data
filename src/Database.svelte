@@ -601,8 +601,14 @@
 
   // Timeline month click handler
   async function handleTimelineMonthClick(monthKey) {
-    // Set selected months to only this month
-    selectedMonths = [monthKey];
+    // Toggle: if this month is already selected, deselect it (show all)
+    if (selectedMonths.length === 1 && selectedMonths[0] === monthKey) {
+      selectedMonths = [];
+    } else {
+      // Otherwise, select only this month
+      selectedMonths = [monthKey];
+    }
+
     currentPage = 1;
     await applyFiltersAndSearch();
 
