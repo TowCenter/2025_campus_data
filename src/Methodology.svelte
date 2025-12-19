@@ -838,63 +838,22 @@
 
         <h4>Overview</h4>
         <p>
-          This database tracks public communications from 100+ universities during a period of heightened federal oversight,
-          capturing how higher education institutions respond to regulatory pressure through their official announcements and statements.
+          This database tracks public communications from 100+ universities during a period of heightened federal oversight. The data contains official announcements and statements from universities starting from January 2025 and can provide instights into how institutions of higher education respond to regulatory pressure.
         </p>
 
         <h4>Collection</h4>
         <p>
-          This dataset was created using the Tow Center's scraper factory, a framework for bulk creating and managing web scrapers.
-          To select the universities in this dataset, we identified any higher education institution that the Department of Education
-          announced investigations into since Donald Trump came into office. We cross-referenced this with universities flagged for
-          federal oversight in the <a href="https://hechingerreport.org/which-schools-and-colleges-are-being-investigated-by-the-trump-administration/" target="_blank" rel="noopener noreferrer">Hechinger Report's investigation tracker</a>, which follows a similar collection method.
+          The database includes announcements from universities that the Department of Education and other agencies have announced investigations into since President Donald Trump came into office. We rely on the <a href="https://hechingerreport.org/which-schools-and-colleges-are-being-investigated-by-the-trump-administration/" target="_blank" rel="noopener noreferrer">Hechinger Report's investigation tracker</a> to keep the list of universities updated.
         </p>
         <p>
-          In order to select the websites from each school to scrape, we identified links to each institution's main news announcements,
-          press releases, provost office, president or chancellor office, board of trustees, international student office, and financial
-          office pages where article-style information was posted. Not all institutions maintain all of these page types, so when possible
-          we identified their equivalent offices. This approach resulted in a minimum of three web scrapers per institution and in some
-          cases up to seven.
+          We collect official announcements and statements from each institution's main announcement webpage, as well as from the websites for the president or chancellor's office, the provost's office, and the board of trustees or equivalent administrative offices.
         </p>
+
+        <h4>Limitations</h4>
         <p>
-          We use a multi-step process to manually and automatically verify the data within each university's dataset to ensure it is
-          complete and not missing any links, texts or information prior to publication.
+          The data does not include private or internal communications, information published in non-latin charcters, social media posts, individual department or faculty pages or any page that requires a login or password to access.  
         </p>
-        <p>
-          Currently the data is from Jan. 1, 2025 onwards, and is updated weekly. We plan on releasing more data with previous years
-          in the near future.
-        </p>
-
-        <h4>Sourcing</h4>
-
-        <h5>Available Content Types</h5>
-        <ul>
-          <li>Official university press releases</li>
-          <li>University news pages and portals</li>
-          <li>Public announcement pages for campus communities</li>
-          <li>Policy statements from university leadership</li>
-          <li>Operational updates and campus communications</li>
-        </ul>
-
-        <h4>Limitations & Exclusions</h4>
-
-        <h5>Not Included</h5>
-        <ul>
-          <li>Private or internal communications</li>
-          <li>Information published in non latin characters</li>
-          <li>Social media posts</li>
-          <li>Routine academic announcements (course schedules, calendars)</li>
-          <li>Individual department or faculty pages</li>
-          <li>Password-protected or login-protected content</li>
-        </ul>
-
-        <h5>Data Gaps</h5>
-        <ul>
-          <li>Some universities may block automated access to certain pages</li>
-          <li>Announcements without clear publication dates are marked as undated, but we manually verify dates when possible. Original publication dates are preserved when available.</li>
-          <li>Historical communications prior to January 2025 (collection in progress)</li>
-        </ul>
-
+        
         <h4>Privacy & Ethics</h4>
         <p>
           All data collection focuses exclusively on publicly available content that universities have chosen to share openly.
@@ -903,12 +862,8 @@
 
         <h4>Access & Updates</h4>
         <p>
-          This dataset is open-source and updated regularly as new university communications are published. For technical
-          questions about data collection methods or to report data quality issues, please contact our team.
-        </p>
-
-        <p class="last-updated">
-          <strong>Last Updated:</strong> November 26, 2025
+          This dataset is open-source and updated weekly as new university communications are published. For technical
+          questions about data collection methods or to report data quality issues, please <a href="mailto:tktk@columbia.edu">contact our team</a>.
         </p>
       </section>
 
@@ -929,18 +884,6 @@
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" on:click={() => toggleFaq(1)}>
-            <span>Why not farther back?</span>
-            <span class="faq-icon">{openFaqIndex === 1 ? '−' : '+'}</span>
-          </button>
-          {#if openFaqIndex === 1}
-            <div class="faq-answer">
-              <p>We aim to publish more data soon that goes farther back.</p>
-            </div>
-          {/if}
-        </div>
-
-        <div class="faq-item">
           <button class="faq-question" on:click={() => toggleFaq(2)}>
             <span>What types of schools are included?</span>
             <span class="faq-icon">{openFaqIndex === 2 ? '−' : '+'}</span>
@@ -953,13 +896,41 @@
         </div>
 
         <div class="faq-item">
+          <button class="faq-question" on:click={() => toggleFaq(1)}>
+            <span>Do you have data from before January 2025?</span>
+            <span class="faq-icon">{openFaqIndex === 1 ? '−' : '+'}</span>
+          </button>
+          {#if openFaqIndex === 1}
+            <div class="faq-answer">
+              <p>
+              We do have historical data from before January 1, 2025, but cannot guarantee it's completeness. Please <a href="mailto:tktk@columbia.edu">contact us</a> if you are interested in accessing historical data.
+            </p>
+            </div>
+          {/if}
+        </div>
+
+        <div class="faq-item">
           <button class="faq-question" on:click={() => toggleFaq(3)}>
-            <span>What is not available?</span>
+            <span>How often does the data update?</span>
             <span class="faq-icon">{openFaqIndex === 3 ? '−' : '+'}</span>
           </button>
           {#if openFaqIndex === 3}
             <div class="faq-answer">
-              <p>Fill in answer here</p>
+              <p>We aim to update the data every Tuesday. However, we will update more frequently if needed to ensure timely coverage of important developments.</p>
+            </div>
+          {/if}
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" on:click={() => toggleFaq(4)}>
+            <span>I noticed an issue with the data.</span>
+            <span class="faq-icon">{openFaqIndex === 4 ? '−' : '+'}</span>
+          </button>
+          {#if openFaqIndex === 4}
+            <div class="faq-answer">
+              <p>
+                Please let us know what you have found. You can contact us by sending an email to <a href="mailto:tktk@columbia.edu">tktk@columbia.edu</a>.
+              </p>
             </div>
           {/if}
         </div>

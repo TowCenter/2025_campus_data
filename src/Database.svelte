@@ -1428,8 +1428,9 @@
     <div class="content-wrapper">
       <section class="intro">
         <p class="lead">
-          Search and filter through all institutional responses. Use the filters below to narrow results by institution,
-          date, or keyword, then download your filtered results.
+          This database tracks public communications from <a href="https://hechingerreport.org/which-schools-and-colleges-are-being-investigated-by-the-trump-administration/" target="_blank">100+ universities</a> during a period of heightened federal oversight. The data contains official announcements and statements from universities starting from January 2025 and can provide instights into how institutions of higher education respond to regulatory pressure. This data is updated weekly.
+          <br/><br/>
+          For questions or suggestions, please email <a href="mailto:tktk@columbia.edu">tktk@columbia.edu</a>.
         </p>
       </section>
 
@@ -1806,7 +1807,7 @@
   }
 
   .content-wrapper {
-    padding: 2rem 1.5rem 4rem 1.5rem;
+    padding: 0 0 4rem;
     flex: 1;
     min-width: 0;
   }
