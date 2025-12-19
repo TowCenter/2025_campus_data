@@ -35,8 +35,10 @@
   // AWS S3 configuration
   const LOCATION_DATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/location.json';
   const S3_BUCKET_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
-  const MONTH_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index.json';
-  const INSTITUTION_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index.json';
+  const MONTH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index';
+  const MONTH_INDEX_MANIFEST_URL = `${MONTH_INDEX_BASE_URL}/manifest.json`; // { "2025": { "2025-12": count, ... }, ... }
+  const INSTITUTION_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index';
+  const INSTITUTION_INDEX_MANIFEST_URL = `${INSTITUTION_INDEX_BASE_URL}/manifest.json`; // { "a": { "American University": 503, ... }, ... }
   let schoolData = [];
   let allArticles = [];
   let articlesByDate = {};
@@ -46,6 +48,10 @@
   let institutionNames = [];
   let institutionIndexLoaded = false;
   let institutionIndexLoadFailed = false;
+  let monthManifest = null;
+  let monthManifestLoaded = false;
+  let monthManifestLoadFailed = false;
+  let monthlyBarData = [];
   let locationDataLoaded = false;
   let locationDataLoadFailed = false;
   
@@ -290,41 +296,28 @@
     return dateMap;
   }
 
-  // Convert article data to weekly bar chart data
-  function processWeeklyData(dateMap) {
-    // Get all dates sorted, only from Jan 1, 2025 onwards
-    const allDates = Object.keys(dateMap)
-      .filter(dateStr => {
-        return dateStr >= '2025-01-01';
-      })
-      .sort();
+  // Build monthly chart data from manifest
+  function buildMonthlyBarData(manifest) {
+    if (!manifest || typeof manifest !== 'object') return [];
 
-    if (allDates.length === 0) return [];
+    const entries = [];
+    const MIN_MONTH = '2025-01';
 
-    // Group by ISO week (week starting Monday)
-    const weekMap = {};
-
-    allDates.forEach(dateStr => {
-      const date = new Date(dateStr + 'T00:00:00Z');
-
-      // Get Monday of this week (ISO week)
-      const dayOfWeek = date.getUTCDay();
-      const diff = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek; // Monday is day 1
-      const monday = new Date(date);
-      monday.setUTCDate(date.getUTCDate() + diff);
-
-      const weekKey = monday.toISOString().split('T')[0];
-      weekMap[weekKey] = (weekMap[weekKey] || 0) + (dateMap[dateStr] || 0);
+    Object.entries(manifest).forEach(([yearKey, yearData]) => {
+      if (!/^\d{4}$/.test(yearKey)) return;
+      if (!yearData || typeof yearData !== 'object') return;
+      Object.entries(yearData).forEach(([monthKey, count]) => {
+        if (!/^\d{4}-\d{2}$/.test(monthKey)) return;
+        if (monthKey < MIN_MONTH) return;
+        const num = Number(count);
+        if (!Number.isFinite(num)) return;
+        // Use day 01 to keep date math simple downstream
+        entries.push([`${monthKey}-01`, { count: num, month: monthKey }]);
+      });
     });
 
-    // Return weekly counts sorted by week start date, only weeks starting in 2025
-    return Object.keys(weekMap)
-      .filter(weekKey => weekKey >= '2025-01-01')
-      .sort()
-      .map(weekKey => [weekKey, { count: weekMap[weekKey] }]);
+    return entries.sort((a, b) => a[0].localeCompare(b[0]));
   }
-
-  $: dailyBarData = processWeeklyData(articlesByDate);
 
   // Organize dates by month for calendar view with week grids
   function organizeByMonth(dateMap) {
@@ -426,26 +419,53 @@
   }
 
   async function loadMonthIndex() {
-    const res = await fetch(MONTH_INDEX_URL);
-    if (!res.ok) return null;
-    const data = await res.json();
-    let total = 0;
-    Object.keys(data).forEach((key) => {
-      const arr = data[key];
-      if (Array.isArray(arr)) total += arr.length;
-    });
-    indexTotalRecords = total;
-    return data;
+    try {
+      const res = await fetch(MONTH_INDEX_MANIFEST_URL);
+      if (!res.ok) throw new Error('Failed to load month index manifest');
+      const manifest = await res.json();
+
+      let total = 0;
+      Object.values(manifest || {}).forEach((yearData) => {
+        if (yearData && typeof yearData === 'object') {
+          Object.values(yearData).forEach((count) => {
+            const num = Number(count);
+            if (Number.isFinite(num)) {
+              total += num;
+            }
+          });
+        }
+      });
+
+      indexTotalRecords = total;
+      monthManifest = manifest;
+      monthlyBarData = buildMonthlyBarData(manifest);
+      monthManifestLoadFailed = false;
+      return manifest;
+    } catch (err) {
+      console.warn('Could not load month index manifest:', err);
+      monthManifestLoadFailed = true;
+      return null;
+    } finally {
+      monthManifestLoaded = true;
+    }
   }
 
   async function loadInstitutionIndex() {
     try {
-      const res = await fetch(INSTITUTION_INDEX_URL);
-      if (!res.ok) throw new Error('Failed to load institution index');
-      const data = await res.json();
-      institutionIndex = data;
-      institutionNames = Object.keys(data).filter((k) => k !== '_no_org');
-      return data;
+      const res = await fetch(INSTITUTION_INDEX_MANIFEST_URL);
+      if (!res.ok) throw new Error('Failed to load institution manifest');
+      const manifest = await res.json();
+
+      const mergedInstitutions = {};
+      Object.values(manifest || {}).forEach((shard) => {
+        if (shard && typeof shard === 'object') {
+          Object.assign(mergedInstitutions, shard);
+        }
+      });
+
+      institutionIndex = mergedInstitutions;
+      institutionNames = Object.keys(mergedInstitutions).filter((k) => k !== '_no_org');
+      return manifest;
     } catch (err) {
       console.warn('Could not load institution index:', err);
       institutionIndexLoadFailed = true;
@@ -627,17 +647,21 @@
       </section>
 
       <!-- Charts Section -->
-      {#if !loadingArticles && Object.keys(articlesByDate).length > 0}
+      {#if monthManifestLoaded && monthlyBarData.length > 0}
         <section class="charts-section">
           <h3>Article Frequency Over Time</h3>
 
           <!-- Bar Chart -->
           <div class="chart-container">
-            <h4>Weekly Article Count</h4>
-            <p class="chart-dek">Number of articles published each week (Total articles: {allArticles.length.toLocaleString()}, Weekly data points: {dailyBarData.length}, Date range: {dailyBarData.length > 0 ? `${dailyBarData[0][0]} to ${dailyBarData[dailyBarData.length - 1][0]}` : 'N/A'})</p>
+            <h4>Monthly Article Count</h4>
+            <p class="chart-dek">
+              Number of articles published each month (Total articles: {indexTotalRecords?.toLocaleString() ?? 'N/A'},
+              Months: {monthlyBarData.length},
+              Date range: {monthlyBarData.length > 0 ? `${monthlyBarData[0][0].slice(0, 7)} to ${monthlyBarData[monthlyBarData.length - 1][0].slice(0, 7)}` : 'N/A'})
+            </p>
             <div class="bar-chart-wrapper">
-                {#if dailyBarData.length > 0}
-                  {@const maxCount = Math.max(...dailyBarData.map(m => m[1].count), 1)}
+                {#if monthlyBarData.length > 0}
+                  {@const maxCount = Math.max(...monthlyBarData.map(m => m[1].count), 1)}
                   {@const chartHeight = 400}
                   {@const chartWidth = 800}
                   {@const leftMargin = 50}
@@ -670,49 +694,27 @@
                   }}
                   {@const dateToTimestamp = (dateKey) => {
                     const [year, month, day] = dateKey.split('-').map(Number);
-                    return Date.UTC(year, month - 1, day);
+                    return Date.UTC(year, (month || 1) - 1, day || 1);
                   }}
-                  {@const minTimestamp = dateToTimestamp(dailyBarData[0][0])}
-                  {@const maxTimestamp = dateToTimestamp(dailyBarData[dailyBarData.length - 1][0])}
+                  {@const minTimestamp = dateToTimestamp(monthlyBarData[0][0])}
+                  {@const maxTimestamp = dateToTimestamp(monthlyBarData[monthlyBarData.length - 1][0])}
                   {@const timeRange = maxTimestamp - minTimestamp || 1}
-                  {@const barWidth = Math.max(1, chartAreaWidth / dailyBarData.length * 0.8)}
-                  {@const bars = dailyBarData.map(([key, data]) => {
+                  {@const barWidth = Math.max(1, chartAreaWidth / monthlyBarData.length * 0.8)}
+                  {@const bars = monthlyBarData.map(([key, data]) => {
                     const timestamp = dateToTimestamp(key);
                     const x = leftMargin + ((timestamp - minTimestamp) / timeRange) * chartAreaWidth;
                     const barHeight = (data.count / yAxisMax) * (chartAreaHeight - 10);
                     const zeroY = (chartAreaHeight - 10) * ((yAxisValues.length - 1) / (yAxisValues.length - 1)) + 5;
                     const y = zeroY - barHeight;
-                    return { x, y, height: barHeight, count: data.count, date: key };
+                    return { x, y, height: barHeight, count: data.count, date: key.slice(0, 7) };
                   })}
-                  {@const monthLabels = (() => {
-                    const labels = [];
-                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-                    // Parse start and end dates using UTC to avoid timezone issues
-                    const [startYear, startMonth] = dailyBarData[0][0].split('-').map(Number);
-                    const [endYear, endMonth] = dailyBarData[dailyBarData.length - 1][0].split('-').map(Number);
-
-                    let year = startYear;
-                    let month = startMonth;
-
-                    while (year < endYear || (year === endYear && month <= endMonth)) {
-                      // Position label at the middle of the month (day 15) for better visual alignment
-                      const timestamp = Date.UTC(year, month - 1, 15);
-                      // Calculate x position in SVG coordinates (same as bars)
-                      const relativePosition = (timestamp - minTimestamp) / timeRange;
-                      const x = leftMargin + (relativePosition * chartAreaWidth);
-                      const monthIndex = month - 1;
-                      const label = month === 1 ? `${monthNames[monthIndex]} ${year}` : monthNames[monthIndex];
-                      labels.push({ x, label });
-
-                      month++;
-                      if (month > 12) {
-                        month = 1;
-                        year++;
-                      }
-                    }
-                    return labels;
-                  })()}
+                  {@const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']}
+                  {@const monthLabels = bars.map((bar, idx) => {
+                    const [year, month] = bar.date.split('-').map(Number);
+                    const name = monthNames[(month || 1) - 1] || '';
+                    const label = month === 1 || idx === 0 ? `${name} ${year}` : name;
+                    return { x: bar.x, label };
+                  })}
 
                   {@const reversedYAxisValues = [...yAxisValues].reverse()}
                   {@const zeroLineY = chartAreaHeight - 5}
@@ -813,18 +815,20 @@
                     </div>
                   </div>
                 {:else}
-                  <p class="loading-text">No daily bar data available. Raw data keys: {Object.keys(articlesByDate).length}</p>
+                  <p class="loading-text">No monthly bar data available.</p>
                 {/if}
               </div>
             </div>
         </section>
-      {:else if loadingArticles}
-        <section class="charts-section">
-          <p class="loading-text">Loading article data...</p>
-        </section>
       {:else}
         <section class="charts-section">
-          <p class="loading-text">No article data loaded. Articles: {allArticles.length}, Date keys: {Object.keys(articlesByDate).length}</p>
+          <p class="loading-text">
+            {#if monthManifestLoadFailed}
+              Unable to load monthly data from the manifest.
+            {:else}
+              Loading monthly data...
+            {/if}
+          </p>
         </section>
       {/if}
 
