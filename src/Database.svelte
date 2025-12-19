@@ -26,6 +26,7 @@
    */
 
   import { onMount } from 'svelte';
+  import TimelineSidebar from './TimelineSidebar.svelte';
 
   // AWS S3 data URLs - all data is hosted in a public S3 bucket
   const MONTH_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index.json';
@@ -209,9 +210,9 @@
     // pull out no-date bucket
     noDateIds = Array.isArray(monthIndex[NO_DATE_KEY]) ? monthIndex[NO_DATE_KEY] : [];
 
-    // months = all keys except NO_DATE_KEY, newest → oldest
+    // months = all keys except NO_DATE_KEY, filtered to Jan 2025 onwards, newest → oldest
     months = allKeys
-            .filter((k) => k !== NO_DATE_KEY)
+            .filter((k) => k !== NO_DATE_KEY && k >= '2025-01')
             .sort()
             .reverse();
 
