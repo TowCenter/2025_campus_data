@@ -20,7 +20,16 @@
   import { onMount } from 'svelte';
   import Methodology from './Methodology.svelte';
   import Database from './Database.svelte';
-
+  import {
+      Article,
+      Body,
+      BodyText,
+      Footer,
+      Head,
+      Header,
+      Headline,
+      TowPartnerLogo
+    } from '@tow/website-design-template';
   // Logo configuration for Tow Center branding
   const logoDesktopUrl = 'https://miro.medium.com/v2/resize:fit:1070/1*Bdt1nEsNDbLfk-w0b3dnqA.jpeg';
   const logoMobileUrl = 'https://miro.medium.com/v2/resize:fit:1070/1*Bdt1nEsNDbLfk-w0b3dnqA.jpeg';
@@ -156,27 +165,7 @@
 </script>
 
 <!-- Header matching template -->
-<div class="container-fluid top-nav-box">
-  <div class="container-lg top-nav-1">
-    <header class="cjr-header">
-      <a class="cjr-header__logo-link" href={logoLink} rel="home">
-        <img
-          src={logoDesktopUrl}
-          alt={logoAlt}
-          class="cjr-header__logo"
-        />
-        <img
-          src={logoMobileUrl}
-          alt={logoAlt}
-          class="cjr-logo-mobile"
-        />
-      </a>
-      <a href="https://towcenter.columbia.edu/newsletter" class="stay-updated-btn" target="_blank" rel="noopener noreferrer">
-        Stay Updated
-      </a>
-    </header>
-  </div>
-</div>
+<Header></Header>
 
 <!-- Article wrapper -->
 <div class="container-xl mx-auto main-content-1">
@@ -298,40 +287,8 @@
 </div>
 
 <!-- Footer matching template -->
-<div id="footer">
-  <div id="footer-inner">
-    <div class="logo">
-      <img src="https://www.cjr.org/wp-content/themes/cjr2017/_resources2017/images/cjr-logo-horizontal-footer-1100.png" width="440" height="25" alt="Columbia Journalism Review">
-      <p>The voice of journalism, since 1961</p>
-    </div>
-    <div class="lists">
-      <div class="list">
-        <h3>About</h3>
-        <ul>
-          <li><a href="https://www.cjr.org/about_us/mission_statement.php">Mission</a></li>
-          <li><a href="https://www.cjr.org/about_us/masthead.php">Masthead</a></li>
-          <li><a href="https://www.cjr.org/about_us/privacy_policy.php">Privacy Policy</a></li>
-          <li><a href="https://www.cjr.org/about_us/contact.php">Contact</a></li>
-        </ul>
-      </div>
-      <div class="list">
-        <h3>Support CJR</h3>
-        <ul>
-          <li><a href="https://members.cjr.org/member/?a=nav-foot-mem&utm_source=cjr-org&utm_medium=cjr-nav&utm_campaign=m-land">Become a Member</a></li>
-          <li><a href="https://www.cjr.org/about_us/donate.php">Donate</a></li>
-        </ul>
-      </div>
-      <div class="list">
-        <h3>Advertise</h3>
-        <ul>
-          <li><a href="https://www.cjr.org/about_us/advertise.php">Contact Us</a></li>
-        </ul>
-      </div>
-    </div>
+<Footer></Footer>
 
-    <div class="copyright"><span class="copyright-mobile">Copyright 2025,</span> Columbia Journalism Review</div>
-  </div>
-</div>
 
 <style>
   /* Global body styles */
