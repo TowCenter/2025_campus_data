@@ -6,7 +6,7 @@
    * Data is stored in AWS S3 and loaded incrementally for performance.
    *
    * Data Architecture:
-   * - month_index.json: Maps months to article IDs for chronological filtering
+   * - month_index/{year}.json: Per-year month to article IDs for chronological filtering
    * - institution_index.json: Maps institutions to article IDs for institution filtering
    * - articles/: Individual JSON files per article, loaded on demand
    * - search_index/: Pre-built search indices for fast keyword matching
@@ -29,31 +29,41 @@
   import TimelineSidebar from './TimelineSidebar.svelte';
 
   // AWS S3 data URLs - all data is hosted in a public S3 bucket
-  const MONTH_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index.json';
-  const INSTITUTION_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index.json';
+  const MONTH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index';
+  const MONTH_INDEX_MANIFEST_URL = `${MONTH_INDEX_BASE_URL}/manifest.json`; // { "2025": { "2025-12": count, ... }, ... }
+  const INSTITUTION_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index';
+  const INSTITUTION_INDEX_MANIFEST_URL = `${INSTITUTION_INDEX_BASE_URL}/manifest.json`;
   const ARTICLE_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/articles';
   const SEARCH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/search_index';
   const FULL_DATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
+  const MIN_YEAR = 2025;
 
   // Performance threshold: if export exceeds this many items, load full dataset at once
   const EXPORT_FULL_DATA_THRESHOLD = 1000;
 
   // Special keys for items without dates or organizations
   const NO_DATE_KEY = '_no_date';
+  const MONTH_INDEX_NO_DATE_URL = `${MONTH_INDEX_BASE_URL}/${NO_DATE_KEY}.json`;
   const NO_ORG_KEY = '_no_org';
-
-  // Metadata - manually update this date when data is refreshed
-  const lastUpdated = 'December 6, 2025';
 
   // monthIndex: { "YYYY-MM": ["id1","id2",...], "_no_date": ["idX",...] }
   let monthIndex = {};
   // institutionIndex: { "Harvard University": ["id1","id2",...], "_no_org": [...] }
   let institutionIndex = {};
+  let institutionIndexReady = false;
+  let institutionIndexLoading = false;
+  let institutionIndexError = null;
+  let institutionIndexPromise = null;
+  let monthFiltersReady = false;
+  let manifestMonthCounts = new Map();
+  let institutionShards = null;
 
   let months = [];        // real months only, e.g. ["2025-11","2025-10",...]
   let institutions = [];  // institution names (no _no_org)
 
   let noDateIds = [];     // from monthIndex[NO_DATE_KEY] if present
+  let noDateLoaded = true; // ignore no-date bucket for display
+  let resultsSectionEl = null;
 
   // Filters (multi-select)
   let selectedMonths = [];        // [] = all months
@@ -84,9 +94,12 @@
   const pageSize = 20;
   let totalPages = 1;
   let gotoPage = 1;
+  let expectedTotalCount = 0;
 
   // Caching
   let initialized = false;
+  const loadedMonthFiles = new Set();
+  let backgroundMonthLoad = null;
 
   // Cache of article JSONs
   const articleCache = new Map();
@@ -120,11 +133,13 @@
     return `matching “${trimmedTerm}”`;
   })();
 
-  $: filteredInstitutions = institutionSearchTerm
-          ? institutions.filter((inst) =>
-                  inst.toLowerCase().includes(institutionSearchTerm.toLowerCase())
-          )
-          : institutions;
+  $: filteredInstitutions = institutionIndexReady
+          ? institutionSearchTerm
+                  ? institutions.filter((inst) =>
+                          inst.toLowerCase().includes(institutionSearchTerm.toLowerCase())
+                  )
+                  : institutions
+          : [];
 
   $: filteredMonths = monthSearchTerm
           ? months.filter((month) => {
@@ -174,10 +189,12 @@
 
     loading = true;
     error = null;
+    monthFiltersReady = false;
 
     try {
-      // load indexes in parallel
-      await Promise.all([loadMonthIndex(), loadInstitutionIndex()]);
+      // load month index first for fast first render; institutions load in background
+      const { remainingYears, fromManifest, loadErrors } = await loadMonthIndex();
+      monthFiltersReady = (!remainingYears || remainingYears.length === 0) && noDateLoaded;
 
       // only set default filters on first successful load
       selectedMonths = [];
@@ -187,6 +204,11 @@
       await applyFiltersAndSearch();
 
       initialized = true;  // mark as ready after success
+
+      // now that first page is ready, start background loads
+      startBackgroundMonthLoad(remainingYears, fromManifest, loadErrors);
+      // start background load of institution index
+      startInstitutionIndexLoad();
     } catch (e) {
       console.error(e);
       error = e.message;
@@ -195,24 +217,64 @@
     }
   }
 
+  function sortYearsDesc(years) {
+    return Array.from(new Set(years)).sort((a, b) => Number(b) - Number(a));
+  }
 
+  async function getMonthIndexYears() {
+    try {
+      const res = await fetch(MONTH_INDEX_MANIFEST_URL);
+      if (!res.ok) {
+        throw new Error(`Failed to load manifest: ${res.status}`);
+      }
 
-  async function loadMonthIndex() {
-    const res = await fetch(MONTH_INDEX_URL);
-    if (!res.ok) {
-      throw new Error(`Failed to load month index: ${res.status}`);
+      const manifestData = await res.json();
+
+      const years = Object.keys(manifestData).filter(
+              (key) => /^\d{4}$/.test(key) && Number(key) >= MIN_YEAR
+      );
+
+      if (years.length > 0) {
+        return {
+          years: sortYearsDesc(years),
+          fromManifest: true,
+          manifest: manifestData
+        };
+      }
+    } catch (e) {
+      console.warn('Failed to load month index manifest', e);
     }
 
-    monthIndex = await res.json();
+    throw new Error('Month index manifest not available');
+  }
 
-    const allKeys = Object.keys(monthIndex);
+  function mergeMonthData(data) {
+    let updated = false;
+    if (data && typeof data === 'object') {
+      for (const [key, ids] of Object.entries(data)) {
+        if (!Array.isArray(ids)) continue;
+        if (monthIndex[key]) {
+          monthIndex[key] = [...monthIndex[key], ...ids];
+        } else {
+          monthIndex[key] = ids;
+        }
+        updated = true;
+      }
+    }
+    return updated;
+  }
 
-    // pull out no-date bucket
-    noDateIds = Array.isArray(monthIndex[NO_DATE_KEY]) ? monthIndex[NO_DATE_KEY] : [];
+  function finalizeMonthIndex() {
+    const manifestKeys = Array.from(manifestMonthCounts.keys());
+    const allKeys = Array.from(new Set([...Object.keys(monthIndex), ...manifestKeys]));
 
     // months = all keys except NO_DATE_KEY, newest → oldest
     months = allKeys
-            .filter((k) => k !== NO_DATE_KEY)
+            .filter((k) => {
+              if (k === NO_DATE_KEY) return false;
+              const year = Number((k || '').split('-')[0]);
+              return Number.isFinite(year) && year >= MIN_YEAR;
+            })
             .sort()
             .reverse();
 
@@ -224,23 +286,245 @@
         globalIds.push(...ids);
       }
     }
-    if (noDateIds.length > 0) {
-      globalIds.push(...noDateIds);
+    noDateIds = []; // exclude no-date bucket from filters/results
+  }
+
+  async function loadMonthIndexFile(year) {
+    const res = await fetch(`${MONTH_INDEX_BASE_URL}/${year}.json`);
+    if (!res.ok) {
+      throw new Error(`Failed to load month index ${year}: ${res.status}`);
+    }
+    const data = await res.json();
+    return data;
+  }
+
+  function normalizeNoDateData(data) {
+    if (Array.isArray(data)) {
+      return { [NO_DATE_KEY]: data };
+    }
+    if (data && typeof data === 'object' && Array.isArray(data[NO_DATE_KEY])) {
+      return { [NO_DATE_KEY]: data[NO_DATE_KEY] };
+    }
+    return null;
+  }
+
+  async function loadNoDateIndex() {
+    try {
+      const res = await fetch(MONTH_INDEX_NO_DATE_URL);
+      if (res.status === 404) return null;
+      if (!res.ok) {
+        throw new Error(`Failed to load no-date index: ${res.status}`);
+      }
+
+      const normalized = normalizeNoDateData(await res.json());
+      if (!normalized) {
+        console.warn('No-date index returned unexpected format');
+        return null;
+      }
+
+      return normalized;
+    } catch (e) {
+      console.warn('Failed to load no-date index', e);
+      return null;
+    }
+  }
+
+  async function loadMonthIndex() {
+    const { years: yearsToLoad, fromManifest, manifest } = await getMonthIndexYears();
+    if (!yearsToLoad || yearsToLoad.length === 0) {
+      throw new Error('No month indexes available');
+    }
+
+    manifestMonthCounts = new Map();
+    if (manifest) {
+      for (const [yearKey, yearData] of Object.entries(manifest)) {
+        if (!/^\d{4}$/.test(yearKey) || Number(yearKey) < MIN_YEAR) continue;
+        if (yearData && typeof yearData === 'object') {
+          for (const [key, count] of Object.entries(yearData)) {
+            const year = Number((key || '').split('-')[0]);
+            if (Number.isFinite(year) && year >= MIN_YEAR) {
+              manifestMonthCounts.set(key, count);
+            }
+          }
+        }
+      }
+    }
+
+    const sortedYears = sortYearsDesc(yearsToLoad);
+    const [newestYear, ...otherYears] = sortedYears;
+    if (!newestYear) {
+      throw new Error('No month indexes available');
+    }
+
+    const initialYears = [newestYear];
+    const remainingYears = otherYears;
+    const loadErrors = [];
+
+    for (const year of initialYears) {
+      try {
+        const data = await loadMonthIndexFile(year);
+        loadedMonthFiles.add(year);
+        mergeMonthData(data);
+      } catch (e) {
+        loadErrors.push(e);
+      }
+    }
+
+    finalizeMonthIndex();
+
+    if (Object.keys(monthIndex).length === 0) {
+      const message = loadErrors[0]?.message || 'Failed to load month indexes';
+      throw new Error(message);
+    }
+
+    return { remainingYears, fromManifest, loadErrors };
+  }
+
+  function startBackgroundMonthLoad(remainingYears, fromManifest, loadErrors = []) {
+    const needsNoDate = !noDateLoaded;
+    if ((!remainingYears || remainingYears.length === 0) && !needsNoDate) return;
+    backgroundMonthLoad = (async () => {
+      const tasks = [];
+      if (remainingYears && remainingYears.length > 0) {
+        tasks.push(
+                ...remainingYears.map((year) =>
+                        loadMonthIndexFile(year).then((data) => ({ type: 'monthFile', year, data }))
+                )
+        );
+      }
+      if (needsNoDate) {
+        tasks.push(
+                loadNoDateIndex().then((data) => ({ type: 'noDate', data }))
+        );
+      }
+
+      const backgroundResults = await Promise.allSettled(tasks);
+
+      let updated = false;
+      for (const result of backgroundResults) {
+        if (result.status === 'fulfilled') {
+          const payload = result.value;
+          if (payload.type === 'monthFile') {
+            const { year, data } = payload;
+            if (!loadedMonthFiles.has(year)) {
+              loadedMonthFiles.add(year);
+              updated = mergeMonthData(data) || updated;
+            }
+          } else if (payload.type === 'noDate') {
+            noDateLoaded = true;
+            const normalized = normalizeNoDateData(payload.data);
+            if (normalized) {
+              updated = mergeMonthData(normalized) || updated;
+            }
+          }
+        } else {
+          loadErrors.push(result.reason);
+        }
+      }
+
+      if (updated) {
+        finalizeMonthIndex();
+        await applyFiltersAndSearch();
+      }
+
+      if (loadErrors.length > 0 && fromManifest) {
+        console.warn('Some month index files failed to load', loadErrors);
+      }
+      monthFiltersReady = true;
+    })();
+  }
+
+  async function loadInstitutionShard(shard) {
+    const url = `${INSTITUTION_INDEX_BASE_URL}/${shard}.json`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`Failed to load institution index shard ${shard}: ${res.status}`);
+    }
+    return res.json();
+  }
+
+  async function getInstitutionShards() {
+    if (Array.isArray(institutionShards) && institutionShards.length > 0) {
+      return institutionShards;
+    }
+
+    try {
+      const res = await fetch(INSTITUTION_INDEX_MANIFEST_URL);
+      if (!res.ok) {
+        throw new Error(`Failed to load institution manifest: ${res.status}`);
+      }
+
+      const manifest = await res.json();
+      const shards = Object.keys(manifest || {}).filter(
+              (key) => manifest[key] && typeof manifest[key] === 'object'
+      );
+
+      if (shards.length === 0) {
+        throw new Error('Institution manifest is empty');
+      }
+
+      institutionShards = shards;
+      return institutionShards;
+    } catch (e) {
+      console.warn('Failed to load institution manifest', e);
+      institutionShards = null;
+      throw e;
     }
   }
 
   async function loadInstitutionIndex() {
-    const res = await fetch(INSTITUTION_INDEX_URL);
-    if (!res.ok) {
-      throw new Error(`Failed to load institution index: ${res.status}`);
+    institutionIndexLoading = true;
+    institutionIndexError = null;
+
+    try {
+      const shards = await getInstitutionShards();
+      if (!shards || shards.length === 0) {
+        throw new Error('Institution index manifest not available');
+      }
+
+      const results = await Promise.allSettled(
+              shards.map((shard) =>
+                      loadInstitutionShard(shard).then((data) => ({ shard, data }))
+              )
+      );
+
+      const merged = {};
+      const errors = [];
+
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          const { data } = result.value;
+          if (data && typeof data === 'object') {
+            Object.assign(merged, data);
+          }
+        } else {
+          errors.push(result.reason);
+        }
+      }
+
+      if (Object.keys(merged).length === 0) {
+        throw errors[0] || new Error('Institution index shards not available');
+      }
+
+      institutionIndex = merged;
+      institutions = Object.keys(institutionIndex)
+              .filter((k) => k !== NO_ORG_KEY)
+              .sort((a, b) => a.localeCompare(b));
+      institutionIndexReady = true;
+      return institutionIndex;
+    } catch (e) {
+      console.error(e);
+      institutionIndexError = e.message;
+      throw e;
+    } finally {
+      institutionIndexLoading = false;
     }
+  }
 
-    institutionIndex = await res.json();
-
-    // institutions = all keys except NO_ORG_KEY, sorted alphabetically
-    institutions = Object.keys(institutionIndex)
-            .filter((k) => k !== NO_ORG_KEY)
-            .sort((a, b) => a.localeCompare(b));
+  function startInstitutionIndexLoad() {
+    if (institutionIndexReady || institutionIndexLoading) return institutionIndexPromise;
+    institutionIndexPromise = loadInstitutionIndex().catch(() => null);
+    return institutionIndexPromise;
   }
 
   // --- Filtering helpers (month + institution) ---
@@ -285,6 +569,34 @@
     }
 
     return baseIds.filter((id) => instIdSet.has(id));
+  }
+
+  function computeExpectedTotal(baseIds) {
+    const hasSearch = Boolean((searchTerm || '').trim());
+    if (hasSearch || selectedInstitutions.length > 0 || monthFiltersReady) {
+      return baseIds.length;
+    }
+
+    const monthCount = (key) => {
+      const manifestVal = manifestMonthCounts.get(key);
+      if (typeof manifestVal === 'number' && manifestVal >= 0) return manifestVal;
+      const ids = monthIndex[key];
+      return Array.isArray(ids) ? ids.length : 0;
+    };
+
+    if (selectedMonths.length === 0) {
+      const manifestCount = Array.from(manifestMonthCounts.values()).reduce(
+              (sum, val) => sum + (Number(val) || 0),
+              0
+      );
+      return Math.max(baseIds.length, manifestCount);
+    }
+
+    const total = Array.from(new Set(selectedMonths)).reduce(
+            (sum, month) => sum + monthCount(month),
+            0
+    );
+    return Math.max(baseIds.length, total);
   }
 
   // --- Search index helpers ---
@@ -350,6 +662,7 @@
     const quotedPhrase = getQuotedPhrase(searchTerm);
     const phraseTokens = quotedPhrase ? getSearchTokens(quotedPhrase) : [];
     const useExactPhraseSearch = quotedPhrase && phraseTokens.length > 1;
+    expectedTotalCount = computeExpectedTotal(baseIds);
 
     if (useExactPhraseSearch) {
       searchLoading = true;
@@ -380,12 +693,14 @@
         }
 
         activeIds = matchedIds;
+        expectedTotalCount = matchedIds.length;
         currentPage = 1;
         await loadPage(1);
       } catch (e) {
         console.error(e);
         searchError = e.message;
         activeIds = [];
+        expectedTotalCount = 0;
         currentPage = 1;
         await loadPage(1);
       } finally {
@@ -431,6 +746,7 @@
 
     if (shardMap.size === 0) {
       activeIds = [];
+      expectedTotalCount = 0;
       currentPage = 1;
       await loadPage(1);
       return;
@@ -458,6 +774,7 @@
 
     if (scoreMap.size === 0) {
       activeIds = [];
+      expectedTotalCount = 0;
       currentPage = 1;
       await loadPage(1);
       return;
@@ -473,6 +790,7 @@
 
     if (buckets.size === 0) {
       activeIds = [];
+      expectedTotalCount = 0;
       currentPage = 1;
       await loadPage(1);
       return;
@@ -485,6 +803,7 @@
     }
 
     activeIds = filteredBySearch;
+    expectedTotalCount = activeIds.length;
     currentPage = 1;
     await loadPage(1);
   }
@@ -506,16 +825,17 @@
 
   async function loadPage(page) {
     const ids = activeIds;
+    const totalCount = Math.max(ids?.length || 0, expectedTotalCount || 0);
 
     if (!ids || ids.length === 0) {
       articles = [];
       currentPage = 1;
-      totalPages = 1;
+      totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
       gotoPage = 1;
       return;
     }
 
-    const newTotalPages = Math.max(1, Math.ceil(ids.length / pageSize));
+    const newTotalPages = Math.max(1, Math.ceil(totalCount / pageSize));
     if (page < 1) page = 1;
     if (page > newTotalPages) page = newTotalPages;
 
@@ -798,9 +1118,15 @@
     return () => document.removeEventListener('click', handleClickOutside);
   });
 
-  function changePage(newPage) {
+  function scrollToResults() {
+    if (!resultsSectionEl) return;
+    resultsSectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function changePage(newPage) {
     if (newPage < 1 || newPage > totalPages || loadingArticles) return;
-    loadPage(newPage);
+    await loadPage(newPage);
+    scrollToResults();
   }
 
   function formatMonthLabel(key) {
@@ -1127,17 +1453,23 @@
               <div class="multi-select-dropdown">
                 <button
                         id="institution-dropdown"
-                        class="dropdown-toggle"
+                        class={`dropdown-toggle ${institutionIndexReady ? '' : 'disabled'}`}
+                        disabled={!institutionIndexReady}
                         onclick={(e) => {
+                          if (!institutionIndexReady) return;
                           e.stopPropagation();
                           institutionDropdownOpen = !institutionDropdownOpen;
                           monthDropdownOpen = false;
                         }}
                         type="button"
                 >
-                  {selectedInstitutions.length === 0
-                          ? 'All Institutions'
-                          : `${selectedInstitutions.length} selected`}
+                  {#if !institutionIndexReady}
+                    Loading institutions...
+                  {:else if selectedInstitutions.length === 0}
+                    All Institutions
+                  {:else}
+                    {selectedInstitutions.length} selected
+                  {/if}
                   <span class="dropdown-arrow">{institutionDropdownOpen ? '▲' : '▼'}</span>
                 </button>
 
@@ -1179,17 +1511,23 @@
               <div class="multi-select-dropdown">
                 <button
                         id="month-dropdown"
-                        class="dropdown-toggle"
+                        class={`dropdown-toggle ${monthFiltersReady ? '' : 'disabled'}`}
+                        disabled={!monthFiltersReady}
                         onclick={(e) => {
+                          if (!monthFiltersReady) return;
                           e.stopPropagation();
                           monthDropdownOpen = !monthDropdownOpen;
                           institutionDropdownOpen = false;
                         }}
                         type="button"
                 >
-                  {selectedMonths.length === 0
-                          ? 'All Months'
-                          : `${selectedMonths.length} selected`}
+                  {#if !monthFiltersReady}
+                    Loading months...
+                  {:else if selectedMonths.length === 0}
+                    All Months
+                  {:else}
+                    {selectedMonths.length} selected
+                  {/if}
                   <span class="dropdown-arrow">{monthDropdownOpen ? '▲' : '▼'}</span>
                 </button>
 
@@ -1272,7 +1610,7 @@
                     <span class="btn-spinner"></span>
                     Exporting...
                   {:else}
-                    Export {activeIds.length.toLocaleString()} items
+                    Export {Math.max(expectedTotalCount || 0, activeIds.length).toLocaleString()} items
                   {/if}
                 </button>
               </div>
@@ -1280,9 +1618,8 @@
           </div>
         </section>
 
-
         <!-- Results -->
-        <section class="results-section">
+        <section class="results-section" bind:this={resultsSectionEl}>
           <div class="results-header">
             <h3>Results</h3>
             <p class="results-meta">
@@ -1605,7 +1942,7 @@
 
   .filters-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(200px, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
     margin-bottom: 0.5rem;
     align-items: start;
@@ -1619,9 +1956,8 @@
 
   .search-wrapper {
     flex: 1 1 auto;
-    min-width: 0;
     max-width: 100%;
-    width: 100%;
+    min-height: 100%;
   }
 
   .filter-group label {
@@ -1655,6 +1991,11 @@
 
   .dropdown-toggle:hover {
     border-color: #254c6f;
+  }
+
+  .dropdown-toggle.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   .multi-select-dropdown {
@@ -1812,7 +2153,6 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    flex: 0 0 auto;
   }
 
   .search-help {
