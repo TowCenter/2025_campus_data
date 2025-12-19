@@ -961,6 +961,21 @@
           selectedInstitutions.length === 0 &&
           !searchTerm.trim();
 
+  /**
+   * Set the search term from a quick search button and trigger filtering
+   */
+  async function quickSearch(term) {
+    searchTerm = term;
+    currentPage = 1;
+    
+    // Track quick search usage
+    if (window.umami) {
+      window.umami.track('quick-search', { term });
+    }
+    
+    await applyFiltersAndSearch();
+  }
+
   async function getFullDataset() {
     if (fullDatasetCache) return fullDatasetCache;
 
@@ -1598,6 +1613,15 @@
                       </div>
                     </button>
                   </div>
+                  <span class="quick-search-label">Example searches:</span>
+                  <div class="quick-search-buttons">
+                    <button type="button" class="quick-search-btn" onclick={() => quickSearch('"funding cut"')}>funding cut</button>
+                    <button type="button" class="quick-search-btn" onclick={() => quickSearch('"Immigration and Customs Enforcement"')}>ICE</button>
+                    <button type="button" class="quick-search-btn" onclick={() => quickSearch('"Office of Civil Rights"')}>Office of Civil Rights</button>
+                    <button type="button" class="quick-search-btn" onclick={() => quickSearch('visa')}>visa</button>
+                    <button type="button" class="quick-search-btn" onclick={() => quickSearch('antisemitism')}>antisemitism</button>
+
+                  </div>
                   {#if searchError}
                     <span class="search-status error-text">Search error: {searchError}</span>
                   {/if}
@@ -2110,7 +2134,7 @@
   .search-export-row {
     display: flex;
     gap: 1rem;
-    align-items: center;
+    align-items: start;
     flex-wrap: nowrap;
   }
 
@@ -2138,6 +2162,38 @@
 
   .search-status.error-text {
     color: #dc3545;
+  }
+
+  .quick-search-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  .quick-search-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0.75rem;
+  }
+
+  .quick-search-btn {
+    background: #254c6f33;
+    border: 1px solid #254c6f;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.85rem;
+    color: #43485a;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: "Graphik Web", sans-serif;
+  }
+
+  .quick-search-btn:hover {
+    background: #254c6f;
+    color: #fff;
+    border-color: #254c6f;
   }
 
   .export-btn {
