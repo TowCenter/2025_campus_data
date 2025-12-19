@@ -110,6 +110,7 @@
   let searchError = null;
   let searchTimeout;
   let exporting = false;
+  let exportProgress = 0;
   // shardKey -> { token: [ids...] }
   const searchShardCache = new Map();
   let fullDatasetCache = null;
@@ -976,15 +977,42 @@
     await applyFiltersAndSearch();
   }
 
-  async function getFullDataset() {
-    if (fullDatasetCache) return fullDatasetCache;
-
-    const res = await fetch(FULL_DATA_URL);
+  async function fetchJsonWithProgress(url, onProgress) {
+    const res = await fetch(url);
     if (!res.ok) {
       throw new Error(`Failed to load full dataset: ${res.status}`);
     }
-    fullDatasetCache = await res.json();
-    return fullDatasetCache;
+
+    const total = Number(res.headers.get('content-length')) || null;
+    const reader = res.body?.getReader ? res.body.getReader() : null;
+    if (!reader) {
+      const data = await res.json();
+      if (onProgress) onProgress(total || 1, total || 1);
+      return data;
+    }
+
+    const decoder = new TextDecoder();
+    let result = '';
+    let loaded = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      loaded += value?.length || 0;
+      result += decoder.decode(value, { stream: true });
+      if (onProgress) onProgress(loaded, total);
+    }
+    result += decoder.decode();
+    if (onProgress) onProgress(total || loaded, total);
+    return JSON.parse(result);
+  }
+
+  async function getFullDataset(onProgress = null) {
+    if (fullDatasetCache && !onProgress) return fullDatasetCache;
+
+    const data = await fetchJsonWithProgress(FULL_DATA_URL, onProgress);
+    fullDatasetCache = data;
+    return data;
   }
 
   function getItemId(item) {
@@ -992,9 +1020,9 @@
     return item.id || item._id?.$oid || item._id || item.document_id || null;
   }
 
-  async function ensureFullDatasetMap() {
+  async function ensureFullDatasetMap(onProgress = null) {
     if (fullDatasetMap) return fullDatasetMap;
-    const data = await getFullDataset();
+    const data = await getFullDataset(onProgress);
     const map = new Map();
     if (Array.isArray(data)) {
       data.forEach((item) => {
@@ -1026,6 +1054,8 @@
     });
   }
 
+  $: exportPercent = Math.round(Math.min(Math.max(exportProgress, 0), 1) * 100);
+
   async function exportResults() {
     if (!activeIds || activeIds.length === 0) {
       alert('No data to export');
@@ -1033,6 +1063,7 @@
     }
 
     exporting = true;
+    exportProgress = 0;
 
     try {
       const useFullDataset =
@@ -1042,25 +1073,43 @@
       let articlesToExport;
 
       if (useFullDataset) {
+        const progressHandler = (loaded, total) => {
+          if (total && total > 0) {
+            exportProgress = Math.min(0.95, loaded / total);
+          } else {
+            exportProgress = Math.min(0.95, exportProgress + 0.02);
+          }
+        };
+
         if (isUnfiltered()) {
-          articlesToExport = await getFullDataset();
+          articlesToExport = await getFullDataset(progressHandler);
         } else {
-          const datasetMap = await ensureFullDatasetMap();
+          const datasetMap = await ensureFullDatasetMap(progressHandler);
           articlesToExport = activeIds
                   .map((id) => datasetMap.get(id))
                   .filter(Boolean);
         }
       } else {
-        articlesToExport = await Promise.all(activeIds.map((id) => getArticleById(id)));
+        const total = activeIds.length;
+        let completed = 0;
+        const track = async (id) => {
+          const article = await getArticleById(id);
+          completed += 1;
+          exportProgress = Math.min(1, completed / Math.max(total, 1));
+          return article;
+        };
+        articlesToExport = await Promise.all(activeIds.map((id) => track(id)));
       }
 
       const cleanData = cleanDataForExport(articlesToExport);
+      exportProgress = 1;
       await downloadCSV(cleanData);
     } catch (e) {
       console.error(e);
       alert('Error exporting data: ' + e.message);
     } finally {
       exporting = false;
+      exportProgress = 0;
     }
   }
 
@@ -1632,8 +1681,15 @@
                         disabled={exporting || loadingArticles || activeIds.length === 0}
                 >
                   {#if exporting}
-                    <span class="btn-spinner"></span>
-                    Exporting...
+                    <div class="export-progress">
+                      <div class="export-progress-bar">
+                        <div
+                                class="export-progress-fill"
+                                style={`width: ${exportPercent}%;`}
+                        ></div>
+                      </div>
+                      <span class="export-progress-text">Exporting {exportPercent}%</span>
+                    </div>
                   {:else}
                     Export {Math.max(expectedTotalCount || 0, activeIds.length).toLocaleString()} items
                   {/if}
@@ -2210,6 +2266,31 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+  }
+  .export-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  .export-progress-bar {
+    flex: 1 1 140px;
+    height: 8px;
+    background: #e6eef5;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .export-progress-fill {
+    height: 100%;
+    background: #d6613a;
+    width: 0%;
+    transition: width 0.2s ease;
+  }
+  .export-progress-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #254c6f;
+    white-space: nowrap;
   }
 
   .search-help {
