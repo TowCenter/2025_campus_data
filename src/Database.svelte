@@ -1256,11 +1256,13 @@
                       </div>
                     </button>
                   </div>
+                  <span class="quick-search-label">Example searches:</span>
                   <div class="quick-search-buttons">
-                    <!-- <span class="quick-search-label">Example search</span> -->
-                    <button type="button" class="quick-search-btn" onclick={() => quickSearch('visa')}>visa</button>
+                    <button type="button" class="quick-search-btn" onclick={() => quickSearch('"funding cut"')}>funding cut</button>
                     <button type="button" class="quick-search-btn" onclick={() => quickSearch('"Immigration and Customs Enforcement"')}>ICE</button>
                     <button type="button" class="quick-search-btn" onclick={() => quickSearch('"Office of Civil Rights"')}>Office of Civil Rights</button>
+                    <button type="button" class="quick-search-btn" onclick={() => quickSearch('visa')}>visa</button>
+
                   </div>
                   {#if searchError}
                     <span class="search-status error-text">Search error: {searchError}</span>
@@ -1789,13 +1791,15 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
     flex-wrap: wrap;
   }
 
   .quick-search-label {
+    display: block;
     font-size: 0.85rem;
     color: #666;
+    margin-top: 0.75rem;
   }
 
   .quick-search-btn {
