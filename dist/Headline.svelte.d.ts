@@ -8,14 +8,20 @@ declare const Headline: import("svelte").Component<{
     hed: any;
     subhed: any;
     date: any;
-    byline_url: any;
-    byline: any;
+    byline1: any;
+    byline1_url: any;
+    byline2: any;
+    byline2_url: any;
+    brand: any;
 }, {}, "">;
 type $$ComponentProps = {
     children: any;
     hed: any;
     subhed: any;
     date: any;
-    byline_url: any;
-    byline: any;
+    byline1: any;
+    byline1_url: any;
+    byline2: any;
+    byline2_url: any;
+    brand: any;
 };

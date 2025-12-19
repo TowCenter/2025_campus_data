@@ -1,35 +1,5 @@
 [
   {
-    "Date": "2025-02-13",
-    "AI Company": [
-      "Cohere"
-    ],
-    "Type": [
-      "Copyright Infringement",
-      "Trademark Infringement"
-    ],
-    "Interaction": "Lawsuit",
-    "News Org(s)": [
-      "Guardian News & Media"
-    ],
-    "Reported Details": "Publishers accuse Cohere of improperly using at least 4,000 copyrighted works to train its large language model and of displaying large portions of or entire articles for users while bypassing visits to the publishers' websites.",
-    "Status": "In progress",
-    "Case Number": "1:25-cv-01305",
-    "Defendant": [
-      "Cohere"
-    ],
-    "Plaintiff": [
-      "Guardian News & Media"
-    ],
-    "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.636920/gov.uscourts.nysd.636920.1.0.pdf",
-    "Location": "United States",
-    "Affected Publications": [],
-    "parent_child_matches": [],
-    "Sources": [
-      "https://www.wsj.com/business/media/conde-nast-mcclatchy-and-other-publishers-accuse-ai-firm-cohere-of-copyright-violations-5f5ceaff"
-    ]
-  },
-  {
     "Date": "2020-05-06",
     "AI Company": [
       "Ross Intelligence"
@@ -41,7 +11,7 @@
     "News Org(s)": [
       "Thomson Reuters"
     ],
-    "Reported Details": "In May 2020, Thomson Reuters sued ROSS Intelligence, alleging the company unlawfully copied content from Thomson Reuter’s legal research platform. In February 2025, the court granted summary judgement that the copying was not fair use.",
+    "Reported Details": "In May 2020, Thomson Reuters sued ROSS Intelligence, alleging the company unlawfully copied content from Thomson Reuters’ legal research platform. In February 2025, the court granted summary judgement that the copying was not fair use.",
     "Status": "Summary judgement",
     "Case Number": "1:20-cv-00613-SB",
     "Defendant": [
@@ -52,137 +22,11 @@
     ],
     "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.ded.72109/gov.uscourts.ded.72109.1.0_1.pdf",
     "Location": "United States",
+    "Last Modified": "2025-12-03 21:43:00",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
       "https://www.wired.com/story/thomson-reuters-ai-copyright-lawsuit/"
-    ]
-  },
-  {
-    "Date": "2024-11-28",
-    "AI Company": [
-      "OpenAI"
-    ],
-    "Type": [
-      "Copyright Infringement"
-    ],
-    "Interaction": "Lawsuit",
-    "News Org(s)": [
-      "Postmedia",
-      "The Globe and Mail",
-      "The Canadian Press",
-      "CBC"
-    ],
-    "Reported Details": "A broad coalition of Canada’s major news organizations sue OpenAI, alleging the AI company is illegally using news articles to train ChatGPT.",
-    "Status": "In progress",
-    "Case Number": "CV-24-00732231-00CL",
-    "Defendant": [
-      "OpenAI"
-    ],
-    "Plaintiff": [
-      "Postmedia",
-      "The Globe and Mail",
-      "The Canadian Press",
-      "CBC"
-    ],
-    "Case Filing": "https://litigate.com/assets/uploads/Canadian-News-Media-Companies-v-OpenAI.pdf",
-    "Location": "Canada",
-    "Affected Publications": [],
-    "parent_child_matches": [],
-    "Sources": []
-  },
-  {
-    "Date": "2025-02-13",
-    "AI Company": [
-      "Cohere"
-    ],
-    "Type": [
-      "Copyright Infringement",
-      "Trademark Infringement"
-    ],
-    "Interaction": "Lawsuit",
-    "News Org(s)": [
-      "Vox Media",
-      "The Atlantic",
-      "Newsday",
-      "Los Angeles Times",
-      "Forbes",
-      "McClatchy"
-    ],
-    "Reported Details": "Publishers accuse Cohere of improperly using at least 4,000 copyrighted works to train its large language model and of displaying large portions of or entire articles for users while bypassing visits to the publishers' websites.",
-    "Status": "In progress",
-    "Case Number": "1:25-cv-01305",
-    "Defendant": [
-      "Cohere"
-    ],
-    "Plaintiff": [
-      "Vox Media",
-      "The Atlantic",
-      "Newsday",
-      "Los Angeles Times",
-      "Forbes",
-      "McClatchy"
-    ],
-    "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.636920/gov.uscourts.nysd.636920.1.0.pdf",
-    "Location": "United States",
-    "Affected Publications": [],
-    "parent_child_matches": [],
-    "Sources": [
-      "https://www.wsj.com/business/media/conde-nast-mcclatchy-and-other-publishers-accuse-ai-firm-cohere-of-copyright-violations-5f5ceaff"
-    ]
-  },
-  {
-    "Date": "2025-02-13",
-    "AI Company": [
-      "Cohere"
-    ],
-    "Type": [
-      "Copyright Infringement",
-      "Trademark Infringement"
-    ],
-    "Interaction": "Lawsuit",
-    "News Org(s)": [
-      "Axel Springer"
-    ],
-    "Reported Details": "Publishers accuse Cohere of improperly using at least 4,000 copyrighted works to train its large language model and of displaying large portions of or entire articles for users while bypassing visits to the publishers' websites.",
-    "Status": "In progress",
-    "Case Number": "1:25-cv-01305",
-    "Defendant": [
-      "Cohere"
-    ],
-    "Plaintiff": [
-      "Axel Springer"
-    ],
-    "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.636920/gov.uscourts.nysd.636920.1.0.pdf",
-    "Location": "United States",
-    "Affected Publications": [
-      "Business Insider",
-      "Politico"
-    ],
-    "parent_child_matches": [
-      {
-        "news_org": "Axel Springer",
-        "publication": "Business Insider",
-        "direct_child": true,
-        "lineage": [
-          "Axel Springer",
-          "Business Insider"
-        ],
-        "lineage_str": "Axel Springer → Business Insider"
-      },
-      {
-        "news_org": "Axel Springer",
-        "publication": "Politico",
-        "direct_child": true,
-        "lineage": [
-          "Axel Springer",
-          "Politico"
-        ],
-        "lineage_str": "Axel Springer → Politico"
-      }
-    ],
-    "Sources": [
-      "https://www.wsj.com/business/media/conde-nast-mcclatchy-and-other-publishers-accuse-ai-firm-cohere-of-copyright-violations-5f5ceaff"
     ]
   },
   {
@@ -191,7 +35,8 @@
       "Perplexity"
     ],
     "Type": [
-      "Copyright Infringement"
+      "Copyright Infringement",
+      "Trademark Infringement"
     ],
     "Interaction": "Lawsuit",
     "News Org(s)": [
@@ -210,6 +55,7 @@
     ],
     "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.630270/gov.uscourts.nysd.630270.1.0.pdf",
     "Location": "United States",
+    "Last Modified": "2025-12-03 22:04:24",
     "Affected Publications": [
       "The Wall Street Journal"
     ],
@@ -235,14 +81,17 @@
       "OpenAI"
     ],
     "Type": [
-      "Copyright Infringement"
+      "Copyright Infringement",
+      "Trademark Infringement",
+      "False Designation of Origin",
+      "Injury to Business Reputation"
     ],
     "Interaction": "Lawsuit",
     "News Org(s)": [
       "U.S. News & World Report"
     ],
     "Reported Details": "The lawsuit alleges OpenAI's theft of the publisher's content infringes on its rights under U.S. copyright and trademark laws",
-    "Status": null,
+    "Status": "In progress",
     "Case Number": "1:25-cv-09912",
     "Defendant": [
       "OpenAI"
@@ -252,6 +101,7 @@
     ],
     "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.653848/gov.uscourts.nysd.653848.1.0.pdf",
     "Location": "United States",
+    "Last Modified": "2025-12-03 22:52:29",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": []
@@ -269,7 +119,7 @@
     "News Org(s)": [
       "Folha de S.Paulo"
     ],
-    "Reported Details": "The Brazilian daily newspaper alleges OpenAI uses its content to train AI models without authorization or payment. The outlet demands that OpenAI destroy the AI models that used its protected material.",
+    "Reported Details": "The Brazilian daily newspaper alleges OpenAI uses its content to train AI models without authorization or payment, and demands that the company destroy the models that used its protected material.",
     "Status": "In progress",
     "Case Number": null,
     "Defendant": [
@@ -280,6 +130,7 @@
     ],
     "Case Filing": null,
     "Location": "Brazil",
+    "Last Modified": "2025-12-03 22:48:45",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -298,7 +149,7 @@
     "News Org(s)": [
       "Danish Press Publications’ Collective Management Organization"
     ],
-    "Reported Details": "The industry group representing almost all of Denmark's media outlets, sues OpenAI for using its repertoire in its training and not respecting \"reservations in terms and conditions of a website.\"",
+    "Reported Details": "The industry group representing almost all of Denmark’s media outlets sues OpenAI for using its repertoire in its training and not respecting “reservations in terms and conditions of a website.”",
     "Status": "In progress",
     "Case Number": null,
     "Defendant": [
@@ -309,11 +160,12 @@
     ],
     "Case Filing": null,
     "Location": "Denmark",
+    "Last Modified": "2025-12-03 22:48:09",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.euronews.com/next/2025/07/01/danish-publishers-sue-openai-after-failing-to-strike-rights-deal",
-      "https://dpcmo.dk/denmark-takes-over-the-eu-presidency-and-dpcmo-will-sue-openai/"
+      "https://dpcmo.dk/denmark-takes-over-the-eu-presidency-and-dpcmo-will-sue-openai/",
+      "https://www.euronews.com/next/2025/07/01/danish-publishers-sue-openai-after-failing-to-strike-rights-deal"
     ]
   },
   {
@@ -357,6 +209,7 @@
     ],
     "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.653833/gov.uscourts.nysd.653833.1.0.pdf",
     "Location": "United States",
+    "Last Modified": "2025-12-03 17:15:01",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": []
@@ -374,7 +227,7 @@
     "News Org(s)": [
       "The New York Times Company"
     ],
-    "Reported Details": "The New York Times becomes the first major media company to sue AI companies for copyright infringement, alleging OpenAI and Microsoft's \"unlawful use of The Times's work to create artificial intelligence products that compete with it threatens The Times's ability to provide that service.\" The complaint \"seeks to hold them responsible for the billions of dollars in statutory and actual damages that they owe for the unlawful copying and use of The Time's uniquely valuable works.\"",
+    "Reported Details": "The New York Times becomes the first major media company to sue AI companies for copyright infringement, alleging OpenAI and Microsoft’s “unlawful use of The Times’s work to create artificial intelligence products that compete with it threatens The Times’s ability to provide that service.” The complaint “seeks to hold them responsible for the billions of dollars in statutory and actual damages that they owe for the unlawful copying and use of The Times’s uniquely valuable works.”",
     "Status": "In progress",
     "Case Number": "1:25-md-3143",
     "Defendant": [
@@ -386,6 +239,7 @@
     ],
     "Case Filing": "https://nytco-assets.nytimes.com/2023/12/NYT_Complaint_Dec2023.pdf",
     "Location": "United States",
+    "Last Modified": "2025-12-03 21:52:53",
     "Affected Publications": [
       "The New York Times",
       "The Athletic",
@@ -424,43 +278,8 @@
       }
     ],
     "Sources": [
+      "https://www.nytimes.com/2023/12/27/business/media/new-york-times-open-ai-microsoft-lawsuit.html",
       "https://www.axios.com/2023/12/27/nyt-microsoft-openai-lawsuit-copyright-infringement"
-    ]
-  },
-  {
-    "Date": "2025-02-13",
-    "AI Company": [
-      "Cohere"
-    ],
-    "Type": [
-      "Copyright Infringement",
-      "Trademark Infringement"
-    ],
-    "Interaction": "Lawsuit",
-    "News Org(s)": [
-      "Condé Nast",
-      "Advance Local Media",
-      "The Republican",
-      "The Plain Dealer"
-    ],
-    "Reported Details": "Publishers accuse Cohere of improperly using at least 4,000 copyrighted works to train its large language model and of displaying large portions of or entire articles for users while bypassing visits to the publishers' websites.",
-    "Status": "In progress",
-    "Case Number": "1:25-cv-01305",
-    "Defendant": [
-      "Cohere"
-    ],
-    "Plaintiff": [
-      "Condé Nast",
-      "Advance Local Media",
-      "The Republican",
-      "The Plain Dealer"
-    ],
-    "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.636920/gov.uscourts.nysd.636920.1.0.pdf",
-    "Location": "United States",
-    "Affected Publications": [],
-    "parent_child_matches": [],
-    "Sources": [
-      "https://www.wsj.com/business/media/conde-nast-mcclatchy-and-other-publishers-accuse-ai-firm-cohere-of-copyright-violations-5f5ceaff"
     ]
   },
   {
@@ -474,9 +293,14 @@
     "Interaction": "Lawsuit",
     "News Org(s)": [
       "Toronto Star",
-      "Metroland Media"
+      "Metroland Media",
+      "Postmedia Network",
+      "PNI Maritimes",
+      "The Globe and Mail",
+      "The Canadian Press",
+      "Canadian Broadcasting Corporation (CBC)"
     ],
-    "Reported Details": "A broad coalition of Canada’s major news organizations sue OpenAI, alleging the AI company is illegally using news articles to train ChatGPT.",
+    "Reported Details": "A broad coalition of Canada’s major news organizations sues OpenAI, alleging the AI company is illegally using news articles to train ChatGPT.",
     "Status": "In progress",
     "Case Number": "CV-24-00732231-00CL",
     "Defendant": [
@@ -484,12 +308,251 @@
     ],
     "Plaintiff": [
       "Toronto Star",
-      "Metroland Media"
+      "Metroland Media",
+      "Postmedia Network",
+      "PNI Maritimes",
+      "The Globe and Mail",
+      "The Canadian Press",
+      "Canadian Broadcasting Corporation (CBC)"
     ],
     "Case Filing": "https://litigate.com/assets/uploads/Canadian-News-Media-Companies-v-OpenAI.pdf",
     "Location": "Canada",
-    "Affected Publications": [],
-    "parent_child_matches": [],
+    "Last Modified": "2025-12-03 22:27:23",
+    "Affected Publications": [
+      "Hamilton Spectator",
+      "Peterborough Examiner",
+      "Waterloo Region Record",
+      "St. Catharines Standard",
+      "Niagara Falls Review",
+      "Welland Tribune",
+      "National Post",
+      "The Chronicle Herald",
+      "Cape Breton Post",
+      "The Guardian",
+      "The Telegram",
+      "The Globe and Mail",
+      "secretcanada.com",
+      "Globe2Go",
+      "CBC.ca",
+      "ici.radio-canada.ca",
+      "ici.tou.tv"
+    ],
+    "parent_child_matches": [
+      {
+        "news_org": "Metroland Media",
+        "publication": "Hamilton Spectator",
+        "direct_child": true,
+        "lineage": [
+          "Metroland Media",
+          "Hamilton Spectator"
+        ],
+        "lineage_str": "Metroland Media → Hamilton Spectator"
+      },
+      {
+        "news_org": "Metroland Media",
+        "publication": "Peterborough Examiner",
+        "direct_child": true,
+        "lineage": [
+          "Metroland Media",
+          "Peterborough Examiner"
+        ],
+        "lineage_str": "Metroland Media → Peterborough Examiner"
+      },
+      {
+        "news_org": "Metroland Media",
+        "publication": "Waterloo Region Record",
+        "direct_child": true,
+        "lineage": [
+          "Metroland Media",
+          "Waterloo Region Record"
+        ],
+        "lineage_str": "Metroland Media → Waterloo Region Record"
+      },
+      {
+        "news_org": "Metroland Media",
+        "publication": "St. Catharines Standard",
+        "direct_child": true,
+        "lineage": [
+          "Metroland Media",
+          "St. Catharines Standard"
+        ],
+        "lineage_str": "Metroland Media → St. Catharines Standard"
+      },
+      {
+        "news_org": "Metroland Media",
+        "publication": "Niagara Falls Review",
+        "direct_child": true,
+        "lineage": [
+          "Metroland Media",
+          "Niagara Falls Review"
+        ],
+        "lineage_str": "Metroland Media → Niagara Falls Review"
+      },
+      {
+        "news_org": "Metroland Media",
+        "publication": "Welland Tribune",
+        "direct_child": true,
+        "lineage": [
+          "Metroland Media",
+          "Welland Tribune"
+        ],
+        "lineage_str": "Metroland Media → Welland Tribune"
+      },
+      {
+        "news_org": "Postmedia Network",
+        "publication": "National Post",
+        "direct_child": true,
+        "lineage": [
+          "Postmedia Network",
+          "National Post"
+        ],
+        "lineage_str": "Postmedia Network → National Post"
+      },
+      {
+        "news_org": "Postmedia Network",
+        "publication": "The Chronicle Herald",
+        "direct_child": false,
+        "lineage": [
+          "Postmedia Network",
+          "PNI Maritimes",
+          "The Chronicle Herald"
+        ],
+        "lineage_str": "Postmedia Network → PNI Maritimes → The Chronicle Herald"
+      },
+      {
+        "news_org": "Postmedia Network",
+        "publication": "Cape Breton Post",
+        "direct_child": false,
+        "lineage": [
+          "Postmedia Network",
+          "PNI Maritimes",
+          "Cape Breton Post"
+        ],
+        "lineage_str": "Postmedia Network → PNI Maritimes → Cape Breton Post"
+      },
+      {
+        "news_org": "Postmedia Network",
+        "publication": "The Guardian",
+        "direct_child": false,
+        "lineage": [
+          "Postmedia Network",
+          "PNI Maritimes",
+          "The Guardian"
+        ],
+        "lineage_str": "Postmedia Network → PNI Maritimes → The Guardian"
+      },
+      {
+        "news_org": "Postmedia Network",
+        "publication": "The Telegram",
+        "direct_child": false,
+        "lineage": [
+          "Postmedia Network",
+          "PNI Maritimes",
+          "The Telegram"
+        ],
+        "lineage_str": "Postmedia Network → PNI Maritimes → The Telegram"
+      },
+      {
+        "news_org": "PNI Maritimes",
+        "publication": "The Chronicle Herald",
+        "direct_child": true,
+        "lineage": [
+          "PNI Maritimes",
+          "The Chronicle Herald"
+        ],
+        "lineage_str": "PNI Maritimes → The Chronicle Herald"
+      },
+      {
+        "news_org": "PNI Maritimes",
+        "publication": "Cape Breton Post",
+        "direct_child": true,
+        "lineage": [
+          "PNI Maritimes",
+          "Cape Breton Post"
+        ],
+        "lineage_str": "PNI Maritimes → Cape Breton Post"
+      },
+      {
+        "news_org": "PNI Maritimes",
+        "publication": "The Guardian",
+        "direct_child": true,
+        "lineage": [
+          "PNI Maritimes",
+          "The Guardian"
+        ],
+        "lineage_str": "PNI Maritimes → The Guardian"
+      },
+      {
+        "news_org": "PNI Maritimes",
+        "publication": "The Telegram",
+        "direct_child": true,
+        "lineage": [
+          "PNI Maritimes",
+          "The Telegram"
+        ],
+        "lineage_str": "PNI Maritimes → The Telegram"
+      },
+      {
+        "news_org": "The Globe and Mail",
+        "publication": "The Globe and Mail",
+        "direct_child": true,
+        "lineage": [
+          "The Globe and Mail",
+          "The Globe and Mail"
+        ],
+        "lineage_str": "The Globe and Mail → The Globe and Mail"
+      },
+      {
+        "news_org": "The Globe and Mail",
+        "publication": "secretcanada.com",
+        "direct_child": true,
+        "lineage": [
+          "The Globe and Mail",
+          "secretcanada.com"
+        ],
+        "lineage_str": "The Globe and Mail → secretcanada.com"
+      },
+      {
+        "news_org": "The Globe and Mail",
+        "publication": "Globe2Go",
+        "direct_child": true,
+        "lineage": [
+          "The Globe and Mail",
+          "Globe2Go"
+        ],
+        "lineage_str": "The Globe and Mail → Globe2Go"
+      },
+      {
+        "news_org": "Canadian Broadcasting Corporation (CBC)",
+        "publication": "CBC.ca",
+        "direct_child": true,
+        "lineage": [
+          "Canadian Broadcasting Corporation (CBC)",
+          "CBC.ca"
+        ],
+        "lineage_str": "Canadian Broadcasting Corporation (CBC) → CBC.ca"
+      },
+      {
+        "news_org": "Canadian Broadcasting Corporation (CBC)",
+        "publication": "ici.radio-canada.ca",
+        "direct_child": true,
+        "lineage": [
+          "Canadian Broadcasting Corporation (CBC)",
+          "ici.radio-canada.ca"
+        ],
+        "lineage_str": "Canadian Broadcasting Corporation (CBC) → ici.radio-canada.ca"
+      },
+      {
+        "news_org": "Canadian Broadcasting Corporation (CBC)",
+        "publication": "ici.tou.tv",
+        "direct_child": true,
+        "lineage": [
+          "Canadian Broadcasting Corporation (CBC)",
+          "ici.tou.tv"
+        ],
+        "lineage_str": "Canadian Broadcasting Corporation (CBC) → ici.tou.tv"
+      }
+    ],
     "Sources": []
   },
   {
@@ -515,11 +578,12 @@
     ],
     "Case Filing": "https://delhihighcourt.nic.in/app/downloadOrderbByDate/CS(COMM)/1028/2024/07-11-2025",
     "Location": "India",
+    "Last Modified": "2025-12-02 18:25:26",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.techpolicy.press/generative-ai-and-copyright-issues-globally-ani-media-v-openai/",
-      "https://www.hindustantimes.com/india-news/news-agency-ani-sues-openai-for-alleged-violation-of-intellectual-property-rights-101731945177550.html"
+      "https://www.hindustantimes.com/india-news/news-agency-ani-sues-openai-for-alleged-violation-of-intellectual-property-rights-101731945177550.html",
+      "https://www.techpolicy.press/generative-ai-and-copyright-issues-globally-ani-media-v-openai/"
     ]
   },
   {
@@ -534,7 +598,7 @@
     "News Org(s)": [
       "Raw Story Media"
     ],
-    "Reported Details": "Raw Story and Alternet allege OpenAI trained its chatbot using copyrighted works by journalists without properly crediting or citing them. The companies seek damages in the amount of at least $2,500 per violation, and ask OpenAI to remove all copyrighted articles from data training sets. (See latest status updates: https://www.bakerlaw.com/in-re-openai-inc-copyright-infringement-litigation/)",
+    "Reported Details": "Raw Story and AlterNet allege OpenAI trained its chatbot using copyrighted works by journalists without properly crediting or citing them. The companies seek damages in the amount of at least $2,500 per violation, and ask OpenAI to remove all copyrighted articles from data training sets.",
     "Status": "In progress",
     "Case Number": "1:24-cv-01514",
     "Defendant": [
@@ -545,6 +609,7 @@
     ],
     "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.616533/gov.uscourts.nysd.616533.1.0.pdf",
     "Location": "United States",
+    "Last Modified": "2025-12-03 21:46:55",
     "Affected Publications": [
       "Raw Story",
       "Alternet"
@@ -587,7 +652,7 @@
     "News Org(s)": [
       "Yomiuri Shimbun"
     ],
-    "Reported Details": "Japan's largest newspaper alleges Perplexity acquired 119,467 Yomiuri articles without permission between February and June 2025 for the purpose of generating answers for its users, which the newspaper claims this violated the right of reproduction and the right to public transmission under the Copyright Law. The suit demands that the company stop using its articles and seeks damages of about ¥2.17 billion, or about $15 million.",
+    "Reported Details": "Japan’s largest newspaper alleges Perplexity acquired 119,467 Yomiuri articles without permission between February and June 2025 for the purpose of generating answers for its users, which the newspaper claims violated the right of reproduction and the right to public transmission under the Copyright Law. The suit demands that the company stop using its articles and seeks damages of about ¥2.17 billion, or about $14 million.",
     "Status": "In progress",
     "Case Number": null,
     "Defendant": [
@@ -598,6 +663,7 @@
     ],
     "Case Filing": null,
     "Location": "Japan",
+    "Last Modified": "2025-12-03 22:48:34",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -611,13 +677,17 @@
       "OpenAI"
     ],
     "Type": [
-      "Copyright Infringement"
+      "Copyright Infringement",
+      "Trademark Infringement",
+      "Unjust Enrichment",
+      "Circumvention of Technical Measures",
+      "Injury to Business Reputation"
     ],
     "Interaction": "Lawsuit",
     "News Org(s)": [
       "Ziff Davis"
     ],
-    "Reported Details": "Ziff Davis sues OpenAI for “intentionally and relentlessly\" reproducing exact copies and creating derivatives of its brands' works, infringing on the publisher’s copyrights and diluting its trademarks.",
+    "Reported Details": "Ziff Davis sues OpenAI for “intentionally and relentlessly” reproducing exact copies and creating derivatives of its brands’ works, infringing on the publisher’s copyrights and diluting its trademarks.",
     "Status": "In progress",
     "Case Number": "1:25-cv-00501",
     "Defendant": [
@@ -628,6 +698,7 @@
     ],
     "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.ded.88911/gov.uscourts.ded.88911.1.0.pdf",
     "Location": "United States",
+    "Last Modified": "2025-12-04 04:00:10",
     "Affected Publications": [
       "IGN",
       "Mashable",
@@ -636,7 +707,21 @@
       "PCMag",
       "Lifehacker",
       "BabyCenter",
-      "Everyday Health"
+      "Everyday Health",
+      "AskMen",
+      "Spiceworks",
+      "RetailMeNot",
+      "DealsOfAmerica",
+      "BlackFriday.com",
+      "TechBargains",
+      "Eurogamer",
+      "Rock Paper Shotgun",
+      "VG247",
+      "What to Expect",
+      "MedPage Today",
+      "theSkimm",
+      "Maxroll",
+      "Map Genie"
     ],
     "parent_child_matches": [
       {
@@ -702,12 +787,13 @@
       {
         "news_org": "Ziff Davis",
         "publication": "BabyCenter",
-        "direct_child": true,
+        "direct_child": false,
         "lineage": [
           "Ziff Davis",
+          "Everyday Health",
           "BabyCenter"
         ],
-        "lineage_str": "Ziff Davis → BabyCenter"
+        "lineage_str": "Ziff Davis → Everyday Health → BabyCenter"
       },
       {
         "news_org": "Ziff Davis",
@@ -718,6 +804,157 @@
           "Everyday Health"
         ],
         "lineage_str": "Ziff Davis → Everyday Health"
+      },
+      {
+        "news_org": "Ziff Davis",
+        "publication": "AskMen",
+        "direct_child": true,
+        "lineage": [
+          "Ziff Davis",
+          "AskMen"
+        ],
+        "lineage_str": "Ziff Davis → AskMen"
+      },
+      {
+        "news_org": "Ziff Davis",
+        "publication": "Spiceworks",
+        "direct_child": true,
+        "lineage": [
+          "Ziff Davis",
+          "Spiceworks"
+        ],
+        "lineage_str": "Ziff Davis → Spiceworks"
+      },
+      {
+        "news_org": "Ziff Davis",
+        "publication": "RetailMeNot",
+        "direct_child": true,
+        "lineage": [
+          "Ziff Davis",
+          "RetailMeNot"
+        ],
+        "lineage_str": "Ziff Davis → RetailMeNot"
+      },
+      {
+        "news_org": "Ziff Davis",
+        "publication": "DealsOfAmerica",
+        "direct_child": true,
+        "lineage": [
+          "Ziff Davis",
+          "DealsOfAmerica"
+        ],
+        "lineage_str": "Ziff Davis → DealsOfAmerica"
+      },
+      {
+        "news_org": "Ziff Davis",
+        "publication": "BlackFriday.com",
+        "direct_child": true,
+        "lineage": [
+          "Ziff Davis",
+          "BlackFriday.com"
+        ],
+        "lineage_str": "Ziff Davis → BlackFriday.com"
+      },
+      {
+        "news_org": "Ziff Davis",
+        "publication": "TechBargains",
+        "direct_child": true,
+        "lineage": [
+          "Ziff Davis",
+          "TechBargains"
+        ],
+        "lineage_str": "Ziff Davis → TechBargains"
+      },
+      {
+        "news_org": "Ziff Davis",
+        "publication": "Eurogamer",
+        "direct_child": false,
+        "lineage": [
+          "Ziff Davis",
+          "IGN",
+          "Gamer Network",
+          "Eurogamer"
+        ],
+        "lineage_str": "Ziff Davis → IGN → Gamer Network → Eurogamer"
+      },
+      {
+        "news_org": "Ziff Davis",
+        "publication": "Rock Paper Shotgun",
+        "direct_child": false,
+        "lineage": [
+          "Ziff Davis",
+          "IGN",
+          "Gamer Network",
+          "Rock Paper Shotgun"
+        ],
+        "lineage_str": "Ziff Davis → IGN → Gamer Network → Rock Paper Shotgun"
+      },
+      {
+        "news_org": "Ziff Davis",
+        "publication": "VG247",
+        "direct_child": false,
+        "lineage": [
+          "Ziff Davis",
+          "IGN",
+          "Gamer Network",
+          "VG247"
+        ],
+        "lineage_str": "Ziff Davis → IGN → Gamer Network → VG247"
+      },
+      {
+        "news_org": "Ziff Davis",
+        "publication": "What to Expect",
+        "direct_child": false,
+        "lineage": [
+          "Ziff Davis",
+          "Everyday Health",
+          "What to Expect"
+        ],
+        "lineage_str": "Ziff Davis → Everyday Health → What to Expect"
+      },
+      {
+        "news_org": "Ziff Davis",
+        "publication": "MedPage Today",
+        "direct_child": false,
+        "lineage": [
+          "Ziff Davis",
+          "Everyday Health",
+          "MedPage Today"
+        ],
+        "lineage_str": "Ziff Davis → Everyday Health → MedPage Today"
+      },
+      {
+        "news_org": "Ziff Davis",
+        "publication": "theSkimm",
+        "direct_child": false,
+        "lineage": [
+          "Ziff Davis",
+          "Everyday Health",
+          "theSkimm"
+        ],
+        "lineage_str": "Ziff Davis → Everyday Health → theSkimm"
+      },
+      {
+        "news_org": "Ziff Davis",
+        "publication": "Maxroll",
+        "direct_child": false,
+        "lineage": [
+          "Ziff Davis",
+          "IGN",
+          "Maxroll"
+        ],
+        "lineage_str": "Ziff Davis → IGN → Maxroll"
+      },
+      {
+        "news_org": "Ziff Davis",
+        "publication": "Map Genie",
+        "direct_child": false,
+        "lineage": [
+          "Ziff Davis",
+          "IGN",
+          "Map Genie"
+        ],
+        "lineage_str": "Ziff Davis → IGN → Map Genie"
       }
     ],
     "Sources": [
@@ -731,7 +968,10 @@
       "Microsoft"
     ],
     "Type": [
-      "Copyright Infringement"
+      "Copyright Infringement",
+      "Unfair Competition/Antitrust",
+      "Trademark Infringement",
+      "Injury to Business Reputation"
     ],
     "Interaction": "Lawsuit",
     "News Org(s)": [
@@ -744,7 +984,7 @@
       "Orange County Register",
       "Pioneer Press"
     ],
-    "Reported Details": "The lawsuit alleges that OpenAI and Microsoft have been \"purloining millions of the Publishers' copyrighted articles without permission and without payment,\" and that their products removed copyright management information like journalists' names and titles from their work when the information they reported was cited in outputs.",
+    "Reported Details": "The lawsuit alleges that OpenAI and Microsoft have been “purloining millions of the Publishers’ copyrighted articles without permission and without payment,” and that their products removed copyright management information like journalists’ names and titles from their work when the information they reported was cited in outputs.",
     "Status": "In progress",
     "Case Number": "1:24-cv-03285",
     "Defendant": [
@@ -763,6 +1003,7 @@
     ],
     "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.620514/gov.uscourts.nysd.620514.1.0.pdf",
     "Location": "United States",
+    "Last Modified": "2025-12-03 22:00:24",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -783,7 +1024,7 @@
     "News Org(s)": [
       "The Intercept"
     ],
-    "Reported Details": "The Intercept seeks damages in the amount of at least $2,500 per copyright infringement violation, as well as asking OpenAI to remove all copyrighted articles from data training sets. ",
+    "Reported Details": "The Intercept seeks damages in the amount of at least $2,500 per copyright infringement violation, and asks OpenAI to remove all copyrighted articles from data training sets. ",
     "Status": "In progress",
     "Case Number": "1:24-cv-01515",
     "Defendant": [
@@ -795,6 +1036,7 @@
     ],
     "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.616536/gov.uscourts.nysd.616536.1.0_1.pdf",
     "Location": "United States",
+    "Last Modified": "2025-12-03 21:47:35",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -808,31 +1050,352 @@
     ],
     "Type": [
       "Copyright Infringement",
-      "Trademark Infringement"
+      "Trademark Infringement",
+      "False Designation of Origin"
     ],
     "Interaction": "Lawsuit",
     "News Org(s)": [
       "Condé Nast",
-      "Advance Local Media",
       "Plain Dealer",
-      "The Republican"
+      "The Republican",
+      "Advance Publications",
+      "The Atlantic",
+      "Axel Springer",
+      "Forbes",
+      "The Guardian",
+      "Los Angeles Times",
+      "McClatchy",
+      "Newsday",
+      "Torstar",
+      "Vox Media"
     ],
-    "Reported Details": "Publishers s accuse the company of improperly using at least 4,000 copyrighted works to train its large language model and of displaying large portions of or entire articles for users while bypassing visits to the publishers' websites",
+    "Reported Details": "Publishers accuse Cohere of improperly using at least 4,000 copyrighted works to train its large language model, and of displaying large portions of or entire articles for users while bypassing visits to the publishers’ websites.",
     "Status": "In progress",
     "Case Number": "1:25-cv-01305",
     "Defendant": [
       "Cohere"
     ],
     "Plaintiff": [
-      "Condé Nast",
+      "Advance Publications",
+      "The Atlantic",
+      "Axel Springer",
+      "Forbes",
+      "The Guardian",
+      "Los Angeles Times",
+      "McClatchy",
+      "Newsday",
+      "Torstar",
+      "Vox Media"
+    ],
+    "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.636920/gov.uscourts.nysd.636920.1.0.pdf",
+    "Location": "United States",
+    "Last Modified": "2025-12-04 04:03:02",
+    "Affected Publications": [
+      "Vogue",
+      "The New Yorker",
+      "GQ",
+      "Vanity Fair",
+      "Wired",
+      "Bon Appétit",
+      "Architectural Digest",
+      "The Oregonian",
+      "Business Insider",
+      "Politico",
+      "The Miami Herald",
+      "Idaho Statesman",
+      "Fort Worth Star-Telegram",
+      "Toronto Star",
+      "The Verge",
+      "SB Nation",
+      "New York Magazine",
+      "Intelligencer",
+      "The Cut",
+      "Vulture",
+      "The Strategist",
+      "Curbed",
+      "Grub Street",
       "Advance Local Media",
       "Plain Dealer",
       "The Republican"
     ],
-    "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.636920/gov.uscourts.nysd.636920.1.0.pdf",
-    "Location": "United States",
-    "Affected Publications": [],
-    "parent_child_matches": [],
+    "parent_child_matches": [
+      {
+        "news_org": "Condé Nast",
+        "publication": "The New Yorker",
+        "direct_child": true,
+        "lineage": [
+          "Condé Nast",
+          "The New Yorker"
+        ],
+        "lineage_str": "Condé Nast → The New Yorker"
+      },
+      {
+        "news_org": "Condé Nast",
+        "publication": "Vanity Fair",
+        "direct_child": true,
+        "lineage": [
+          "Condé Nast",
+          "Vanity Fair"
+        ],
+        "lineage_str": "Condé Nast → Vanity Fair"
+      },
+      {
+        "news_org": "Condé Nast",
+        "publication": "Wired",
+        "direct_child": true,
+        "lineage": [
+          "Condé Nast",
+          "Wired"
+        ],
+        "lineage_str": "Condé Nast → Wired"
+      },
+      {
+        "news_org": "Condé Nast",
+        "publication": "Bon Appétit",
+        "direct_child": true,
+        "lineage": [
+          "Condé Nast",
+          "Bon Appétit"
+        ],
+        "lineage_str": "Condé Nast → Bon Appétit"
+      },
+      {
+        "news_org": "Condé Nast",
+        "publication": "Architectural Digest",
+        "direct_child": true,
+        "lineage": [
+          "Condé Nast",
+          "Architectural Digest"
+        ],
+        "lineage_str": "Condé Nast → Architectural Digest"
+      },
+      {
+        "news_org": "Advance Publications",
+        "publication": "The New Yorker",
+        "direct_child": false,
+        "lineage": [
+          "Advance Publications",
+          "Condé Nast",
+          "The New Yorker"
+        ],
+        "lineage_str": "Advance Publications → Condé Nast → The New Yorker"
+      },
+      {
+        "news_org": "Advance Publications",
+        "publication": "Vanity Fair",
+        "direct_child": false,
+        "lineage": [
+          "Advance Publications",
+          "Condé Nast",
+          "Vanity Fair"
+        ],
+        "lineage_str": "Advance Publications → Condé Nast → Vanity Fair"
+      },
+      {
+        "news_org": "Advance Publications",
+        "publication": "Wired",
+        "direct_child": false,
+        "lineage": [
+          "Advance Publications",
+          "Condé Nast",
+          "Wired"
+        ],
+        "lineage_str": "Advance Publications → Condé Nast → Wired"
+      },
+      {
+        "news_org": "Advance Publications",
+        "publication": "Bon Appétit",
+        "direct_child": false,
+        "lineage": [
+          "Advance Publications",
+          "Condé Nast",
+          "Bon Appétit"
+        ],
+        "lineage_str": "Advance Publications → Condé Nast → Bon Appétit"
+      },
+      {
+        "news_org": "Advance Publications",
+        "publication": "Architectural Digest",
+        "direct_child": false,
+        "lineage": [
+          "Advance Publications",
+          "Condé Nast",
+          "Architectural Digest"
+        ],
+        "lineage_str": "Advance Publications → Condé Nast → Architectural Digest"
+      },
+      {
+        "news_org": "Advance Publications",
+        "publication": "The Oregonian",
+        "direct_child": false,
+        "lineage": [
+          "Advance Publications",
+          "Advance Local Media",
+          "The Oregonian"
+        ],
+        "lineage_str": "Advance Publications → Advance Local Media → The Oregonian"
+      },
+      {
+        "news_org": "Advance Publications",
+        "publication": "Advance Local Media",
+        "direct_child": true,
+        "lineage": [
+          "Advance Publications",
+          "Advance Local Media"
+        ],
+        "lineage_str": "Advance Publications → Advance Local Media"
+      },
+      {
+        "news_org": "Advance Publications",
+        "publication": "The Republican",
+        "direct_child": true,
+        "lineage": [
+          "Advance Publications",
+          "The Republican"
+        ],
+        "lineage_str": "Advance Publications → The Republican"
+      },
+      {
+        "news_org": "Axel Springer",
+        "publication": "Business Insider",
+        "direct_child": true,
+        "lineage": [
+          "Axel Springer",
+          "Business Insider"
+        ],
+        "lineage_str": "Axel Springer → Business Insider"
+      },
+      {
+        "news_org": "Axel Springer",
+        "publication": "Politico",
+        "direct_child": true,
+        "lineage": [
+          "Axel Springer",
+          "Politico"
+        ],
+        "lineage_str": "Axel Springer → Politico"
+      },
+      {
+        "news_org": "McClatchy",
+        "publication": "The Miami Herald",
+        "direct_child": true,
+        "lineage": [
+          "McClatchy",
+          "The Miami Herald"
+        ],
+        "lineage_str": "McClatchy → The Miami Herald"
+      },
+      {
+        "news_org": "McClatchy",
+        "publication": "Idaho Statesman",
+        "direct_child": true,
+        "lineage": [
+          "McClatchy",
+          "Idaho Statesman"
+        ],
+        "lineage_str": "McClatchy → Idaho Statesman"
+      },
+      {
+        "news_org": "McClatchy",
+        "publication": "Fort Worth Star-Telegram",
+        "direct_child": true,
+        "lineage": [
+          "McClatchy",
+          "Fort Worth Star-Telegram"
+        ],
+        "lineage_str": "McClatchy → Fort Worth Star-Telegram"
+      },
+      {
+        "news_org": "Torstar",
+        "publication": "Toronto Star",
+        "direct_child": true,
+        "lineage": [
+          "Torstar",
+          "Toronto Star"
+        ],
+        "lineage_str": "Torstar → Toronto Star"
+      },
+      {
+        "news_org": "Vox Media",
+        "publication": "The Verge",
+        "direct_child": true,
+        "lineage": [
+          "Vox Media",
+          "The Verge"
+        ],
+        "lineage_str": "Vox Media → The Verge"
+      },
+      {
+        "news_org": "Vox Media",
+        "publication": "SB Nation",
+        "direct_child": true,
+        "lineage": [
+          "Vox Media",
+          "SB Nation"
+        ],
+        "lineage_str": "Vox Media → SB Nation"
+      },
+      {
+        "news_org": "Vox Media",
+        "publication": "Intelligencer",
+        "direct_child": true,
+        "lineage": [
+          "Vox Media",
+          "Intelligencer"
+        ],
+        "lineage_str": "Vox Media → Intelligencer"
+      },
+      {
+        "news_org": "Vox Media",
+        "publication": "The Cut",
+        "direct_child": true,
+        "lineage": [
+          "Vox Media",
+          "The Cut"
+        ],
+        "lineage_str": "Vox Media → The Cut"
+      },
+      {
+        "news_org": "Vox Media",
+        "publication": "Vulture",
+        "direct_child": true,
+        "lineage": [
+          "Vox Media",
+          "Vulture"
+        ],
+        "lineage_str": "Vox Media → Vulture"
+      },
+      {
+        "news_org": "Vox Media",
+        "publication": "The Strategist",
+        "direct_child": true,
+        "lineage": [
+          "Vox Media",
+          "The Strategist"
+        ],
+        "lineage_str": "Vox Media → The Strategist"
+      },
+      {
+        "news_org": "Vox Media",
+        "publication": "Curbed",
+        "direct_child": true,
+        "lineage": [
+          "Vox Media",
+          "Curbed"
+        ],
+        "lineage_str": "Vox Media → Curbed"
+      },
+      {
+        "news_org": "Vox Media",
+        "publication": "Grub Street",
+        "direct_child": true,
+        "lineage": [
+          "Vox Media",
+          "Grub Street"
+        ],
+        "lineage_str": "Vox Media → Grub Street"
+      }
+    ],
     "Sources": [
       "https://www.wsj.com/business/media/conde-nast-mcclatchy-and-other-publishers-accuse-ai-firm-cohere-of-copyright-violations-5f5ceaff"
     ]
@@ -850,7 +1413,7 @@
     "News Org(s)": [
       "Center for Investigative Reporting"
     ],
-    "Reported Details": "The lawsuit alleges the companies used the nonprofit news organizations' content without permission or offering compensation",
+    "Reported Details": "The lawsuit alleges the companies used the nonprofit news organizations’ content without permission or offering compensation.",
     "Status": "In progress",
     "Case Number": "1:24-cv-04872",
     "Defendant": [
@@ -862,6 +1425,7 @@
     ],
     "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.623941/gov.uscourts.nysd.623941.1.0.pdf",
     "Location": "United States",
+    "Last Modified": "2025-12-04 11:25:44",
     "Affected Publications": [
       "Mother Jones",
       "Reveal"
@@ -889,37 +1453,8 @@
       }
     ],
     "Sources": [
-      "['https://apnews.com/article/ai-media-lawsuits-center-for-investigative-reporting-chatgpt-mother-jones-c48452889750479410b65a119537746c', 'https://www.motherjones.com/press-releases/CIR-sues-OpenAI/'"
-    ]
-  },
-  {
-    "Date": "2025-02-13",
-    "AI Company": [
-      "Cohere"
-    ],
-    "Type": [
-      "Copyright Infringement",
-      "Trademark Infringement"
-    ],
-    "Interaction": "Lawsuit",
-    "News Org(s)": [
-      "Toronto Star"
-    ],
-    "Reported Details": "Publishers accuse Cohere of improperly using at least 4,000 copyrighted works to train its large language model and of displaying large portions of or entire articles for users while bypassing visits to the publishers' websites.",
-    "Status": "In progress",
-    "Case Number": "1:25-cv-01305",
-    "Defendant": [
-      "Cohere"
-    ],
-    "Plaintiff": [
-      "Toronto Star"
-    ],
-    "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.636920/gov.uscourts.nysd.636920.1.0.pdf",
-    "Location": "United States",
-    "Affected Publications": [],
-    "parent_child_matches": [],
-    "Sources": [
-      "https://www.wsj.com/business/media/conde-nast-mcclatchy-and-other-publishers-accuse-ai-firm-cohere-of-copyright-violations-5f5ceaff"
+      "https://apnews.com/article/ai-media-lawsuits-center-for-investigative-reporting-chatgpt-mother-jones-c48452889750479410b65a119537746c",
+      "https://www.motherjones.com/press-releases/CIR-sues-OpenAI/‘"
     ]
   },
   {
@@ -928,13 +1463,14 @@
       "Google"
     ],
     "Type": [
-      "Unfair Competition/Antitrust"
+      "Unfair Competition/Antitrust",
+      "Unjust Enrichment"
     ],
     "Interaction": "Lawsuit",
     "News Org(s)": [
       "Penske Media Corporation"
     ],
-    "Reported Details": "Penske's antitrust suit alleges that Google illegally uses its journalism to power AI summaries, which reduces traffic to its sites",
+    "Reported Details": "Penske’s antitrust suit alleges that Google illegally uses its journalism to power AI summaries and reduce traffic to its sites.",
     "Status": "In progress",
     "Case Number": "1:25-cv-03192",
     "Defendant": [
@@ -945,6 +1481,7 @@
     ],
     "Case Filing": "https://storage.courtlistener.com/recap/gov.uscourts.dcd.284823/gov.uscourts.dcd.284823.1.0.pdf",
     "Location": "United States",
+    "Last Modified": "2025-12-03 22:51:44",
     "Affected Publications": [
       "Billboard",
       "Deadline",
@@ -1156,12 +1693,13 @@
     ],
     "Case Filing": null,
     "Location": "Japan",
+    "Last Modified": "2025-12-02 18:26:18",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.nikkei.co.jp/nikkeiinfo/en/news/release_en_20250826_01.pdf",
       "https://www.asahi.com/ajw/articles/15987899",
-      "https://www.ft.com/content/79a88d1a-d914-4188-8792-0a20973b39a1"
+      "https://www.ft.com/content/79a88d1a-d914-4188-8792-0a20973b39a1",
+      "https://www.nikkei.co.jp/nikkeiinfo/en/news/release_en_20250826_01.pdf"
     ]
   },
   {
@@ -1176,7 +1714,7 @@
     "News Org(s)": [
       "Digital News Publishers Association"
     ],
-    "Reported Details": "The Digital News Publishers Association files an intervention in the Delhi High Court to join an ongoing proceeding against OpenAI, filed first by news agency ANI in 2024, for improperly using copyrighted content.",
+    "Reported Details": "The Digital News Publishers Association files an intervention in the Delhi High Court to join an ongoing proceeding against OpenAI, first filed by news agency ANI in 2024, for improperly using copyrighted content.",
     "Status": "In progress",
     "Case Number": "CS(COMM) 1028/2024",
     "Defendant": [
@@ -1187,6 +1725,7 @@
     ],
     "Case Filing": null,
     "Location": "India",
+    "Last Modified": "2025-12-03 22:24:24",
     "Affected Publications": [
       "The Indian Express",
       "Hindustan Times",
@@ -1274,13 +1813,14 @@
     "News Org(s)": [
       "WAN-IFRA"
     ],
-    "Reported Details": "WAN-IFRA announces the expansion of its Newsroom AI Catalyst program that will feature two additional cohorts, open to 24 editorial teams, and will expand to new regions, including Australia and New Zealand.",
+    "Reported Details": "WAN-IFRA announces the expansion of its Newsroom AI Catalyst program with two additional cohorts, open to 24 editorial teams, and new regions including Australia and New Zealand.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:57:28",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -1299,18 +1839,19 @@
     "News Org(s)": [
       "Online News Association"
     ],
-    "Reported Details": "The Online News Association, with financial support from Microsoft, launches the AI in Journalism Initiative, with the goal of \"connect[ing] digital innovators and newsroom leaders with year-round programming to build practical skills, knowledge and the capacity to swiftly harness opportunities presented by the latest shifts in AI\"",
+    "Reported Details": "The Online News Association, with financial support from Microsoft, launches the AI in Journalism Initiative, with the goal of “connect[ing] digital innovators and newsroom leaders with year-round programming to build practical skills, knowledge and the capacity to swiftly harness opportunities presented by the latest shifts in AI.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:55:35",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://journalists.org/2024/02/05/ona-launches-ai-in-journalism-initiative/",
-      "https://blogs.microsoft.com/on-the-issues/2024/02/05/journalism-news-generative-ai-democracy-forward/"
+      "https://blogs.microsoft.com/on-the-issues/2024/02/05/journalism-news-generative-ai-democracy-forward/",
+      "https://journalists.org/2024/02/05/ona-launches-ai-in-journalism-initiative/"
     ]
   },
   {
@@ -1325,13 +1866,14 @@
     "News Org(s)": [
       "Lenfest Institute"
     ],
-    "Reported Details": "OpenAI and Microsoft announce a $10 million AI collaborative and fellowship program operated by the Lenfest Institute, which will provide $500,000 each to five U.S. metro news organizations to cover the cost of hiring a two-year AI fellow to work on projects that focus on driving sustainable businesses for local news.",
+    "Reported Details": "OpenAI and Microsoft announce a $10 million AI collaborative and fellowship program operated by the Lenfest Institute, which will provide $500,000 each to five U.S. metro news organizations to hire a two-year AI fellow to work on projects focusing on driving sustainable business for local news.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:57:22",
     "Affected Publications": [
       "Chicago Public Media",
       "The Minnesota Star Tribune",
@@ -1408,19 +1950,20 @@
     "News Org(s)": [
       "Semafor"
     ],
-    "Reported Details": "Semafor launches a new, global multi-source breaking news feed called Signals, in which journalists use tools from Microsoft and OpenAI to offer readers \"diverse, sophisticated perspectives and insights on the biggest stories in the world as they develop.\" The Financial Times reports that \"the companies would not share financial details, but the amount of money is 'substantial' to Semafor’s business.\"",
+    "Reported Details": "Semafor launches a new, global multi-source breaking news feed called Signals, in which journalists use tools from Microsoft and OpenAI to offer readers “diverse, sophisticated perspectives and insights on the biggest stories in the world as they develop.” The Financial Times reports that “the companies would not share financial details, but the amount of money is ‘substantial’ to Semafor’s business.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:55:40",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
+      "https://blogs.microsoft.com/on-the-issues/2024/02/05/journalism-news-generative-ai-democracy-forward/",
       "https://www.semafor.com/article/02/05/2024/introducing-semafor-signals",
-      "https://www.ft.com/content/b521a662-a272-49a1-b76e-3deea4754b76",
-      "https://blogs.microsoft.com/on-the-issues/2024/02/05/journalism-news-generative-ai-democracy-forward/"
+      "https://www.ft.com/content/b521a662-a272-49a1-b76e-3deea4754b76"
     ]
   },
   {
@@ -1435,13 +1978,14 @@
     "News Org(s)": [
       "New York University’s Arthur L. Carter Journalism Institute"
     ],
-    "Reported Details": "New York University’s Arthur L. Carter Journalism Institute launches the Ethics and Journalism Initiative, backed by a $395,000 grant from OpenAI",
+    "Reported Details": "New York University’s Arthur L. Carter Journalism Institute launches the Ethics and Journalism Initiative, backed by a $395,000 grant from OpenAI.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:55:15",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -1460,13 +2004,14 @@
     "News Org(s)": [
       "JournalismAI"
     ],
-    "Reported Details": "JournalismAI, a project of Polis – the journalism think-tank at the London School of Economics and Political Science – announces a new grant program with the Google News Initiative \"to enable 35 news organisations around the world to experiment, implement and share best practice across AI technologies.\" The grants - which range between $50,000 and $250,000 - will be targeted in three areas: experimentation of new formats across mobile, video and audio; identification of ways to grow subscriptions and support diverse forms of revenue; and fighting misinformation.",
+    "Reported Details": "JournalismAI, a project of Polis, the journalism think tank at the London School of Economics and Political Science, announces a new grant program with the Google News Initiative “to enable 35 news organisations around the world to experiment, implement and share best practice across AI technologies.” Grants from $50,000 to $250,000 will be targeted in “experimentation of new formats across mobile, video and audio; identification of ways to grow subscriptions and support diverse forms of revenue; and to fight misinformation.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:56:58",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -1485,17 +2030,18 @@
     "News Org(s)": [
       "Nota"
     ],
-    "Reported Details": "Microsoft partners with Nota, \"a startup dedicated to putting high-quality AI tools into newsrooms to help improve newsroom operations, has expanded to more than a 100 newsrooms with support from Microsoft\"",
+    "Reported Details": "Microsoft launches a collaboration with Nota, a startup that helps newsrooms use AI to improve operations",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:55:48",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.heynota.com/microsoft-journalism-hub/",
+      "https://web.archive.org/web/20240417001422/https://www.heynota.com/microsoft-journalism-hub/",
       "https://blogs.microsoft.com/on-the-issues/2024/02/05/journalism-news-generative-ai-democracy-forward/"
     ]
   },
@@ -1511,13 +2057,14 @@
     "News Org(s)": [
       "WAN-IFRA"
     ],
-    "Reported Details": "Launched in partnership with OpenAI, WAN-IFRA's Newsroom AI Catalyst is \"an accelerator program designed to help newsrooms fast-track their AI adoption and implementation to bring efficiencies and create quality content.\" The program is said to support over 100 news publishers.",
+    "Reported Details": "Launched in partnership with OpenAI, WAN-IFRA’s Newsroom AI Catalyst is “an accelerator program designed to help newsrooms fast-track their AI adoption and implementation to bring efficiencies and create quality content.” The program is said to support over 100 news publishers.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:56:34",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -1537,13 +2084,14 @@
     "News Org(s)": [
       "FT Strategies"
     ],
-    "Reported Details": "FT Strategies, the growth consultancy from the Financial Times, partners with the Google News Initiatives to launch The AI Launchpad, \"a five-month hands-on programme that engages a group of 8 publishers on a journey to craft an ambitious and responsible vision for AI in their organisation, guiding them through live experiments to test their ideas\"",
+    "Reported Details": "FT Strategies, the growth consultancy from the Financial Times, partners with the Google News Initiatives to launch The AI Launchpad, “a five-month hands-on programme that engages a group of 8 publishers on a journey to craft an ambitious and responsible vision for AI in their organisation, guiding them through live experiments to test their ideas.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:55:31",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -1562,18 +2110,19 @@
     "News Org(s)": [
       "The GroundTruth Project"
     ],
-    "Reported Details": "Microsoft partners with The GroundTruth Project, which sends local journalists into newsrooms around the world through its Report for America and Report for the World programs. The project will add an AI track of work for its corps members through the AI in Local News initiative with the goal of helping make reporting and newsrooms themselves more efficient and sustainable for the future",
+    "Reported Details": "Microsoft partners with The GroundTruth Project on a project that will add an AI track of work for its members through the AI in Local News initiative, with the goal of helping make reporting and newsrooms themselves more efficient and sustainable for the future",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:56:00",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://thegroundtruthproject.org/heres-how-microsoft-is-working-with-journalists-to-create-the-newsrooms-of-the-future-with-ai/",
-      "https://blogs.microsoft.com/on-the-issues/2024/02/05/journalism-news-generative-ai-democracy-forward/"
+      "https://blogs.microsoft.com/on-the-issues/2024/02/05/journalism-news-generative-ai-democracy-forward/",
+      "https://thegroundtruthproject.org/heres-how-microsoft-is-working-with-journalists-to-create-the-newsrooms-of-the-future-with-ai/"
     ]
   },
   {
@@ -1588,13 +2137,14 @@
     "News Org(s)": [
       "American Journalism Project"
     ],
-    "Reported Details": "OpenAI is commits $5 million to the American Journalism Project to support the expansion of AJP’s work and up to $5 million in OpenAI API credits to help its grantee organizations \"assess and deploy emerging AI technologies within their organizations\"",
+    "Reported Details": "OpenAI commits $5 million to the American Journalism Project to support the expansion of AJP’s work and up to $5 million in OpenAI API credits to help its grantee organizations “assess and deploy emerging AI technologies within their organizations.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:55:13",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -1614,13 +2164,14 @@
     "News Org(s)": [
       "News Corp"
     ],
-    "Reported Details": "Google agrees to pay News Corp between $5 million and $6 million annually to fund its development of new artificial intelligence-related content and products. The arrangement follows Google's recent termination of another content partnership with The Wall Street Journal, which resulted in layoffs at the publication",
+    "Reported Details": "Google agrees to pay News Corp $5 million to $6 million annually to fund its development of new artificial intelligence-related content and products. The arrangement follows Google’s recent termination of another content partnership with The Wall Street Journal, which resulted in layoffs at the publication.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:56:26",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -1639,13 +2190,14 @@
     "News Org(s)": [
       "Northwestern University's Medill School of Journalism"
     ],
-    "Reported Details": "Perplexity donates $250,000 to Northwestern University's Medill School of Journalism towards research into the future of AI and news. The school's Knight Lab will also receive access to Perplexity’s data, staff and publisher partners so it can learn how news content shows up in the chatbot’s responses and how newsrooms are approaching AI.",
+    "Reported Details": "Perplexity donates $250,000 to Northwestern University’s Medill School of Journalism toward research into the future of AI and news. The school’s Knight Lab will also receive access to Perplexity’s data, staff, and publisher partners so it can learn how news content shows up in the chatbot’s responses and how newsrooms are approaching AI.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:56:41",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -1666,13 +2218,14 @@
     "News Org(s)": [
       "Lenfest Institute"
     ],
-    "Reported Details": "ProPublica joins the Lenfest Institute AI Collaborative and Fellowship Program to \"launch AI experiments in partnership with OpenAI and Microsoft.\" The publisher will \"explore using an AI-powered system to help its engagement team categorize and route investigative news tip submissions — aiming to ensure that journalists quickly receive relevant leads while safeguarding source anonymity. The AI Fellow will also work with ProPublica’s journalists on other possible investigative news projects.\"",
+    "Reported Details": "ProPublica joins the Lenfest Institute AI Collaborative and Fellowship Program to “launch AI experiments in partnership with OpenAI and Microsoft.” The publisher will “explore using an AI-powered system to help its engagement team categorize and route investigative news tip submissions — aiming to ensure that journalists quickly receive relevant leads while safeguarding source anonymity.” The AI Fellow will “work with ProPublica’s journalists on other possible investigative news projects.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:57:38",
     "Affected Publications": [
       "ProPublica",
       "Boston Globe Media",
@@ -1733,8 +2286,8 @@
       }
     ],
     "Sources": [
-      "https://www.lenfestinstitute.org/institute-news/five-news-organizations-lenfest-ai-collaborative-fellowship-openai-microsoft",
-      "https://www.propublica.org/atpropublica/propublica-joins-lenfest-institute-ai-collaborative-and-fellowship-program"
+      "https://www.propublica.org/atpropublica/propublica-joins-lenfest-institute-ai-collaborative-and-fellowship-program",
+      "https://www.lenfestinstitute.org/institute-news/five-news-organizations-lenfest-ai-collaborative-fellowship-openai-microsoft"
     ]
   },
   {
@@ -1749,13 +2302,14 @@
     "News Org(s)": [
       "American Journalism Project"
     ],
-    "Reported Details": "American Journalism Project awards \"one- to two-year grants, ranging from $25,000 to $200,000,\" funded by OpenAI, to a cohort of 13 of its portfolio organizations",
+    "Reported Details": "American Journalism Project awards one-to-two-year grants ranging from $25,000 to $200,000, funded by OpenAI, to a cohort of 13 of its portfolio organizations.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:55:26",
     "Affected Publications": [
       "Spotlight PA",
       "Civic News Company",
@@ -1909,13 +2463,14 @@
     "News Org(s)": [
       "Craig Newmark Graduate School of Journalism"
     ],
-    "Reported Details": "Microsoft partners with The Craig Newmark Graduate School of Journalism at CUNY to invite experienced journalists to a tuition-free program to explore ways to incorporate generative AI into their work and newsrooms in a three-month hybrid and highly interactive program",
+    "Reported Details": "Microsoft partners with The Craig Newmark Graduate School of Journalism at CUNY to invite experienced journalists to explore ways to incorporate generative AI into their work and newsrooms in a three-month hybrid, highly interactive tuition-free program.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 22:56:13",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -1936,18 +2491,19 @@
     "News Org(s)": [
       "Reach plc"
     ],
-    "Reported Details": "Publishers are credited and compensated on a per-use basis.",
+    "Reported Details": "ProRata announces partner publishers in the UK and Ireland, who will be credited and compensated for their content on a per-use basis.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:09:40",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.businesswire.com/news/home/20241119176784/en/Major-UK-Media-Organizations-Join-ProRata%E2%80%99s-Movement-to-Credit-and-Compensate-Content-Owners-in-the-Age-of-Generative-AI",
-      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai"
+      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai",
+      "https://www.businesswire.com/news/home/20241119176784/en/Major-UK-Media-Organizations-Join-ProRata%E2%80%99s-Movement-to-Credit-and-Compensate-Content-Owners-in-the-Age-of-Generative-AI"
     ]
   },
   {
@@ -1963,18 +2519,19 @@
     "News Org(s)": [
       "Sky News"
     ],
-    "Reported Details": "Publishers are credited and compensated on a per-use basis.",
+    "Reported Details": "ProRata announces partner publishers in the UK and Ireland, who will be credited and compensated for their content on a per-use basis.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:09:40",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.businesswire.com/news/home/20241119176784/en/Major-UK-Media-Organizations-Join-ProRata%E2%80%99s-Movement-to-Credit-and-Compensate-Content-Owners-in-the-Age-of-Generative-AI",
-      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai"
+      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai",
+      "https://www.businesswire.com/news/home/20241119176784/en/Major-UK-Media-Organizations-Join-ProRata%E2%80%99s-Movement-to-Credit-and-Compensate-Content-Owners-in-the-Age-of-Generative-AI"
     ]
   },
   {
@@ -1990,18 +2547,19 @@
     "News Org(s)": [
       "Guardian Media Group"
     ],
-    "Reported Details": "Publishers are credited and compensated on a per-use basis.",
+    "Reported Details": "ProRata announces partner publishers in the UK and Ireland, who will be credited and compensated for their content on a per-use basis.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:09:40",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.businesswire.com/news/home/20241119176784/en/Major-UK-Media-Organizations-Join-ProRata%E2%80%99s-Movement-to-Credit-and-Compensate-Content-Owners-in-the-Age-of-Generative-AI",
-      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai"
+      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai",
+      "https://www.businesswire.com/news/home/20241119176784/en/Major-UK-Media-Organizations-Join-ProRata%E2%80%99s-Movement-to-Credit-and-Compensate-Content-Owners-in-the-Age-of-Generative-AI"
     ]
   },
   {
@@ -2017,18 +2575,19 @@
     "News Org(s)": [
       "Prospect Magazine"
     ],
-    "Reported Details": "Publishers are credited and compensated on a per-use basis.",
+    "Reported Details": "ProRata announces partner publishers in the UK and Ireland, who will be credited and compensated for their content on a per-use basis.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:09:40",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.businesswire.com/news/home/20241119176784/en/Major-UK-Media-Organizations-Join-ProRata%E2%80%99s-Movement-to-Credit-and-Compensate-Content-Owners-in-the-Age-of-Generative-AI",
-      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai"
+      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai",
+      "https://www.businesswire.com/news/home/20241119176784/en/Major-UK-Media-Organizations-Join-ProRata%E2%80%99s-Movement-to-Credit-and-Compensate-Content-Owners-in-the-Age-of-Generative-AI"
     ]
   },
   {
@@ -2044,18 +2603,19 @@
     "News Org(s)": [
       "Exponential View"
     ],
-    "Reported Details": "Publishers are credited and compensated on a per-use basis.",
+    "Reported Details": "ProRata announces partner publishers in the UK and Ireland, who will be credited and compensated for their content on a per-use basis.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:09:40",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.businesswire.com/news/home/20241119176784/en/Major-UK-Media-Organizations-Join-ProRata%E2%80%99s-Movement-to-Credit-and-Compensate-Content-Owners-in-the-Age-of-Generative-AI",
-      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai"
+      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai",
+      "https://www.businesswire.com/news/home/20241119176784/en/Major-UK-Media-Organizations-Join-ProRata%E2%80%99s-Movement-to-Credit-and-Compensate-Content-Owners-in-the-Age-of-Generative-AI"
     ]
   },
   {
@@ -2071,18 +2631,19 @@
     "News Org(s)": [
       "Hello!"
     ],
-    "Reported Details": "Publishers are credited and compensated on a per-use basis.",
+    "Reported Details": "ProRata announces partner publishers in the UK and Ireland, who will be credited and compensated for their content on a per-use basis.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:09:40",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.businesswire.com/news/home/20241119176784/en/Major-UK-Media-Organizations-Join-ProRata%E2%80%99s-Movement-to-Credit-and-Compensate-Content-Owners-in-the-Age-of-Generative-AI",
-      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai"
+      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai",
+      "https://www.businesswire.com/news/home/20241119176784/en/Major-UK-Media-Organizations-Join-ProRata%E2%80%99s-Movement-to-Credit-and-Compensate-Content-Owners-in-the-Age-of-Generative-AI"
     ]
   },
   {
@@ -2098,18 +2659,19 @@
     "News Org(s)": [
       "Mediahuis"
     ],
-    "Reported Details": "Publishers are credited and compensated on a per-use basis.",
+    "Reported Details": "ProRata announces partner publishers in the UK and Ireland, who will be credited and compensated for their content on a per-use basis.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:09:40",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.businesswire.com/news/home/20241119176784/en/Major-UK-Media-Organizations-Join-ProRata%E2%80%99s-Movement-to-Credit-and-Compensate-Content-Owners-in-the-Age-of-Generative-AI",
-      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai"
+      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai",
+      "https://www.businesswire.com/news/home/20241119176784/en/Major-UK-Media-Organizations-Join-ProRata%E2%80%99s-Movement-to-Credit-and-Compensate-Content-Owners-in-the-Age-of-Generative-AI"
     ]
   },
   {
@@ -2124,13 +2686,14 @@
     "News Org(s)": [
       "Reuters"
     ],
-    "Reported Details": "Microsoft partners with publishers for its Copilot Daily feature, which generates audio summaries of current events and weather pulled from \"authorized content sources.\" The company says it plans to add more sources over time. Financial terms are not disclosed.",
+    "Reported Details": "Microsoft partners with publishers for its Copilot Daily feature, which generates audio summaries of current events and weather pulled from “authorized content sources.” The company says it plans to add more sources over time. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:51:49",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2150,39 +2713,14 @@
     "News Org(s)": [
       "Financial Times"
     ],
-    "Reported Details": "Microsoft partners with publishers for its Copilot Daily feature, which generates audio summaries of current events and weather pulled from \"authorized content sources.\" The company says it plans to add more sources over time. Financial terms are not disclosed.",
+    "Reported Details": "Microsoft partners with publishers for its Copilot Daily feature, which generates audio summaries of current events and weather pulled from “authorized content sources.” The company says it plans to add more sources over time. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
-    "Affected Publications": [],
-    "parent_child_matches": [],
-    "Sources": [
-      "https://blogs.microsoft.com/blog/2024/10/01/an-ai-companion-for-everyone/",
-      "https://techcrunch.com/2024/10/01/microsoft-starts-paying-publishers-for-content-in-copilot/"
-    ]
-  },
-  {
-    "Date": "2024-10-01",
-    "AI Company": [
-      "Microsoft"
-    ],
-    "Type": [
-      "Licensing"
-    ],
-    "Interaction": "Deal",
-    "News Org(s)": [
-      "USA Today"
-    ],
-    "Reported Details": "Microsoft partners with publishers for its Copilot Daily feature, which generates audio summaries of current events and weather pulled from \"authorized content sources.\" The company says it plans to add more sources over time. Financial terms are not disclosed.",
-    "Status": null,
-    "Case Number": null,
-    "Defendant": null,
-    "Plaintiff": null,
-    "Case Filing": null,
-    "Location": null,
+    "Last Modified": "2025-12-03 20:51:49",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2202,13 +2740,14 @@
     "News Org(s)": [
       "Axel Springer"
     ],
-    "Reported Details": "Microsoft partners with publishers for its Copilot Daily feature, which generates audio summaries of current events and weather pulled from \"authorized content sources.\" The company says it plans to add more sources over time. Financial terms are not disclosed.",
+    "Reported Details": "Microsoft partners with publishers for its Copilot Daily feature, which generates audio summaries of current events and weather pulled from “authorized content sources.” The company says it plans to add more sources over time. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:51:49",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2228,13 +2767,41 @@
     "News Org(s)": [
       "Hearst Magazines"
     ],
-    "Reported Details": "Microsoft partners with publishers for its Copilot Daily feature, which generates audio summaries of current events and weather pulled from \"authorized content sources.\" The company says it plans to add more sources over time. Financial terms are not disclosed.",
+    "Reported Details": "Microsoft partners with publishers for its Copilot Daily feature, which generates audio summaries of current events and weather pulled from “authorized content sources.” The company says it plans to add more sources over time. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:51:49",
+    "Affected Publications": [],
+    "parent_child_matches": [],
+    "Sources": [
+      "https://blogs.microsoft.com/blog/2024/10/01/an-ai-companion-for-everyone/",
+      "https://techcrunch.com/2024/10/01/microsoft-starts-paying-publishers-for-content-in-copilot/"
+    ]
+  },
+  {
+    "Date": "2024-10-01",
+    "AI Company": [
+      "Microsoft"
+    ],
+    "Type": [
+      "Licensing"
+    ],
+    "Interaction": "Deal",
+    "News Org(s)": [
+      "USA Today Network"
+    ],
+    "Reported Details": "Microsoft partners with publishers for its Copilot Daily feature, which generates audio summaries of current events and weather pulled from “authorized content sources.” The company says it plans to add more sources over time. Financial terms are not disclosed.",
+    "Status": null,
+    "Case Number": null,
+    "Defendant": null,
+    "Plaintiff": null,
+    "Case Filing": null,
+    "Location": null,
+    "Last Modified": "2025-12-03 20:51:49",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2254,13 +2821,14 @@
     "News Org(s)": [
       "The Economist"
     ],
-    "Reported Details": "The partnership allows Google to use publishers' content in featured notebooks in its NotebookLM tool",
+    "Reported Details": "The partnership allows Google to use publishers’ content in featured notebooks in its NotebookLM tool. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:32:30",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2279,13 +2847,14 @@
     "News Org(s)": [
       "The Atlantic"
     ],
-    "Reported Details": "The partnership allows Google to use publishers' content in featured notebooks in its NotebookLM tool",
+    "Reported Details": "The partnership allows Google to use publishers’ content in featured notebooks in its NotebookLM tool. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:32:30",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2304,13 +2873,14 @@
     "News Org(s)": [
       "GEDI"
     ],
-    "Reported Details": "In addition to bringing Italian-language content to users of ChatGPT and the SearchGPT prototype, the strategic partnership \"also opens opportunities for both organizations to further collaborate on AI features and applications that can enhance the way readers access and interact with news in Italy.\" Financial terms are not disclosed.",
+    "Reported Details": "In addition to bringing Italian-language content to users of ChatGPT and the SearchGPT prototype, the strategic partnership “also opens opportunities for both organizations to further collaborate on AI features and applications that can enhance the way readers access and interact with news in Italy.” Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:50:03",
     "Affected Publications": [
       "La Repubblica",
       "La Stampa"
@@ -2354,13 +2924,14 @@
     "News Org(s)": [
       "USA Today Network"
     ],
-    "Reported Details": "Cortex Knowledge Extension allows publishers to monetize their content for enterprise AI use with licensing terms",
+    "Reported Details": "Cortex Knowledge Extensions allows publishers to monetize their content for enterprise AI use with licensing terms. ",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:27:51",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2380,13 +2951,14 @@
     "News Org(s)": [
       "USA Today"
     ],
-    "Reported Details": "Cortex Knowledge Extension allows publishers to monetize their content for enterprise AI use with licensing terms",
+    "Reported Details": "Cortex Knowledge Extensions allows publishers to monetize their content for enterprise AI use with licensing terms. ",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:27:51",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2406,13 +2978,14 @@
     "News Org(s)": [
       "Associated Press"
     ],
-    "Reported Details": "Cortex Knowledge Extension allows publishers to monetize their content for enterprise AI use with licensing terms",
+    "Reported Details": "Cortex Knowledge Extensions allows publishers to monetize their content for enterprise AI use with licensing terms. ",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:27:51",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2432,13 +3005,14 @@
     "News Org(s)": [
       "Hearst"
     ],
-    "Reported Details": "The partnership enables OpenAI to incorporate content from more than 20 magazine brands and 40+ newspapers into its AI products. Hearst’s other businesses outside of magazines and newspapers are not included in the partnership. Financial terms are not disclosed.",
+    "Reported Details": "The partnership enables OpenAI to incorporate content from more than 20 magazine brands and 40-plus newspapers into its AI products. Hearst’s other businesses outside of magazines and newspapers are not included in the partnership. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:04:31",
     "Affected Publications": [
       "Houston Chronicle",
       "San Francisco Chronicle",
@@ -2504,8 +3078,8 @@
       }
     ],
     "Sources": [
-      "https://www.hearst.com/-/hearst-and-openai-announce-strategic-content-partnership",
-      "https://openai.com/index/hearst/"
+      "https://openai.com/index/hearst/",
+      "https://www.hearst.com/-/hearst-and-openai-announce-strategic-content-partnership"
     ]
   },
   {
@@ -2520,13 +3094,14 @@
     "News Org(s)": [
       "The New York Times Company"
     ],
-    "Reported Details": "The multi-year agreement allows Amazon to use the Times' editorial content in \"a variety of ... customer experiences,\" including \"real-time display of summaries and short excerpts of Times content within Amazon products and services, such as Alexa, and training Amazon’s proprietary foundation models.\" The Wall Street Journal reports that the tech giant will pay the Times at between $20 and $25 million annually to license its content.",
+    "Reported Details": "The multi-year agreement allows Amazon to use the Times’ editorial content in “a variety of ... customer experiences,\" including “real-time display of summaries and short excerpts of Times content within Amazon products and services, such as Alexa, and training Amazon’s proprietary foundation models.” The Wall Street Journal reports that the tech giant will pay the Times $20 to $25 million annually to license its content.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:27:17",
     "Affected Publications": [
       "The New York Times",
       "The Athletic"
@@ -2554,8 +3129,8 @@
       }
     ],
     "Sources": [
-      "https://www.wsj.com/business/media/amazon-to-pay-new-york-times-at-least-20-million-a-year-in-ai-deal-66db8503",
-      "https://investors.nytco.com/news-and-events/press-releases/#data-item=The-New-York-Times-Company-and-Amazon-Announce-Licensing-Agreement--2025-cYgtzu69ot, "
+      "https://investors.nytco.com/news-and-events/press-releases/#data-item=The-New-York-Times-Company-and-Amazon-Announce-Licensing-Agreement--2025-cYgtzu69ot, ",
+      "https://www.wsj.com/business/media/amazon-to-pay-new-york-times-at-least-20-million-a-year-in-ai-deal-66db8503"
     ]
   },
   {
@@ -2577,6 +3152,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-02 19:17:39",
     "Affected Publications": [
       "Good Housekeeping",
       "Cosmopolitan",
@@ -2640,6 +3216,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-02 19:17:39",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2658,13 +3235,14 @@
     "News Org(s)": [
       "RTL Deutschland"
     ],
-    "Reported Details": "\"As part of the program, these publishers will share in revenue generated from advertising. They’ll also have access to our APIs and developer support to build unique features using our proprietary search technology. They will receive free Perplexity Enterprise Pro for their entire organization for a year. Additionally, they’ll receive data analytics to help track trends and content performance as long as they remain in the program.\"",
+    "Reported Details": "Partner publishers will receive a share of revenue generated from advertising, as well as access to data analytics to help track trends and content performance for the duration of their participation in the program. They will also get have access to Perplexity’s APIs and developer support to build features using its proprietary search technology, as well as free Perplexity Enterprise Pro for their entire organization for a year.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:44",
     "Affected Publications": [
       "NTV",
       "Stern"
@@ -2708,13 +3286,14 @@
     "News Org(s)": [
       "Lee Enterprises"
     ],
-    "Reported Details": "\"As part of the program, these publishers will share in revenue generated from advertising. They’ll also have access to our APIs and developer support to build unique features using our proprietary search technology. They will receive free Perplexity Enterprise Pro for their entire organization for a year. Additionally, they’ll receive data analytics to help track trends and content performance as long as they remain in the program.\"",
+    "Reported Details": "Partner publishers will receive a share of revenue generated from advertising, as well as access to data analytics to help track trends and content performance for the duration of their participation in the program. They will also get have access to Perplexity’s APIs and developer support to build features using its proprietary search technology, as well as free Perplexity Enterprise Pro for their entire organization for a year.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:44",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2734,13 +3313,14 @@
     "News Org(s)": [
       "Los Angeles Times"
     ],
-    "Reported Details": "\"As part of the program, these publishers will share in revenue generated from advertising. They’ll also have access to our APIs and developer support to build unique features using our proprietary search technology. They will receive free Perplexity Enterprise Pro for their entire organization for a year. Additionally, they’ll receive data analytics to help track trends and content performance as long as they remain in the program.\"",
+    "Reported Details": "Partner publishers will receive a share of revenue generated from advertising, as well as access to data analytics to help track trends and content performance for the duration of their participation in the program. They will also get have access to Perplexity’s APIs and developer support to build features using its proprietary search technology, as well as free Perplexity Enterprise Pro for their entire organization for a year.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:44",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2760,13 +3340,14 @@
     "News Org(s)": [
       "Adweek"
     ],
-    "Reported Details": "\"As part of the program, these publishers will share in revenue generated from advertising. They’ll also have access to our APIs and developer support to build unique features using our proprietary search technology. They will receive free Perplexity Enterprise Pro for their entire organization for a year. Additionally, they’ll receive data analytics to help track trends and content performance as long as they remain in the program.\"",
+    "Reported Details": "Partner publishers will receive a share of revenue generated from advertising, as well as access to data analytics to help track trends and content performance for the duration of their participation in the program. They will also get have access to Perplexity’s APIs and developer support to build features using its proprietary search technology, as well as free Perplexity Enterprise Pro for their entire organization for a year.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:44",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2786,13 +3367,14 @@
     "News Org(s)": [
       "World History Encyclopedia"
     ],
-    "Reported Details": "\"As part of the program, these publishers will share in revenue generated from advertising. They’ll also have access to our APIs and developer support to build unique features using our proprietary search technology. They will receive free Perplexity Enterprise Pro for their entire organization for a year. Additionally, they’ll receive data analytics to help track trends and content performance as long as they remain in the program.\"",
+    "Reported Details": "Partner publishers will receive a share of revenue generated from advertising, as well as access to data analytics to help track trends and content performance for the duration of their participation in the program. They will also get have access to Perplexity’s APIs and developer support to build features using its proprietary search technology, as well as free Perplexity Enterprise Pro for their entire organization for a year.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:44",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2812,13 +3394,14 @@
     "News Org(s)": [
       "Mexico News Daily"
     ],
-    "Reported Details": "\"As part of the program, these publishers will share in revenue generated from advertising. They’ll also have access to our APIs and developer support to build unique features using our proprietary search technology. They will receive free Perplexity Enterprise Pro for their entire organization for a year. Additionally, they’ll receive data analytics to help track trends and content performance as long as they remain in the program.\"",
+    "Reported Details": "Partner publishers will receive a share of revenue generated from advertising, as well as access to data analytics to help track trends and content performance for the duration of their participation in the program. They will also get have access to Perplexity’s APIs and developer support to build features using its proprietary search technology, as well as free Perplexity Enterprise Pro for their entire organization for a year.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:44",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2836,15 +3419,16 @@
     ],
     "Interaction": "Deal",
     "News Org(s)": [
-      "Minkabu Infonoid"
+      "Minkabu the Infonoid"
     ],
-    "Reported Details": "\"As part of the program, these publishers will share in revenue generated from advertising. They’ll also have access to our APIs and developer support to build unique features using our proprietary search technology. They will receive free Perplexity Enterprise Pro for their entire organization for a year. Additionally, they’ll receive data analytics to help track trends and content performance as long as they remain in the program.\"",
+    "Reported Details": "Partner publishers will receive a share of revenue generated from advertising, as well as access to data analytics to help track trends and content performance for the duration of their participation in the program. They will also get have access to Perplexity’s APIs and developer support to build features using its proprietary search technology, as well as free Perplexity Enterprise Pro for their entire organization for a year.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:44",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2864,13 +3448,14 @@
     "News Org(s)": [
       "The Independent"
     ],
-    "Reported Details": "\"As part of the program, these publishers will share in revenue generated from advertising. They’ll also have access to our APIs and developer support to build unique features using our proprietary search technology. They will receive free Perplexity Enterprise Pro for their entire organization for a year. Additionally, they’ll receive data analytics to help track trends and content performance as long as they remain in the program.\"",
+    "Reported Details": "Partner publishers will receive a share of revenue generated from advertising, as well as access to data analytics to help track trends and content performance for the duration of their participation in the program. They will also get have access to Perplexity’s APIs and developer support to build features using its proprietary search technology, as well as free Perplexity Enterprise Pro for their entire organization for a year.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:44",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2890,13 +3475,14 @@
     "News Org(s)": [
       "MediaLab"
     ],
-    "Reported Details": "\"As part of the program, these publishers will share in revenue generated from advertising. They’ll also have access to our APIs and developer support to build unique features using our proprietary search technology. They will receive free Perplexity Enterprise Pro for their entire organization for a year. Additionally, they’ll receive data analytics to help track trends and content performance as long as they remain in the program.\"",
+    "Reported Details": "Partner publishers will receive a share of revenue generated from advertising, as well as access to data analytics to help track trends and content performance for the duration of their participation in the program. They will also get have access to Perplexity’s APIs and developer support to build features using its proprietary search technology, as well as free Perplexity Enterprise Pro for their entire organization for a year.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:44",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2916,13 +3502,14 @@
     "News Org(s)": [
       "Gear Patrol"
     ],
-    "Reported Details": "\"As part of the program, these publishers will share in revenue generated from advertising. They’ll also have access to our APIs and developer support to build unique features using our proprietary search technology. They will receive free Perplexity Enterprise Pro for their entire organization for a year. Additionally, they’ll receive data analytics to help track trends and content performance as long as they remain in the program.\"",
+    "Reported Details": "Partner publishers will receive a share of revenue generated from advertising, as well as access to data analytics to help track trends and content performance for the duration of their participation in the program. They will also get have access to Perplexity’s APIs and developer support to build features using its proprietary search technology, as well as free Perplexity Enterprise Pro for their entire organization for a year.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:44",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2942,13 +3529,14 @@
     "News Org(s)": [
       "DPReview"
     ],
-    "Reported Details": "\"As part of the program, these publishers will share in revenue generated from advertising. They’ll also have access to our APIs and developer support to build unique features using our proprietary search technology. They will receive free Perplexity Enterprise Pro for their entire organization for a year. Additionally, they’ll receive data analytics to help track trends and content performance as long as they remain in the program.\"",
+    "Reported Details": "Partner publishers will receive a share of revenue generated from advertising, as well as access to data analytics to help track trends and content performance for the duration of their participation in the program. They will also get have access to Perplexity’s APIs and developer support to build features using its proprietary search technology, as well as free Perplexity Enterprise Pro for their entire organization for a year.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:44",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2968,13 +3556,14 @@
     "News Org(s)": [
       "Blavity"
     ],
-    "Reported Details": "\"As part of the program, these publishers will share in revenue generated from advertising. They’ll also have access to our APIs and developer support to build unique features using our proprietary search technology. They will receive free Perplexity Enterprise Pro for their entire organization for a year. Additionally, they’ll receive data analytics to help track trends and content performance as long as they remain in the program.\"",
+    "Reported Details": "Partner publishers will receive a share of revenue generated from advertising, as well as access to data analytics to help track trends and content performance for the duration of their participation in the program. They will also get have access to Perplexity’s APIs and developer support to build features using its proprietary search technology, as well as free Perplexity Enterprise Pro for their entire organization for a year.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:44",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -2994,13 +3583,14 @@
     "News Org(s)": [
       "NewsPicks"
     ],
-    "Reported Details": "\"As part of the program, these publishers will share in revenue generated from advertising. They’ll also have access to our APIs and developer support to build unique features using our proprietary search technology. They will receive free Perplexity Enterprise Pro for their entire organization for a year. Additionally, they’ll receive data analytics to help track trends and content performance as long as they remain in the program.\"",
+    "Reported Details": "Partner publishers will receive a share of revenue generated from advertising, as well as access to data analytics to help track trends and content performance for the duration of their participation in the program. They will also get have access to Perplexity’s APIs and developer support to build features using its proprietary search technology, as well as free Perplexity Enterprise Pro for their entire organization for a year.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:44",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3020,13 +3610,14 @@
     "News Org(s)": [
       "Prisa Media"
     ],
-    "Reported Details": "\"As part of the program, these publishers will share in revenue generated from advertising. They’ll also have access to our APIs and developer support to build unique features using our proprietary search technology. They will receive free Perplexity Enterprise Pro for their entire organization for a year. Additionally, they’ll receive data analytics to help track trends and content performance as long as they remain in the program.\"",
+    "Reported Details": "Partner publishers will receive a share of revenue generated from advertising, as well as access to data analytics to help track trends and content performance for the duration of their participation in the program. They will also get have access to Perplexity’s APIs and developer support to build features using its proprietary search technology, as well as free Perplexity Enterprise Pro for their entire organization for a year.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:44",
     "Affected Publications": [
       "El País",
       "Cadena SER"
@@ -3070,13 +3661,14 @@
     "News Org(s)": [
       "News Corp Australia"
     ],
-    "Reported Details": "\"Dow Jones is building the world’s premiere collection of full-text news articles permissioned for use with GenAI tools and applications, with licensing agreements spanning nearly 4,000 sources, 160+ countries and 29 languages\"",
+    "Reported Details": "Dow Jones announces licensing agreements spanning nearly 4,000 sources, 160+ countries and 29 languages for its Factiva Smart Summary tool, which enables corporations to retrieve “concise, informative summaries that streamline research and decision-making.” Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:11:03",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3095,13 +3687,14 @@
     "News Org(s)": [
       "News UK"
     ],
-    "Reported Details": "\"Dow Jones is building the world’s premiere collection of full-text news articles permissioned for use with GenAI tools and applications, with licensing agreements spanning nearly 4,000 sources, 160+ countries and 29 languages\"",
+    "Reported Details": "Dow Jones announces licensing agreements spanning nearly 4,000 sources, 160+ countries and 29 languages for its Factiva Smart Summary tool, which enables corporations to retrieve “concise, informative summaries that streamline research and decision-making.” Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:11:03",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3120,13 +3713,14 @@
     "News Org(s)": [
       "Dow Jones"
     ],
-    "Reported Details": "\"Dow Jones is building the world’s premiere collection of full-text news articles permissioned for use with GenAI tools and applications, with licensing agreements spanning nearly 4,000 sources, 160+ countries and 29 languages\"",
+    "Reported Details": "Dow Jones announces licensing agreements spanning nearly 4,000 sources, 160+ countries and 29 languages for its Factiva Smart Summary tool, which enables corporations to retrieve “concise, informative summaries that streamline research and decision-making.” Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:11:03",
     "Affected Publications": [
       "The Wall Street Journal",
       "Barron’s",
@@ -3224,13 +3818,14 @@
     "News Org(s)": [
       "The Washington Post"
     ],
-    "Reported Details": "\"Dow Jones is building the world’s premiere collection of full-text news articles permissioned for use with GenAI tools and applications, with licensing agreements spanning nearly 4,000 sources, 160+ countries and 29 languages\"",
+    "Reported Details": "Dow Jones announces licensing agreements spanning nearly 4,000 sources, 160+ countries and 29 languages for its Factiva Smart Summary tool, which enables corporations to retrieve “concise, informative summaries that streamline research and decision-making.” Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:11:03",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3249,38 +3844,14 @@
     "News Org(s)": [
       "AWP Finanznachrichten AG"
     ],
-    "Reported Details": "\"Dow Jones is building the world’s premiere collection of full-text news articles permissioned for use with GenAI tools and applications, with licensing agreements spanning nearly 4,000 sources, 160+ countries and 29 languages\"",
+    "Reported Details": "Dow Jones announces licensing agreements spanning nearly 4,000 sources, 160+ countries and 29 languages for its Factiva Smart Summary tool, which enables corporations to retrieve “concise, informative summaries that streamline research and decision-making.” Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
-    "Affected Publications": [],
-    "parent_child_matches": [],
-    "Sources": [
-      "https://www.dowjones.com/press-room/dow-jones-launches-factiva-smart-summary/"
-    ]
-  },
-  {
-    "Date": "2024-11-13",
-    "AI Company": [
-      "Factiva/Dow Jones"
-    ],
-    "Type": [
-      "Licensing"
-    ],
-    "Interaction": "Deal",
-    "News Org(s)": [
-      "nearly 4,000 unnamed sources"
-    ],
-    "Reported Details": "\"Dow Jones is building the world’s premiere collection of full-text news articles permissioned for use with GenAI tools and applications, with licensing agreements spanning nearly 4,000 sources, 160+ countries and 29 languages\"",
-    "Status": null,
-    "Case Number": null,
-    "Defendant": null,
-    "Plaintiff": null,
-    "Case Filing": null,
-    "Location": null,
+    "Last Modified": "2025-12-03 21:11:03",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3300,13 +3871,14 @@
     "News Org(s)": [
       "Fast Company, Inc."
     ],
-    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai's answers",
+    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai’s answers. ProRata's attribution systems “analyze AI output, measure the value of contributing content from contributing sources, and calculate proportional compensation.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:31:36",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3326,13 +3898,14 @@
     "News Org(s)": [
       "Boston Globe Media"
     ],
-    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai's answers",
+    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai’s answers. ProRata's attribution systems “analyze AI output, measure the value of contributing content from contributing sources, and calculate proportional compensation.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:31:36",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3352,13 +3925,14 @@
     "News Org(s)": [
       "Newsday"
     ],
-    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai's answers",
+    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai’s answers. ProRata's attribution systems “analyze AI output, measure the value of contributing content from contributing sources, and calculate proportional compensation.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:31:36",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3378,13 +3952,14 @@
     "News Org(s)": [
       "Frommer's"
     ],
-    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai's answers",
+    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai’s answers. ProRata's attribution systems “analyze AI output, measure the value of contributing content from contributing sources, and calculate proportional compensation.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:31:36",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3404,13 +3979,14 @@
     "News Org(s)": [
       "The Nation"
     ],
-    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai's answers",
+    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai’s answers. ProRata's attribution systems “analyze AI output, measure the value of contributing content from contributing sources, and calculate proportional compensation.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:31:36",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3430,13 +4006,14 @@
     "News Org(s)": [
       "The New Republic"
     ],
-    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai's answers",
+    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai’s answers. ProRata's attribution systems “analyze AI output, measure the value of contributing content from contributing sources, and calculate proportional compensation.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:31:36",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3456,13 +4033,14 @@
     "News Org(s)": [
       "EFE"
     ],
-    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai's answers",
+    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai’s answers. ProRata's attribution systems “analyze AI output, measure the value of contributing content from contributing sources, and calculate proportional compensation.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:31:36",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3482,13 +4060,14 @@
     "News Org(s)": [
       "Prisa Media"
     ],
-    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai's answers",
+    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai’s answers. ProRata's attribution systems “analyze AI output, measure the value of contributing content from contributing sources, and calculate proportional compensation.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:31:36",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3508,13 +4087,14 @@
     "News Org(s)": [
       "Cherry Road Media"
     ],
-    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai's answers",
+    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai’s answers. ProRata's attribution systems “analyze AI output, measure the value of contributing content from contributing sources, and calculate proportional compensation.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:31:36",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3534,13 +4114,14 @@
     "News Org(s)": [
       "Vox Media"
     ],
-    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai's answers",
+    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai’s answers. ProRata's attribution systems “analyze AI output, measure the value of contributing content from contributing sources, and calculate proportional compensation.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:31:36",
     "Affected Publications": [
       "The Verge",
       "Vox",
@@ -3595,13 +4176,14 @@
     "News Org(s)": [
       "The Philadelphia Inquirer"
     ],
-    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai's answers",
+    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai’s answers. ProRata's attribution systems “analyze AI output, measure the value of contributing content from contributing sources, and calculate proportional compensation.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:31:36",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3621,13 +4203,14 @@
     "News Org(s)": [
       "Future plc"
     ],
-    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai's answers",
+    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai’s answers. ProRata's attribution systems “analyze AI output, measure the value of contributing content from contributing sources, and calculate proportional compensation.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:31:36",
     "Affected Publications": [
       "Tom’s Guide",
       "Who What Wear",
@@ -3682,13 +4265,14 @@
     "News Org(s)": [
       "Reader's Digest"
     ],
-    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai's answers",
+    "Reported Details": "ProRata signs partnerships with more than 500 publications to power Gist.ai’s answers. ProRata's attribution systems “analyze AI output, measure the value of contributing content from contributing sources, and calculate proportional compensation.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:31:36",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3707,18 +4291,19 @@
     "News Org(s)": [
       "Agence France-Presse (AFP)"
     ],
-    "Reported Details": "The multi-year partnership allows Mistral's conversational AI assistant, Le Chat, to access the full range of AFP's text stories. Financial terms are not disclosed.",
+    "Reported Details": "The multi-year partnership allows Mistral’s conversational AI assistant, Le Chat, to access the full range of AFP’s text stories. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:23:31",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://mistral.ai/news/mistral-afp",
-      "https://www.afp.com/en/agency/inside-afp/press-release/afp-and-mistral-ai-announce-global-partnership-enhance-ai-responses"
+      "https://www.afp.com/en/agency/inside-afp/press-release/afp-and-mistral-ai-announce-global-partnership-enhance-ai-responses",
+      "https://mistral.ai/news/mistral-afp"
     ]
   },
   {
@@ -3733,13 +4318,14 @@
     "News Org(s)": [
       "Le Monde"
     ],
-    "Reported Details": "The multi-year agreement does not involve the use of Le Monde content to train Perplexity's LLM; it only concerns the use of our content to generate answers to questions. The agreement also grants the publisher access to Sonar, an answer engine that will be rolled out on its site and apps. Financial terms are not disclosed.",
+    "Reported Details": "The multi-year agreement does not involve the use of Le Monde content to train Perplexity's LLM; it only concerns its use to generate answers to questions. The agreement also grants the publisher access to Sonar, an answer engine that will be rolled out on its site and apps. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:26:28",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -3758,18 +4344,19 @@
     "News Org(s)": [
       "Reuters"
     ],
-    "Reported Details": "The multi-year deal - the first of its kind - allows Meta to user Reuters' news content to provide real-time answers to user queries about news and current events in its Meta AI chatbot. It is unclear whether the partnership includes a licensing component that would allow Meta to use Reuters' journalism to train Meta's large language model, Llama. Financial terms are not disclosed.",
+    "Reported Details": "The multi-year deal — the first of its kind — allows Meta to use Reuters’ news content to provide real-time answers to user queries about news and current events in its Meta AI chatbot. It is unclear whether the partnership includes a licensing component that would allow Meta to use Reuters’ journalism to train Meta’s large language model, Llama. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:05:23",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.reuters.com/technology/artificial-intelligence/meta-platforms-use-reuters-news-content-ai-chatbot-2024-10-25/",
-      "https://www.axios.com/2024/10/25/meta-reuters-ai-news-facebook-instagram"
+      "https://www.axios.com/2024/10/25/meta-reuters-ai-news-facebook-instagram",
+      "https://www.reuters.com/technology/artificial-intelligence/meta-platforms-use-reuters-news-content-ai-chatbot-2024-10-25/"
     ]
   },
   {
@@ -3785,18 +4372,19 @@
     "News Org(s)": [
       "Gannett (now USA TODAY CO.)"
     ],
-    "Reported Details": "Gannett Chairman and CEO announced that the publisher was partnering with Microsoft on the upcoming launch of the Publisher Content Marketplace. Financial terms were not disclosed.",
+    "Reported Details": "Gannett chairman and CEO Michael Reed announced that the publisher was partnering with Microsoft on the upcoming launch of its Publisher Content Marketplace. Financial terms were not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:34:23",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://investors.usatodayco.com/news/news-details/2025/Gannett-Announces-Third-Quarter-2025-Results-New-AI-Licensing-Deal-with-Microsoft--Updated-Business-Outlook/default.aspx",
-      "https://www.axios.com/2025/09/23/microsoft-ai-marketplace-publishers"
+      "https://www.axios.com/2025/09/23/microsoft-ai-marketplace-publishers",
+      "https://investors.usatodayco.com/news/news-details/2025/Gannett-Announces-Third-Quarter-2025-Results-New-AI-Licensing-Deal-with-Microsoft--Updated-Business-Outlook/default.aspx"
     ]
   },
   {
@@ -3811,13 +4399,14 @@
     "News Org(s)": [
       "Schibsted Media Group"
     ],
-    "Reported Details": "The partnership allows OpenAI to integrate content from a selection of Schibsted Media Group's titles, into OpenAI's products, including ChatGPT. Financial terms are not disclosed.",
+    "Reported Details": "The partnership allows OpenAI to integrate content from a selection of Schibsted Media Group’s titles into OpenAI’s products, including ChatGPT. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-04 11:41:00",
     "Affected Publications": [
       "VG",
       "Aftenposten",
@@ -3867,8 +4456,8 @@
       }
     ],
     "Sources": [
-      "https://schibstedmedia.com/news/schibsted-media-partners-with-openai/",
-      "https://openai.com/index/openai-partners-with-schibsted-media-group/"
+      "https://openai.com/index/openai-partners-with-schibsted-media-group/",
+      "https://web.archive.org/web/20250503091219/https://schibstedmedia.com/news/schibsted-media-partners-with-openai/"
     ]
   },
   {
@@ -3883,13 +4472,14 @@
     "News Org(s)": [
       "Condé Nast"
     ],
-    "Reported Details": "The multi-year partnership with enables OpenAI to display the publisher's content within its products, including the SearchGPT prototype. Financial terms are not disclosed.",
+    "Reported Details": "The multi-year partnership enables OpenAI to display the publisher’s content within its products, including the SearchGPT prototype. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:49:19",
     "Affected Publications": [
       "The New Yorker",
       "Condé Nast Traveler",
@@ -3961,8 +4551,8 @@
       }
     ],
     "Sources": [
-      "https://www.condenast.com/news/conde-nast-openai-partnership",
-      "https://openai.com/index/conde-nast/"
+      "https://openai.com/index/conde-nast/",
+      "https://www.condenast.com/news/conde-nast-openai-partnership"
     ]
   },
   {
@@ -3977,19 +4567,20 @@
     "News Org(s)": [
       "Fortune"
     ],
-    "Reported Details": "Perplexity partnered with publishers to give users access to articles via Comet Plus. The company allocated a $42.5 million pool to be distributed among publishers in the program, compensating them based on how often their content is accessed, appears in AI search results, or used by Comet's AI assistant.",
+    "Reported Details": "Perplexity partnered with publishers to give users access to articles via Comet Plus. The company allocated a $42.5 million pool to be distributed among publishers in the program, compensating them based on how often their content is accessed, appears in AI search results, or is used by Comet’s AI assistant.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:33:23",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.bloomberg.com/news/articles/2025-08-25/perplexity-to-let-publishers-share-in-revenue-from-ai-searches",
       "https://www.perplexity.ai/hub/blog/announcing-comet-plus-launch-partners",
-      "https://www.perplexity.ai/hub/blog/introducing-comet-plus"
+      "https://www.perplexity.ai/hub/blog/introducing-comet-plus",
+      "https://www.bloomberg.com/news/articles/2025-08-25/perplexity-to-let-publishers-share-in-revenue-from-ai-searches"
     ]
   },
   {
@@ -4004,19 +4595,20 @@
     "News Org(s)": [
       "Le Figaro"
     ],
-    "Reported Details": "Perplexity partnered with publishers to give users access to articles via Comet Plus. The company allocated a $42.5 million pool to be distributed among publishers in the program, compensating them based on how often their content is accessed, appears in AI search results, or used by Comet's AI assistant.",
+    "Reported Details": "Perplexity partnered with publishers to give users access to articles via Comet Plus. The company allocated a $42.5 million pool to be distributed among publishers in the program, compensating them based on how often their content is accessed, appears in AI search results, or is used by Comet’s AI assistant.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:33:23",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.bloomberg.com/news/articles/2025-08-25/perplexity-to-let-publishers-share-in-revenue-from-ai-searches",
       "https://www.perplexity.ai/hub/blog/announcing-comet-plus-launch-partners",
-      "https://www.perplexity.ai/hub/blog/introducing-comet-plus"
+      "https://www.perplexity.ai/hub/blog/introducing-comet-plus",
+      "https://www.bloomberg.com/news/articles/2025-08-25/perplexity-to-let-publishers-share-in-revenue-from-ai-searches"
     ]
   },
   {
@@ -4031,19 +4623,20 @@
     "News Org(s)": [
       "Le Monde"
     ],
-    "Reported Details": "Perplexity partnered with publishers to give users access to articles via Comet Plus. The company allocated a $42.5 million pool to be distributed among publishers in the program, compensating them based on how often their content is accessed, appears in AI search results, or used by Comet's AI assistant.",
+    "Reported Details": "Perplexity partnered with publishers to give users access to articles via Comet Plus. The company allocated a $42.5 million pool to be distributed among publishers in the program, compensating them based on how often their content is accessed, appears in AI search results, or is used by Comet’s AI assistant.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:33:23",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.bloomberg.com/news/articles/2025-08-25/perplexity-to-let-publishers-share-in-revenue-from-ai-searches",
       "https://www.perplexity.ai/hub/blog/announcing-comet-plus-launch-partners",
-      "https://www.perplexity.ai/hub/blog/introducing-comet-plus"
+      "https://www.perplexity.ai/hub/blog/introducing-comet-plus",
+      "https://www.bloomberg.com/news/articles/2025-08-25/perplexity-to-let-publishers-share-in-revenue-from-ai-searches"
     ]
   },
   {
@@ -4058,19 +4651,20 @@
     "News Org(s)": [
       "Los Angeles Times"
     ],
-    "Reported Details": "Perplexity partnered with publishers to give users access to articles via Comet Plus. The company allocated a $42.5 million pool to be distributed among publishers in the program, compensating them based on how often their content is accessed, appears in AI search results, or used by Comet's AI assistant.",
+    "Reported Details": "Perplexity partnered with publishers to give users access to articles via Comet Plus. The company allocated a $42.5 million pool to be distributed among publishers in the program, compensating them based on how often their content is accessed, appears in AI search results, or is used by Comet’s AI assistant.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:33:23",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.bloomberg.com/news/articles/2025-08-25/perplexity-to-let-publishers-share-in-revenue-from-ai-searches",
       "https://www.perplexity.ai/hub/blog/announcing-comet-plus-launch-partners",
-      "https://www.perplexity.ai/hub/blog/introducing-comet-plus"
+      "https://www.perplexity.ai/hub/blog/introducing-comet-plus",
+      "https://www.bloomberg.com/news/articles/2025-08-25/perplexity-to-let-publishers-share-in-revenue-from-ai-searches"
     ]
   },
   {
@@ -4085,19 +4679,20 @@
     "News Org(s)": [
       "The Washington Post"
     ],
-    "Reported Details": "Perplexity partnered with publishers to give users access to articles via Comet Plus. The company allocated a $42.5 million pool to be distributed among publishers in the program, compensating them based on how often their content is accessed, appears in AI search results, or used by Comet's AI assistant.",
+    "Reported Details": "Perplexity partnered with publishers to give users access to articles via Comet Plus. The company allocated a $42.5 million pool to be distributed among publishers in the program, compensating them based on how often their content is accessed, appears in AI search results, or is used by Comet’s AI assistant.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:33:23",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.bloomberg.com/news/articles/2025-08-25/perplexity-to-let-publishers-share-in-revenue-from-ai-searches",
       "https://www.perplexity.ai/hub/blog/announcing-comet-plus-launch-partners",
-      "https://www.perplexity.ai/hub/blog/introducing-comet-plus"
+      "https://www.perplexity.ai/hub/blog/introducing-comet-plus",
+      "https://www.bloomberg.com/news/articles/2025-08-25/perplexity-to-let-publishers-share-in-revenue-from-ai-searches"
     ]
   },
   {
@@ -4112,13 +4707,14 @@
     "News Org(s)": [
       "Condé Nast"
     ],
-    "Reported Details": "Perplexity partnered with publishers to give users access to articles via Comet Plus. The company allocated a $42.5 million pool to be distributed among publishers in the program, compensating them based on how often their content is accessed, appears in AI search results, or used by Comet's AI assistant.",
+    "Reported Details": "Perplexity partnered with publishers to give users access to articles via Comet Plus. The company allocated a $42.5 million pool to be distributed among publishers in the program, compensating them based on how often their content is accessed, appears in AI search results, or is used by Comet’s AI assistant.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:33:23",
     "Affected Publications": [
       "The New Yorker",
       "Wired",
@@ -4267,9 +4863,9 @@
       }
     ],
     "Sources": [
-      "https://www.bloomberg.com/news/articles/2025-08-25/perplexity-to-let-publishers-share-in-revenue-from-ai-searches",
       "https://www.perplexity.ai/hub/blog/announcing-comet-plus-launch-partners",
-      "https://www.perplexity.ai/hub/blog/introducing-comet-plus"
+      "https://www.perplexity.ai/hub/blog/introducing-comet-plus",
+      "https://www.bloomberg.com/news/articles/2025-08-25/perplexity-to-let-publishers-share-in-revenue-from-ai-searches"
     ]
   },
   {
@@ -4284,19 +4880,20 @@
     "News Org(s)": [
       "CNN"
     ],
-    "Reported Details": "Perplexity partnered with publishers to give users access to articles via Comet Plus. The company allocated a $42.5 million pool to be distributed among publishers in the program, compensating them based on how often their content is accessed, appears in AI search results, or used by Comet's AI assistant.",
+    "Reported Details": "Perplexity partnered with publishers to give users access to articles via Comet Plus. The company allocated a $42.5 million pool to be distributed among publishers in the program, compensating them based on how often their content is accessed, appears in AI search results, or is used by Comet’s AI assistant.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:33:23",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.bloomberg.com/news/articles/2025-08-25/perplexity-to-let-publishers-share-in-revenue-from-ai-searches",
       "https://www.perplexity.ai/hub/blog/announcing-comet-plus-launch-partners",
-      "https://www.perplexity.ai/hub/blog/introducing-comet-plus"
+      "https://www.perplexity.ai/hub/blog/introducing-comet-plus",
+      "https://www.bloomberg.com/news/articles/2025-08-25/perplexity-to-let-publishers-share-in-revenue-from-ai-searches"
     ]
   },
   {
@@ -4311,13 +4908,14 @@
     "News Org(s)": [
       "Prisa Media"
     ],
-    "Reported Details": "The partnership will allow OpenAI to use Prisa Media's content for training models and allow users to engage with content from the publisher in ChatGPT. Financial terms are not disclosed.",
+    "Reported Details": "The partnership will allow OpenAI to use the publisher's content for training models and allow users to engage with content from the publisher in ChatGPT. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:19:26",
     "Affected Publications": [
       "El País",
       "Cinco Días",
@@ -4384,13 +4982,14 @@
     "News Org(s)": [
       "Le Monde"
     ],
-    "Reported Details": "The partnership will allow OpenAI to use Prisa Media's content for training models and allow users to engage with content from the publisher in ChatGPT. Financial terms are not disclosed.",
+    "Reported Details": "The partnership will allow OpenAI to use the publisher's content for training models and allow users to engage with content from the publisher in ChatGPT. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:19:26",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -4411,18 +5010,19 @@
     "News Org(s)": [
       "TIME"
     ],
-    "Reported Details": "Perks for partners include revenue sharing, access to Perplexity's APIs and one year of free Enterprise Pro for all employees. According to The Verge, \"the revenue share is a multiyear agreement with a 'double-digit percentage,' consistent across all publishers, with especially favorable terms for the initial partners.\"",
+    "Reported Details": "Perks for partners in the Perplexity Publishers' Program include revenue sharing, access to the company's APIs and one year of free Enterprise Pro for all employees. According to The Verge, \"the revenue share is a multiyear agreement with a 'double-digit percentage,' consistent across all publishers, with especially favorable terms for the initial partners.\"",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:43:22",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.theverge.com/2024/7/30/24208979/perplexity-publishers-program-ad-revenue-sharing-ai-time-fortune-der-spiegel",
-      "https://www.perplexity.ai/hub/blog/introducing-the-perplexity-publishers-program"
+      "https://www.perplexity.ai/hub/blog/introducing-the-perplexity-publishers-program",
+      "https://www.theverge.com/2024/7/30/24208979/perplexity-publishers-program-ad-revenue-sharing-ai-time-fortune-der-spiegel"
     ]
   },
   {
@@ -4437,18 +5037,19 @@
     "News Org(s)": [
       "Der Spiegel"
     ],
-    "Reported Details": "Perks for partners include revenue sharing, access to Perplexity's APIs and one year of free Enterprise Pro for all employees. According to The Verge, \"the revenue share is a multiyear agreement with a 'double-digit percentage,' consistent across all publishers, with especially favorable terms for the initial partners.\"",
+    "Reported Details": "Perks for partners in the Perplexity Publishers' Program include revenue sharing, access to the company's APIs and one year of free Enterprise Pro for all employees. According to The Verge, \"the revenue share is a multiyear agreement with a 'double-digit percentage,' consistent across all publishers, with especially favorable terms for the initial partners.\"",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:43:22",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.theverge.com/2024/7/30/24208979/perplexity-publishers-program-ad-revenue-sharing-ai-time-fortune-der-spiegel",
-      "https://www.perplexity.ai/hub/blog/introducing-the-perplexity-publishers-program"
+      "https://www.perplexity.ai/hub/blog/introducing-the-perplexity-publishers-program",
+      "https://www.theverge.com/2024/7/30/24208979/perplexity-publishers-program-ad-revenue-sharing-ai-time-fortune-der-spiegel"
     ]
   },
   {
@@ -4463,18 +5064,19 @@
     "News Org(s)": [
       "Fortune"
     ],
-    "Reported Details": "Perks for partners include revenue sharing, access to Perplexity's APIs and one year of free Enterprise Pro for all employees. According to The Verge, \"the revenue share is a multiyear agreement with a 'double-digit percentage,' consistent across all publishers, with especially favorable terms for the initial partners.\"",
+    "Reported Details": "Perks for partners in the Perplexity Publishers' Program include revenue sharing, access to the company's APIs and one year of free Enterprise Pro for all employees. According to The Verge, \"the revenue share is a multiyear agreement with a 'double-digit percentage,' consistent across all publishers, with especially favorable terms for the initial partners.\"",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:43:22",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.theverge.com/2024/7/30/24208979/perplexity-publishers-program-ad-revenue-sharing-ai-time-fortune-der-spiegel",
-      "https://www.perplexity.ai/hub/blog/introducing-the-perplexity-publishers-program"
+      "https://www.perplexity.ai/hub/blog/introducing-the-perplexity-publishers-program",
+      "https://www.theverge.com/2024/7/30/24208979/perplexity-publishers-program-ad-revenue-sharing-ai-time-fortune-der-spiegel"
     ]
   },
   {
@@ -4489,18 +5091,19 @@
     "News Org(s)": [
       "Entrepreneur"
     ],
-    "Reported Details": "Perks for partners include revenue sharing, access to Perplexity's APIs and one year of free Enterprise Pro for all employees. According to The Verge, \"the revenue share is a multiyear agreement with a 'double-digit percentage,' consistent across all publishers, with especially favorable terms for the initial partners.\"",
+    "Reported Details": "Perks for partners in the Perplexity Publishers' Program include revenue sharing, access to the company's APIs and one year of free Enterprise Pro for all employees. According to The Verge, \"the revenue share is a multiyear agreement with a 'double-digit percentage,' consistent across all publishers, with especially favorable terms for the initial partners.\"",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:43:22",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.theverge.com/2024/7/30/24208979/perplexity-publishers-program-ad-revenue-sharing-ai-time-fortune-der-spiegel",
-      "https://www.perplexity.ai/hub/blog/introducing-the-perplexity-publishers-program"
+      "https://www.perplexity.ai/hub/blog/introducing-the-perplexity-publishers-program",
+      "https://www.theverge.com/2024/7/30/24208979/perplexity-publishers-program-ad-revenue-sharing-ai-time-fortune-der-spiegel"
     ]
   },
   {
@@ -4515,18 +5118,19 @@
     "News Org(s)": [
       "The Texas Tribune"
     ],
-    "Reported Details": "Perks for partners include revenue sharing, access to Perplexity's APIs and one year of free Enterprise Pro for all employees. According to The Verge, \"the revenue share is a multiyear agreement with a 'double-digit percentage,' consistent across all publishers, with especially favorable terms for the initial partners.\"",
+    "Reported Details": "Perks for partners in the Perplexity Publishers' Program include revenue sharing, access to the company's APIs and one year of free Enterprise Pro for all employees. According to The Verge, \"the revenue share is a multiyear agreement with a 'double-digit percentage,' consistent across all publishers, with especially favorable terms for the initial partners.\"",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:43:22",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.theverge.com/2024/7/30/24208979/perplexity-publishers-program-ad-revenue-sharing-ai-time-fortune-der-spiegel",
-      "https://www.perplexity.ai/hub/blog/introducing-the-perplexity-publishers-program"
+      "https://www.perplexity.ai/hub/blog/introducing-the-perplexity-publishers-program",
+      "https://www.theverge.com/2024/7/30/24208979/perplexity-publishers-program-ad-revenue-sharing-ai-time-fortune-der-spiegel"
     ]
   },
   {
@@ -4539,20 +5143,21 @@
     ],
     "Interaction": "Deal",
     "News Org(s)": [
-      "Wordpress.com"
+      "WordPress.com"
     ],
-    "Reported Details": "Perks for partners include revenue sharing, access to Perplexity's APIs and one year of free Enterprise Pro for all employees. According to The Verge, \"the revenue share is a multiyear agreement with a 'double-digit percentage,' consistent across all publishers, with especially favorable terms for the initial partners.\"",
+    "Reported Details": "Perks for partners in the Perplexity Publishers' Program include revenue sharing, access to the company's APIs and one year of free Enterprise Pro for all employees. According to The Verge, \"the revenue share is a multiyear agreement with a 'double-digit percentage,' consistent across all publishers, with especially favorable terms for the initial partners.\"",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:43:22",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.theverge.com/2024/7/30/24208979/perplexity-publishers-program-ad-revenue-sharing-ai-time-fortune-der-spiegel",
-      "https://www.perplexity.ai/hub/blog/introducing-the-perplexity-publishers-program"
+      "https://www.perplexity.ai/hub/blog/introducing-the-perplexity-publishers-program",
+      "https://www.theverge.com/2024/7/30/24208979/perplexity-publishers-program-ad-revenue-sharing-ai-time-fortune-der-spiegel"
     ]
   },
   {
@@ -4567,18 +5172,19 @@
     "News Org(s)": [
       "Guardian Media Group"
     ],
-    "Reported Details": "The strategic partnership enables ChatGPT users to gain direct access and receive extended summaries to the Guardian's reporting. In addition, \"The Guardian will also be rolling out ChatGPT Enterprise across the business, with the aim of developing new products, features and tools for both its readers and business operations.\" Financial terms are not disclosed.",
+    "Reported Details": "The strategic partnership enables ChatGPT users to gain direct access and receive extended summaries to the Guardian’s reporting. “The Guardian will also be rolling out ChatGPT Enterprise across the business, with the aim of developing new products, features and tools for both its readers and business operations.” Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:24:36",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.theguardian.com/gnm-press-office/2025/feb/14/guardian-media-group-announces-strategic-partnership-with-openai",
-      "https://openai.com/index/openai-and-guardian-media-group-launch-content-partnership/"
+      "https://openai.com/index/openai-and-guardian-media-group-launch-content-partnership/",
+      "https://www.theguardian.com/gnm-press-office/2025/feb/14/guardian-media-group-announces-strategic-partnership-with-openai"
     ]
   },
   {
@@ -4600,6 +5206,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-02 18:53:17",
     "Affected Publications": [
       "Vox",
       "The Verge",
@@ -4671,8 +5278,8 @@
       }
     ],
     "Sources": [
-      "https://www.voxmedia.com/2024/5/29/24166483/vox-media-openai-strategic-content-and-product-partnership",
-      "https://openai.com/index/a-content-and-product-partnership-with-vox-media/"
+      "https://openai.com/index/a-content-and-product-partnership-with-vox-media/",
+      "https://www.voxmedia.com/2024/5/29/24166483/vox-media-openai-strategic-content-and-product-partnership"
     ]
   },
   {
@@ -4688,13 +5295,14 @@
     "News Org(s)": [
       "DMG Media"
     ],
-    "Reported Details": "dmg media takes an equity stake in ProRata.ai. In its partnership with the company, dmg media \"will give ProRata.ai access to its content for a consumer answer engine\"",
+    "Reported Details": "dmg media takes an equity stake in ProRata.ai. In its partnership with the company, dmg media “will give ProRata.ai access to its content for a consumer answer engine.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:11:21",
     "Affected Publications": [
       "The Daily Mail"
     ],
@@ -4734,10 +5342,12 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-04 11:46:23",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://blog.google/products/news/associated-press-gemini-app/,https://apnews.com/article/google-gemini-ai-associated-press-ap-0b57bcf8c80dd406daa9ba916adacfaf"
+      "https://blog.google/products/news/associated-press-gemini-app/",
+      "https://apnews.com/article/google-gemini-ai-associated-press-ap-0b57bcf8c80dd406daa9ba916adacfaf"
     ]
   },
   {
@@ -4759,6 +5369,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:25:29",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -4784,6 +5395,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:25:29",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -4809,6 +5421,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:25:29",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -4834,6 +5447,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:25:29",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -4859,6 +5473,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:25:29",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -4884,6 +5499,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:25:29",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -4909,6 +5525,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:25:29",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -4934,6 +5551,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:25:29",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -4959,6 +5577,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:25:29",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -4984,6 +5603,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:25:29",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -5009,31 +5629,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
-    "Affected Publications": [],
-    "parent_child_matches": [],
-    "Sources": [
-      "https://www.aboutamazon.com/news/devices/new-alexa-top-features"
-    ]
-  },
-  {
-    "Date": "2025-02-26",
-    "AI Company": [
-      "Amazon"
-    ],
-    "Type": [
-      "Licensing"
-    ],
-    "Interaction": "Deal",
-    "News Org(s)": [
-      "more than 200 unnamed outlets"
-    ],
-    "Reported Details": "Amazon partners with more than 200 outlets to use their content in its LLM-powered virtual assistant Alexa+. Financial terms are not disclosed.",
-    "Status": null,
-    "Case Number": null,
-    "Defendant": null,
-    "Plaintiff": null,
-    "Case Filing": null,
-    "Location": null,
+    "Last Modified": "2025-12-03 21:25:29",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -5052,18 +5648,19 @@
     "News Org(s)": [
       "Financial Times"
     ],
-    "Reported Details": "The strategic partnership and licensing agreement will serve to \"enhance ChatGPT with attributed content, help improve its models’ usefulness by incorporating FT journalism, and collaborate on developing new AI products and features for FT readers.\" Though financial terms were not disclosed, the Wall Street Journal reports the deal is worth \"$5 million to $10 million a year.\" Financial terms are not disclosed.",
+    "Reported Details": "The strategic partnership and licensing agreement will serve to \"enhance ChatGPT with attributed content, help improve its models’ usefulness by incorporating FT journalism, and collaborate on developing new AI products and features for FT readers.\" Though financial terms were not disclosed, the Wall Street Journal reports the deal is worth \"$5 million to $10 million a year.\"",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:56:56",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
       "https://www.wsj.com/business/media/openai-news-corp-strike-deal-23f186ba",
-      "'https://openai.com/index/global-news-partnerships-le-monde-and-prisa-media/']"
+      "https://aboutus.ft.com/press_release/openai"
     ]
   },
   {
@@ -5078,16 +5675,18 @@
     "News Org(s)": [
       "Associated Press"
     ],
-    "Reported Details": "Perplexity launches a dedicated hub for U.S. general election information populated by data from The Associated Press and Democracy Works. Financial terms are not disclosed.",
+    "Reported Details": "Perplexity launches an Election Information Hub for U.S. general election information populated by data from The Associated Press and Democracy Works. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:06:30",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
+      "https://www.democracy.works/news/democracy-works-perplexity-collaborate-to-empower-voters",
       "https://www.perplexity.ai/hub/blog/introducing-the-election-information-hub"
     ]
   },
@@ -5111,10 +5710,12 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:45:56",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai"
+      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai",
+      "https://www.businesswire.com/news/home/20240806000889/en/ProRata-Invents-Generative-AI-Attribution-Technology-to-Compensate-and-Credit-Content-Owners-While-Facilitating-Fairness-and-Fact"
     ]
   },
   {
@@ -5137,10 +5738,12 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:45:56",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai"
+      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai",
+      "https://www.businesswire.com/news/home/20240806000889/en/ProRata-Invents-Generative-AI-Attribution-Technology-to-Compensate-and-Credit-Content-Owners-While-Facilitating-Fairness-and-Fact"
     ]
   },
   {
@@ -5163,10 +5766,12 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:45:56",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai"
+      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai",
+      "https://www.businesswire.com/news/home/20240806000889/en/ProRata-Invents-Generative-AI-Attribution-Technology-to-Compensate-and-Credit-Content-Owners-While-Facilitating-Fairness-and-Fact"
     ]
   },
   {
@@ -5189,10 +5794,12 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:45:56",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai"
+      "https://www.axios.com/2024/08/06/news-outlets-ink-deals-with-new-ai-startup-prorataai",
+      "https://www.businesswire.com/news/home/20240806000889/en/ProRata-Invents-Generative-AI-Attribution-Technology-to-Compensate-and-Credit-Content-Owners-While-Facilitating-Fairness-and-Fact"
     ]
   },
   {
@@ -5207,13 +5814,14 @@
     "News Org(s)": [
       "Axel Springer"
     ],
-    "Reported Details": "The partnership will deliver ChatGPT users \"summaries of selected global news content from Axel Springer’s media brands... including otherwise paid content.\" According to the Wall Street Journal, \"is worth at least $25 million to $30 million over three years.\"",
+    "Reported Details": "The partnership will deliver ChatGPT users “summaries of selected global news content from Axel Springer’s media brands ... including otherwise paid content.” According to the Wall Street Journal, the deal “is worth at least $25 million to $30 million over three years.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:15:36",
     "Affected Publications": [
       "Politico",
       "Business Insider",
@@ -5263,8 +5871,8 @@
       }
     ],
     "Sources": [
-      "https://www.wsj.com/business/media/openai-news-corp-strike-deal-23f186ba",
       "https://openai.com/blog/axel-springer-partnership",
+      "https://www.wsj.com/business/media/openai-news-corp-strike-deal-23f186ba",
       "https://www.nytimes.com/2023/12/29/business/media/media-openai-chatgpt.html"
     ]
   },
@@ -5287,6 +5895,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-02 18:53:17",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -5306,13 +5915,14 @@
     "News Org(s)": [
       "Future plc"
     ],
-    "Reported Details": "The strategic partnership will allow ChatGPT users to access content from across Future's portfolio, \"with attribution and links to the full original articles for transparency and further information.\" Financial terms are not disclosed.",
+    "Reported Details": "The strategic partnership will allow ChatGPT users to access content from across Future’s portfolio, “with attribution and links to the full original articles for transparency and further information.” Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:11:45",
     "Affected Publications": [
       "Marie Claire",
       "PC Gamer",
@@ -5417,6 +6027,7 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-02 20:52:38",
     "Affected Publications": [
       "The Wall Street Journal",
       "Barron’s",
@@ -5565,9 +6176,9 @@
       }
     ],
     "Sources": [
-      "https://www.wsj.com/business/media/openai-news-corp-strike-deal-23f186ba",
+      "https://newscorp.com/2024/05/22/news-corp-and-openai-sign-landmark-multi-year-global-partnership/",
       "https://openai.com/index/news-corp-and-openai-sign-landmark-multi-year-global-partnership/",
-      "https://newscorp.com/2024/05/22/news-corp-and-openai-sign-landmark-multi-year-global-partnership/"
+      "https://www.wsj.com/business/media/openai-news-corp-strike-deal-23f186ba"
     ]
   },
   {
@@ -5589,11 +6200,12 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:39:26",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://openai.com/index/enhancing-news-in-chatgpt-with-the-atlantic/",
-      "https://www.theatlantic.com/press-releases/archive/2024/05/atlantic-product-content-partnership-openai/678529/"
+      "https://www.theatlantic.com/press-releases/archive/2024/05/atlantic-product-content-partnership-openai/678529/",
+      "https://openai.com/index/enhancing-news-in-chatgpt-with-the-atlantic/"
     ]
   },
   {
@@ -5608,13 +6220,14 @@
     "News Org(s)": [
       "Associated Press"
     ],
-    "Reported Details": "According to the agreement, OpenAI will license \"part of AP’s text archive, while AP will leverage OpenAI’s technology and product expertise.\" Financial terms of the deal are not disclosed, but the Wall Street Journal reports that the deal is \"in the single-digit millions a year.\"",
+    "Reported Details": "According to the agreement, OpenAI will license “part of AP’s text archive, while AP will leverage OpenAI’s technology and product expertise.” Financial terms of the deal are not disclosed, but the Wall Street Journal reports that the deal is “in the single-digit millions a year.”",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 20:14:50",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -5641,8 +6254,10 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 17:03:16",
     "Affected Publications": [
       "PEOPLE",
+      "Better Homes & Gardens",
       "FOOD & WINE",
       "Verywell",
       "InStyle",
@@ -5658,6 +6273,16 @@
           "PEOPLE"
         ],
         "lineage_str": "Dotdash Meredith (now People Inc.) → PEOPLE"
+      },
+      {
+        "news_org": "Dotdash Meredith (now People Inc.)",
+        "publication": "Better Homes & Gardens",
+        "direct_child": true,
+        "lineage": [
+          "Dotdash Meredith (now People Inc.)",
+          "Better Homes & Gardens"
+        ],
+        "lineage_str": "Dotdash Meredith (now People Inc.) → Better Homes & Gardens"
       },
       {
         "news_org": "Dotdash Meredith (now People Inc.)",
@@ -5717,13 +6342,14 @@
     "News Org(s)": [
       "Arena Group"
     ],
-    "Reported Details": "ProRata plans to share half of its revenue from subscriptions and ads with its licensing partners",
+    "Reported Details": "ProRata plans to share half of its revenue from subscriptions and ads with its licensing partners.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:50",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -5743,13 +6369,14 @@
     "News Org(s)": [
       "Atlas Obscura"
     ],
-    "Reported Details": "ProRata plans to share half of its revenue from subscriptions and ads with its licensing partners",
+    "Reported Details": "ProRata plans to share half of its revenue from subscriptions and ads with its licensing partners.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:50",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -5769,13 +6396,14 @@
     "News Org(s)": [
       "BuzzFeed"
     ],
-    "Reported Details": "ProRata plans to share half of its revenue from subscriptions and ads with its licensing partners",
+    "Reported Details": "ProRata plans to share half of its revenue from subscriptions and ads with its licensing partners.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:50",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -5795,13 +6423,14 @@
     "News Org(s)": [
       "Adweek"
     ],
-    "Reported Details": "ProRata plans to share half of its revenue from subscriptions and ads with its licensing partners",
+    "Reported Details": "ProRata plans to share half of its revenue from subscriptions and ads with its licensing partners.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:50",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -5821,13 +6450,14 @@
     "News Org(s)": [
       "TIME"
     ],
-    "Reported Details": "ProRata plans to share half of its revenue from subscriptions and ads with its licensing partners",
+    "Reported Details": "ProRata plans to share half of its revenue from subscriptions and ads with its licensing partners.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:50",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -5847,13 +6477,14 @@
     "News Org(s)": [
       "Recurrent Ventures"
     ],
-    "Reported Details": "ProRata plans to share half of its revenue from subscriptions and ads with its licensing partners",
+    "Reported Details": "ProRata plans to share half of its revenue from subscriptions and ads with its licensing partners.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:50",
     "Affected Publications": [
       "Popular Science"
     ],
@@ -5886,13 +6517,14 @@
     "News Org(s)": [
       "Graham Holdings Company"
     ],
-    "Reported Details": "ProRata plans to share half of its revenue from subscriptions and ads with its licensing partners",
+    "Reported Details": "ProRata plans to share half of its revenue from subscriptions and ads with its licensing partners.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:12:50",
     "Affected Publications": [
       "Foreign Policy",
       "Slate"
@@ -5943,10 +6575,67 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
-    "Affected Publications": [],
-    "parent_child_matches": [],
+    "Last Modified": "2025-12-03 21:00:04",
+    "Affected Publications": [
+      "Politico",
+      "BILD",
+      "WELT",
+      "Business Insider",
+      "ONET"
+    ],
+    "parent_child_matches": [
+      {
+        "news_org": "Axel Springer",
+        "publication": "Politico",
+        "direct_child": true,
+        "lineage": [
+          "Axel Springer",
+          "Politico"
+        ],
+        "lineage_str": "Axel Springer → Politico"
+      },
+      {
+        "news_org": "Axel Springer",
+        "publication": "BILD",
+        "direct_child": true,
+        "lineage": [
+          "Axel Springer",
+          "BILD"
+        ],
+        "lineage_str": "Axel Springer → BILD"
+      },
+      {
+        "news_org": "Axel Springer",
+        "publication": "WELT",
+        "direct_child": true,
+        "lineage": [
+          "Axel Springer",
+          "WELT"
+        ],
+        "lineage_str": "Axel Springer → WELT"
+      },
+      {
+        "news_org": "Axel Springer",
+        "publication": "Business Insider",
+        "direct_child": true,
+        "lineage": [
+          "Axel Springer",
+          "Business Insider"
+        ],
+        "lineage_str": "Axel Springer → Business Insider"
+      },
+      {
+        "news_org": "Axel Springer",
+        "publication": "ONET",
+        "direct_child": true,
+        "lineage": [
+          "Axel Springer",
+          "ONET"
+        ],
+        "lineage_str": "Axel Springer → ONET"
+      }
+    ],
     "Sources": [
-      "https://openai.com/index/axel-springer-partnership/",
       "https://www.axelspringer.com/en/ax-press-release/axel-springer-and-microsoft-expand-partnership-across-advertising-ai-content-and-azure-services"
     ]
   },
@@ -5969,11 +6658,12 @@
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 01:13:51",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://www.ap.org/media-center/press-releases/2025/ap-debuts-global-data-and-intelligence-offering/",
-      "https://www.axios.com/2025/09/23/microsoft-ai-marketplace-publishers"
+      "https://www.axios.com/2025/09/23/microsoft-ai-marketplace-publishers",
+      "https://www.ap.org/media-center/press-releases/2025/ap-debuts-global-data-and-intelligence-offering/"
     ]
   },
   {
@@ -5988,13 +6678,14 @@
     "News Org(s)": [
       "Gannett (now USA TODAY CO.)"
     ],
-    "Reported Details": "The strategic content licensing agreement enables Perplexity to integrate content from USA TODAY and the USA TODAY Network's 200+ local publications into its AI-powered search experiences. Additionally, Gannett will have access to Perplexity's Sonar API and Enterprise Pro for all employees. Financial terms are not disclosed.",
+    "Reported Details": "The strategic content licensing agreement enables Perplexity to integrate content from USA TODAY and the USA TODAY Network’s 200+ local publications into its AI-powered search tools. Additionally, Gannett will have access to Perplexity’s Sonar API and Enterprise Pro for all employees. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:33:06",
     "Affected Publications": [
       "USA Today"
     ],
@@ -6011,8 +6702,8 @@
       }
     ],
     "Sources": [
-      "https://investors.gannett.com/news/news-details/2025/Gannett--USA-TODAY-Network-and-Perplexity-Announce-Strategic-AI-Content-Licensing-Agreement/default.aspx",
-      "https://www.perplexity.ai/hub/blog/welcoming-gannett-to-the-perplexity-publisher-program"
+      "https://www.perplexity.ai/hub/blog/welcoming-gannett-to-the-perplexity-publisher-program",
+      "https://investors.gannett.com/news/news-details/2025/Gannett--USA-TODAY-Network-and-Perplexity-Announce-Strategic-AI-Content-Licensing-Agreement/default.aspx"
     ]
   },
   {
@@ -6028,13 +6719,14 @@
     "News Org(s)": [
       "News/Media Alliance"
     ],
-    "Reported Details": "The News/Media Alliance's licensing partnership with ProRata allows members to opt into a content license with the startup for use with its Gist.AI product. \"ProRata’s attribution technology will identify when publisher content is used in generative AI answers, attribute the information to them, and pay them 50% of revenues for the use of their content.\"",
+    "Reported Details": "The News/Media Alliance’s licensing partnership with ProRata allows members to opt into a content license with the startup for use with its Gist.AI product. “ProRata’s attribution technology will identify when publisher content is used in generative AI answers, attribute the information to them,” and pay them 50 percent of revenues for the use of their content.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:25:02",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -6053,13 +6745,14 @@
     "News Org(s)": [
       "USA Today"
     ],
-    "Reported Details": "Content from USA TODAY and 27 USA TODAY Network publications will be available for Perplexity's new agentic browser Comet. ",
+    "Reported Details": "Content from USA TODAY and 27 USA TODAY Network publications will be available for Perplexity’s new agentic browser Comet. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:37:31",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -6078,13 +6771,14 @@
     "News Org(s)": [
       "USA Today Network"
     ],
-    "Reported Details": "Content from USA TODAY and 27 USA TODAY Network publications will be available for Perplexity's new agentic browser Comet. ",
+    "Reported Details": "Content from USA TODAY and 27 USA TODAY Network publications will be available for Perplexity’s new agentic browser Comet. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:37:31",
     "Affected Publications": [
       "Asbury Park Press",
       "The Oklahoman",
@@ -6292,13 +6986,14 @@
     "News Org(s)": [
       "The Washington Post"
     ],
-    "Reported Details": "The strategic partnership enables to ChatGPT's search tool to \"display summaries, quotes, and links to original reporting from The Post in response to relevant questions.\" Financial terms are not disclosed.",
+    "Reported Details": "The strategic partnership enables ChatGPT’s search tool to “display summaries, quotes, and links to original reporting from The Post in response to relevant questions.” Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:25:22",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
@@ -6317,13 +7012,14 @@
     "News Org(s)": [
       "Axios"
     ],
-    "Reported Details": "As part of the content partnership,\"ChatGPT will use Axios journalism to answer user queries with attributed summaries, quotes and links to Axios stories. Axios can access OpenAI's technology to build its own AI products, processes, and systems.\" The deal also includes funding to help Axios build new newsrooms in four new U.S. cities: Pittsburgh, Pennsylvania; Kansas City, Missouri; Boulder, Colorado; and Huntsville, Alabama. Financial terms are not disclosed.",
+    "Reported Details": "As part of the content partnership, “ChatGPT will use Axios journalism to answer user queries with attributed summaries, quotes, and links to Axios stories. Axios can access OpenAI’s technology to build its own AI products, processes, and systems.” The deal also includes funding to help Axios build new newsrooms in four U.S. cities: Pittsburgh, Pennsylvania; Kansas City, Missouri; Boulder, Colorado; and Huntsville, Alabama. Financial terms are not disclosed.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:22:29",
     "Affected Publications": [
       "Axios Pittsburgh",
       "Axios Kansas City",
@@ -6373,8 +7069,8 @@
       }
     ],
     "Sources": [
-      "https://openai.com/index/partnering-with-axios-expands-openai-work-with-the-news-industry/",
-      "https://www.axios.com/2025/01/15/axios-openai-go-big-in-local"
+      "https://www.axios.com/2025/01/15/axios-openai-go-big-in-local",
+      "https://openai.com/index/partnering-with-axios-expands-openai-work-with-the-news-industry/"
     ]
   },
   {
@@ -6390,18 +7086,19 @@
     "News Org(s)": [
       "Dotdash Meredith (now People Inc.)"
     ],
-    "Reported Details": "People Inc. CEO Neil Vogel announced to shareholders that the publisher had struck an AI licensing deal with Microsoft to be part of the tech company's pay-per-usage AI content marketplace. Financial terms were not disclosed.",
+    "Reported Details": "People Inc. CEO Neil Vogel announced to shareholders that the publisher had struck an AI licensing deal with Microsoft to be part of the tech company’s pay-per-usage AI content marketplace.",
     "Status": null,
     "Case Number": null,
     "Defendant": null,
     "Plaintiff": null,
     "Case Filing": null,
     "Location": null,
+    "Last Modified": "2025-12-03 21:38:06",
     "Affected Publications": [],
     "parent_child_matches": [],
     "Sources": [
-      "https://digiday.com/media/people-inc-strikes-microsoft-ai-licensing-deal-as-googles-ai-overviews-hit-programmatic-ad-revenue/",
-      "https://www.axios.com/2025/09/23/microsoft-ai-marketplace-publishers"
+      "https://www.axios.com/2025/09/23/microsoft-ai-marketplace-publishers",
+      "https://digiday.com/media/people-inc-strikes-microsoft-ai-licensing-deal-as-googles-ai-overviews-hit-programmatic-ad-revenue/"
     ]
   }
 ]

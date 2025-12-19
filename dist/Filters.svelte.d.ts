@@ -13,7 +13,7 @@ declare const Filters: import("svelte").Component<{
     filterPublishers?: any[];
     filteredRowCount?: number;
     onDownloadCSV?: Function;
-}, {}, "searchQuery" | "filterInteraction" | "filterType" | "filterPlatform" | "filterPublishers">;
+}, {}, "searchQuery" | "filterPublishers" | "filterInteraction" | "filterType" | "filterPlatform">;
 type $$ComponentProps = {
     data?: any[];
     columns?: any[];

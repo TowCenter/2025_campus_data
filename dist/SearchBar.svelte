@@ -24,11 +24,11 @@
 		<input
 			id={inputId}
 			type="text"
-			placeholder="Search all columns..."
+			placeholder="Search by keyword..."
 			value={searchQuery}
 			oninput={(e) => onSearchChange(e.target.value)}
 			class="search-input"
-			aria-label="Search all columns"
+			aria-label="Search by keyword"
 		/>
 		{#if searchQuery}
 			<button 

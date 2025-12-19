@@ -159,9 +159,9 @@
 			class="download-csv-btn" 
 			onclick={handleDownloadCSV}
 			type="button"
-			aria-label="Export {filteredRowCount} items to CSV"
+			aria-label="Export {filteredRowCount} items"
 		>
-			Export {filteredRowCount} items to CSV
+			Export {filteredRowCount} items
 		</button>
 	</div>
 </div>
@@ -171,7 +171,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
-		margin: 3rem;
+		margin: 2rem auto;
+		max-width: 900px;
 		padding: 1.5rem;
 		background-color: #fafafa;
 		border: 1px solid #e0e0e0;

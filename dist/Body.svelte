@@ -15,9 +15,9 @@
     let { 
 		children,
 		navItems = [
-			{ href: 'https://towcenter.columbia.edu/news/platforms-and-publishers', label: 'Partners and Publishers' },
-			{ href: 'https://tow.cjr.org/platform-timeline/', label: 'Timeline' },
-			{ href: 'https://www.cjr.org/tow-center', label: 'Other Reports' }
+			{ href: 'https://towcenter.columbia.edu/news/platforms-and-publishers', label: 'Platforms and Publishers Project' },
+			{ href: 'https://tow.cjr.org/platform-timeline/', label: 'P&P Timeline' },
+			{ href: 'https://www.cjr.org/tow-center', label: 'Other Tow Center Reports' }
 		]
 	} = $props();
 </script>
@@ -54,13 +54,13 @@
         }
         .col-sm-2 {
             flex: 0 0 auto;
-            width: 16.66666667%;
-            padding-right: 15px;
+            width: 21.5%;
+            padding-right: 25px;
             padding-left: 15px;
         }
         .col-sm-10 {
             flex: 0 0 auto;
-            width: 83.33333333%;
+            width: 78.5%;
             padding-right: 15px;
             padding-left: 15px;
         }
@@ -70,13 +70,15 @@
             padding-left: 15px;
             margin-right: auto;
             margin-left: auto;
-            max-width: 1140px;
+            max-width: 900px;
         }
         @media (max-width: 767.98px) {
             .col-sm-2,
             .col-sm-10 {
                 flex: 0 0 100%;
                 max-width: 100%;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
             }
         }
     </style>
@@ -92,11 +94,12 @@
         padding: 0;
         margin: 0;
         border-left: 2px solid #ccc;
-        padding-left: 1rem;
+        padding-left: 1.5rem;
     }
 
     .left-nav li {
-        margin-bottom: 0.75rem;
+        margin-bottom: 1.25rem;
+        line-height: 1.5;
     }
 
     .left-nav a {
@@ -104,6 +107,8 @@
         text-decoration: none;
         font-size: 0.95rem;
         transition: color 0.2s;
+        line-height: 1.6;
+        display: block;
     }
 
     .left-nav a:hover {
@@ -124,11 +129,68 @@
             width: 100%;
             flex: 0 0 100%;
             max-width: 100%;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
         }
 
         .entry-content {
-            padding-left: 1rem;
-            padding-right: 1rem;
+            padding-left: 0;
+            padding-right: 0;
+        }
+    }
+
+    .update-date-divider {
+        margin-top: 2rem;
+        margin-bottom: 1.5rem;
+        margin-left: 0;
+    }
+
+    .divider-line {
+        height: 1px;
+        background-color: #e0e0e0;
+        margin-top: 0;
+        margin-bottom: 1.25rem;
+        margin-left: 0;
+        margin-right: 0;
+        width: 100%;
+        display: block;
+    }
+
+    .update-date {
+        font-family: "Lyon Text Web", 'Georgia', serif;
+        font-size: 20px;
+        line-height: 28px;
+        font-weight: normal;
+        color: #222222;
+        text-transform: none;
+        display: block;
+        margin-top: 0;
+        margin-left: 0;
+        letter-spacing: 0;
+    }
+
+    .update-date em {
+        font-style: italic;
+    }
+
+    .update-date strong {
+        font-weight: bold;
+    }
+
+    @media screen and (max-width: 768px) {
+        .update-date-divider {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            margin-left: 0;
+        }
+
+        .divider-line {
+            margin-bottom: 1rem;
+        }
+
+        .update-date {
+            font-size: 18px;
+            line-height: 1.6;
         }
     }
 </style>
