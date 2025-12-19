@@ -6,7 +6,7 @@
    * Data is stored in AWS S3 and loaded incrementally for performance.
    *
    * Data Architecture:
-   * - month_index.json: Maps months to article IDs for chronological filtering
+   * - month_index/manifest.json + month_index/[month].json: month buckets loaded lazily for chronology
    * - institution_index.json: Maps institutions to article IDs for institution filtering
    * - articles/: Individual JSON files per article, loaded on demand
    * - search_index/: Pre-built search indices for fast keyword matching
@@ -28,7 +28,9 @@
   import { onMount } from 'svelte';
 
   // AWS S3 data URLs - all data is hosted in a public S3 bucket
-  const MONTH_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index.json';
+  const MONTH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index';
+  const MONTH_MANIFEST_URL = `${MONTH_INDEX_BASE_URL}/manifest.json`;
+  const LEGACY_MONTH_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index.json';
   const INSTITUTION_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index.json';
   const ARTICLE_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/articles';
   const SEARCH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/search_index';
@@ -46,6 +48,8 @@
 
   // monthIndex: { "YYYY-MM": ["id1","id2",...], "_no_date": ["idX",...] }
   let monthIndex = {};
+  let monthCounts = new Map();
+  const monthFetchCache = new Map();
   // institutionIndex: { "Harvard University": ["id1","id2",...], "_no_org": [...] }
   let institutionIndex = {};
 
@@ -53,6 +57,7 @@
   let institutions = [];  // institution names (no _no_org)
 
   let noDateIds = [];     // from monthIndex[NO_DATE_KEY] if present
+  let noDateCount = 0;
 
   // Filters (multi-select)
   let selectedMonths = [];        // [] = all months
@@ -86,6 +91,7 @@
 
   // Caching
   let initialized = false;
+  let backgroundMonthsLoading = false;
 
   // Cache of article JSONs
   const articleCache = new Map();
@@ -133,10 +139,12 @@
           })
           : months;
 
+  $: hasNoDateBucket = (noDateIds.length > 0) || noDateCount > 0;
   $: showNoDateOption =
-          monthSearchTerm.trim() === ''
+          hasNoDateBucket &&
+          (monthSearchTerm.trim() === ''
                   ? true
-                  : 'no date'.includes(monthSearchTerm.toLowerCase());
+                  : 'no date'.includes(monthSearchTerm.toLowerCase()));
 
   // Track time spent on Database page
   let pageStartTime;
@@ -196,18 +204,174 @@
 
 
 
-  async function loadMonthIndex() {
-    const res = await fetch(MONTH_INDEX_URL);
+  function rebuildGlobalIds() {
+    const ordered = [];
+    for (const month of months) {
+      const ids = monthIndex[month];
+      if (Array.isArray(ids)) {
+        ordered.push(...ids);
+      }
+    }
+    if (Array.isArray(noDateIds) && noDateIds.length) {
+      ordered.push(...noDateIds);
+    }
+    globalIds = ordered;
+  }
+
+  function pickInitialMonthsForPage() {
+    const initial = [];
+    let remaining = pageSize;
+    for (const month of months) {
+      initial.push(month);
+      const count = monthCounts.has(month) ? monthCounts.get(month) : 0;
+      remaining -= count;
+      if (remaining <= 0) break;
+    }
+    if (!initial.length && months.length) {
+      initial.push(months[0]);
+    }
+    return initial;
+  }
+
+  async function loadMonthFile(monthKey) {
+    if (!monthKey) return [];
+    if (monthIndex[monthKey]) return monthIndex[monthKey];
+
+    if (monthCounts.has(monthKey) && monthCounts.get(monthKey) === 0) {
+      monthIndex[monthKey] = [];
+      if (monthKey === NO_DATE_KEY) {
+        noDateIds = [];
+        noDateCount = 0;
+      }
+      rebuildGlobalIds();
+      return [];
+    }
+
+    if (monthFetchCache.has(monthKey)) {
+      return monthFetchCache.get(monthKey);
+    }
+
+    const promise = (async () => {
+      const res = await fetch(`${MONTH_INDEX_BASE_URL}/${monthKey}.json`);
+      if (!res.ok) {
+        throw new Error(`Failed to load month bucket '${monthKey}': ${res.status}`);
+      }
+      const data = await res.json();
+      let ids = data?.[monthKey];
+      if (!Array.isArray(ids)) {
+        const firstKey = data && Object.keys(data)[0];
+        ids = Array.isArray(data?.[firstKey]) ? data[firstKey] : [];
+      }
+      if (!Array.isArray(ids)) ids = [];
+
+      monthIndex[monthKey] = ids;
+      if (monthKey === NO_DATE_KEY) {
+        noDateIds = ids;
+        noDateCount = ids.length;
+      }
+
+      rebuildGlobalIds();
+      return ids;
+    })();
+
+    monthFetchCache.set(monthKey, promise);
+    try {
+      return await promise;
+    } finally {
+      monthFetchCache.delete(monthKey);
+    }
+  }
+
+  async function ensureMonthsLoaded(monthKeys = []) {
+    const keys = monthKeys.filter(Boolean);
+    if (!keys.length) return;
+    await Promise.all(keys.map((key) => loadMonthFile(key)));
+  }
+
+  async function loadManifestMonthIndex() {
+    const res = await fetch(MONTH_MANIFEST_URL);
+    if (!res.ok) {
+      throw new Error(`Failed to load month manifest: ${res.status}`);
+    }
+
+    const manifest = await res.json();
+    if (!Array.isArray(manifest)) {
+      throw new Error('Invalid month manifest format');
+    }
+
+    monthCounts = new Map();
+    monthIndex = {};
+    globalIds = [];
+    noDateIds = [];
+    monthFetchCache.clear();
+
+    const manifestMonths = [];
+    noDateCount = 0;
+
+    for (const entry of manifest) {
+      if (!entry?.key) continue;
+      const count = Number(entry.count) || 0;
+      monthCounts.set(entry.key, count);
+      if (entry.key === NO_DATE_KEY) {
+        noDateCount = count;
+      } else {
+        manifestMonths.push(entry.key);
+      }
+    }
+
+    months = manifestMonths.sort().reverse();
+
+    const initialMonths = pickInitialMonthsForPage();
+    await ensureMonthsLoaded(initialMonths);
+    rebuildGlobalIds();
+
+    backgroundPrefetchRemaining(initialMonths).catch((err) => {
+      console.error('Background month prefetch failed', err);
+    });
+  }
+
+  async function backgroundPrefetchRemaining(initialMonths = []) {
+    if (backgroundMonthsLoading) return;
+
+    const remaining = months.filter((m) => !initialMonths.includes(m));
+    const queue = [...remaining];
+    if (noDateCount > 0) {
+      queue.push(NO_DATE_KEY);
+    }
+
+    if (!queue.length) return;
+
+    backgroundMonthsLoading = true;
+    try {
+      for (const key of queue) {
+        if (monthIndex[key]) continue;
+        try {
+          await loadMonthFile(key);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      await applyFiltersAndSearch({ preservePage: true });
+    } finally {
+      backgroundMonthsLoading = false;
+    }
+  }
+
+  async function loadLegacyMonthIndex() {
+    const res = await fetch(LEGACY_MONTH_INDEX_URL);
     if (!res.ok) {
       throw new Error(`Failed to load month index: ${res.status}`);
     }
 
+    monthFetchCache.clear();
     monthIndex = await res.json();
+    monthCounts = new Map();
 
     const allKeys = Object.keys(monthIndex);
 
     // pull out no-date bucket
     noDateIds = Array.isArray(monthIndex[NO_DATE_KEY]) ? monthIndex[NO_DATE_KEY] : [];
+    noDateCount = noDateIds.length;
 
     // months = all keys except NO_DATE_KEY, newest → oldest
     months = allKeys
@@ -215,16 +379,15 @@
             .sort()
             .reverse();
 
-    // globalIds = all dated months (newest → oldest), then no-date
-    globalIds = [];
-    for (const month of months) {
-      const ids = monthIndex[month];
-      if (Array.isArray(ids)) {
-        globalIds.push(...ids);
-      }
-    }
-    if (noDateIds.length > 0) {
-      globalIds.push(...noDateIds);
+    rebuildGlobalIds();
+  }
+
+  async function loadMonthIndex() {
+    try {
+      await loadManifestMonthIndex();
+    } catch (manifestError) {
+      console.warn('Failed to load month manifest, falling back to legacy month_index.json', manifestError);
+      await loadLegacyMonthIndex();
     }
   }
 
@@ -343,12 +506,55 @@
     return phrase || null;
   }
 
-  async function applyFiltersAndSearch() {
+  async function setActiveIds(nextIds, options = {}) {
+    const { preservePage = false, previousPage = 1 } = options;
+    activeIds = nextIds;
+    const safeTotalPages = Math.max(1, Math.ceil(nextIds.length / pageSize));
+    const targetPage = preservePage
+            ? Math.min(Math.max(previousPage, 1), safeTotalPages)
+            : 1;
+    await loadPage(targetPage);
+  }
+
+  async function applyFiltersAndSearch(options = {}) {
+    const { preservePage = false } = options;
+    const previousPage = currentPage;
+
+    const trimmedSearch = (searchTerm || '').trim();
+    const searchActive = trimmedSearch.length > 0;
+    const hasInstitutionFilter = selectedInstitutions.length > 0;
+
+    const monthsToLoad =
+            selectedMonths.length > 0
+                    ? selectedMonths.filter((m) => m !== NO_DATE_KEY)
+                    : searchActive || hasInstitutionFilter
+                            ? months
+                            : [];
+    const shouldLoadNoDate =
+            selectedMonths.includes(NO_DATE_KEY) ||
+            (selectedMonths.length === 0 && (searchActive || hasInstitutionFilter) && noDateCount > 0);
+
+    try {
+      if (monthsToLoad.length) {
+        await ensureMonthsLoaded(monthsToLoad);
+      }
+      if (shouldLoadNoDate && !noDateIds.length) {
+        await ensureMonthsLoaded([NO_DATE_KEY]);
+      }
+    } catch (e) {
+      console.error(e);
+      error = e.message;
+      return;
+    }
+
+    rebuildGlobalIds();
+
     const baseIds = getBaseIdsFromFilters();
     const baseIdsSet = new Set(baseIds);
     const quotedPhrase = getQuotedPhrase(searchTerm);
     const phraseTokens = quotedPhrase ? getSearchTokens(quotedPhrase) : [];
     const useExactPhraseSearch = quotedPhrase && phraseTokens.length > 1;
+    const setOptions = { preservePage, previousPage };
 
     if (useExactPhraseSearch) {
       searchLoading = true;
@@ -378,15 +584,11 @@
           }
         }
 
-        activeIds = matchedIds;
-        currentPage = 1;
-        await loadPage(1);
+        await setActiveIds(matchedIds, setOptions);
       } catch (e) {
         console.error(e);
         searchError = e.message;
-        activeIds = [];
-        currentPage = 1;
-        await loadPage(1);
+        await setActiveIds([], setOptions);
       } finally {
         searchLoading = false;
       }
@@ -397,9 +599,7 @@
 
     // No search term: just filtered timeline
     if (tokens.length === 0) {
-      activeIds = baseIds;
-      currentPage = 1;
-      await loadPage(1);
+      await setActiveIds(baseIds, setOptions);
       return;
     }
 
@@ -413,9 +613,7 @@
     );
 
     if (shardKeys.length === 0) {
-      activeIds = [];
-      currentPage = 1;
-      await loadPage(1);
+      await setActiveIds([], setOptions);
       return;
     }
 
@@ -429,9 +627,7 @@
     }
 
     if (shardMap.size === 0) {
-      activeIds = [];
-      currentPage = 1;
-      await loadPage(1);
+      await setActiveIds([], setOptions);
       return;
     }
 
@@ -456,9 +652,7 @@
     }
 
     if (scoreMap.size === 0) {
-      activeIds = [];
-      currentPage = 1;
-      await loadPage(1);
+      await setActiveIds([], setOptions);
       return;
     }
 
@@ -471,9 +665,7 @@
     }
 
     if (buckets.size === 0) {
-      activeIds = [];
-      currentPage = 1;
-      await loadPage(1);
+      await setActiveIds([], setOptions);
       return;
     }
 
@@ -483,12 +675,10 @@
       filteredBySearch.push(...buckets.get(score));
     }
 
-    activeIds = filteredBySearch;
-    currentPage = 1;
-    await loadPage(1);
+    await setActiveIds(filteredBySearch, setOptions);
   }
 
-    // --- Paging + article loading ---
+  // --- Paging + article loading ---
 
   async function getArticleById(id) {
     if (articleCache.has(id)) return articleCache.get(id);
@@ -682,6 +872,22 @@
     exporting = true;
 
     try {
+      const targetMonths = selectedMonths.length ? selectedMonths : months;
+      const missingMonths = targetMonths.filter(
+              (m) =>
+                      m !== NO_DATE_KEY &&
+                      !monthIndex[m] &&
+                      !(monthCounts.has(m) && monthCounts.get(m) === 0)
+      );
+      const needsNoDateLoad =
+              (selectedMonths.includes(NO_DATE_KEY) || (selectedMonths.length === 0 && noDateCount > 0)) &&
+              !noDateIds.length;
+
+      if (missingMonths.length || needsNoDateLoad) {
+        await ensureMonthsLoaded([...missingMonths, ...(needsNoDateLoad ? [NO_DATE_KEY] : [])]);
+        await applyFiltersAndSearch({ preservePage: true });
+      }
+
       const useFullDataset =
               isUnfiltered() ||
               activeIds.length > EXPORT_FULL_DATA_THRESHOLD ||
@@ -1197,7 +1403,7 @@
                           <span>{formatMonthLabel(month)}</span>
                         </label>
                       {/each}
-                      {#if noDateIds.length && showNoDateOption}
+                      {#if showNoDateOption}
                         <label class="dropdown-option">
                           <input
                                   type="checkbox"
