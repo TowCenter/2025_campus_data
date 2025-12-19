@@ -1263,6 +1263,10 @@
           </div>
         </section>
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
         <!-- Results -->
         <section class="results-section">
           <div class="results-header">
