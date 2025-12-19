@@ -1755,7 +1755,7 @@
   .search-export-row {
     display: flex;
     gap: 1rem;
-    align-items: center;
+    align-items: start;
     flex-wrap: nowrap;
   }
 
