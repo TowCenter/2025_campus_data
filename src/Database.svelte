@@ -1799,10 +1799,11 @@
   }
 
   .quick-search-btn {
-    background: #f0f0f0;
-    border: 1px solid #ccc;
+    background: #254c6f33;
+    border: 1px solid #254c6f;
     padding: 0.25rem 0.75rem;
     font-size: 0.85rem;
+    color: #43485a;
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: "Graphik Web", sans-serif;
