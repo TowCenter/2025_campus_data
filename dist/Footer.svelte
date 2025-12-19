@@ -1,5 +1,5 @@
 <script>
-	import towLogo from '../../demo-app/src/lib/assets/Tow Center Logo.png';
+	import towLogo from './assets/Tow Center Logo.png';
 </script>
 
 <div id="footer">
