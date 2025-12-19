@@ -1262,6 +1262,7 @@
                     <button type="button" class="quick-search-btn" onclick={() => quickSearch('"Immigration and Customs Enforcement"')}>ICE</button>
                     <button type="button" class="quick-search-btn" onclick={() => quickSearch('"Office of Civil Rights"')}>Office of Civil Rights</button>
                     <button type="button" class="quick-search-btn" onclick={() => quickSearch('visa')}>visa</button>
+                    <button type="button" class="quick-search-btn" onclick={() => quickSearch('antisemitism')}>antisemitism</button>
 
                   </div>
                   {#if searchError}
