@@ -6,7 +6,7 @@
    * Data is stored in AWS S3 and loaded incrementally for performance.
    *
    * Data Architecture:
-   * - year_index/{YEAR}.json: Per-year month -> article IDs for chronological filtering
+   * - month_index/{year}.json: Per-year month to article IDs for chronological filtering
    * - institution_index.json: Maps institutions to article IDs for institution filtering
    * - articles/: Individual JSON files per article, loaded on demand
    * - search_index/: Pre-built search indices for fast keyword matching
@@ -28,15 +28,10 @@
   import { onMount } from 'svelte';
 
   // AWS S3 data URLs - all data is hosted in a public S3 bucket
-  const YEAR_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/year_index';
-  const YEAR_INDEX_MANIFEST_URL = `${YEAR_INDEX_BASE_URL}/manifest.json`; // preferred: { "2025": { "2025-12": count, ... }, ... }
-  const YEAR_INDEX_FALLBACK_START_YEAR = 2020;
+  const MONTH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index';
+  const MONTH_INDEX_MANIFEST_URL = `${MONTH_INDEX_BASE_URL}/manifest.json`; // { "2025": { "2025-12": count, ... }, ... }
   const INSTITUTION_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index';
-  const INSTITUTION_SHARDS = [
-    ...'abcdefghijklmnopqrstuvwxyz'.split(''),
-    '0-9',
-    'other'
-  ];
+  const INSTITUTION_INDEX_MANIFEST_URL = `${INSTITUTION_INDEX_BASE_URL}/manifest.json`;
   const ARTICLE_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/articles';
   const SEARCH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/search_index';
   const FULL_DATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
@@ -46,11 +41,8 @@
 
   // Special keys for items without dates or organizations
   const NO_DATE_KEY = '_no_date';
-  const YEAR_INDEX_NO_DATE_URL = `${YEAR_INDEX_BASE_URL}/${NO_DATE_KEY}.json`;
+  const MONTH_INDEX_NO_DATE_URL = `${MONTH_INDEX_BASE_URL}/${NO_DATE_KEY}.json`;
   const NO_ORG_KEY = '_no_org';
-
-  // Metadata - manually update this date when data is refreshed
-  const lastUpdated = 'December 6, 2025';
 
   // monthIndex: { "YYYY-MM": ["id1","id2",...], "_no_date": ["idX",...] }
   let monthIndex = {};
@@ -62,13 +54,14 @@
   let institutionIndexPromise = null;
   let monthFiltersReady = false;
   let manifestMonthCounts = new Map();
-  let manifestTotalCount = 0;
+  let institutionShards = null;
 
   let months = [];        // real months only, e.g. ["2025-11","2025-10",...]
   let institutions = [];  // institution names (no _no_org)
 
   let noDateIds = [];     // from monthIndex[NO_DATE_KEY] if present
   let noDateLoaded = false;
+  let resultsSectionEl = null;
 
   // Filters (multi-select)
   let selectedMonths = [];        // [] = all months
@@ -103,8 +96,8 @@
 
   // Caching
   let initialized = false;
-  const loadedYears = new Set();
-  let backgroundYearLoad = null;
+  const loadedMonthFiles = new Set();
+  let backgroundMonthLoad = null;
 
   // Cache of article JSONs
   const articleCache = new Map();
@@ -211,7 +204,7 @@
       initialized = true;  // mark as ready after success
 
       // now that first page is ready, start background loads
-      startBackgroundYearLoad(remainingYears, fromManifest, loadErrors);
+      startBackgroundMonthLoad(remainingYears, fromManifest, loadErrors);
       // start background load of institution index
       startInstitutionIndexLoad();
     } catch (e) {
@@ -222,149 +215,36 @@
     }
   }
 
-  function buildFallbackYearList() {
-    const currentYear = new Date().getFullYear();
-    const years = [];
-    for (let year = currentYear; year >= YEAR_INDEX_FALLBACK_START_YEAR; year -= 1) {
-      years.push(String(year));
-    }
-    return years;
-  }
-
-  function getManifestYearTotals(manifest) {
-    if (!manifest) return new Map();
-
-    const totals = new Map();
-    const addCount = (year, count) => {
-      const numeric = Number(count) || 0;
-      if (!year || Number.isNaN(Number(year)) || numeric <= 0) return;
-      const prev = totals.get(year) || 0;
-      totals.set(year, prev + numeric);
-    };
-
-    if (Array.isArray(manifest)) {
-      for (const entry of manifest) {
-        const key = entry?.key;
-        const count = entry?.count;
-        if (typeof key === 'string') {
-          const match = key.match(/^(\d{4})-/);
-          if (match) addCount(match[1], count);
-        }
-      }
-    } else if (manifest && typeof manifest === 'object') {
-      for (const [year, months] of Object.entries(manifest)) {
-        if (months && typeof months === 'object') {
-          const total = Object.values(months).reduce((sum, val) => sum + (Number(val) || 0), 0);
-          addCount(year, total);
-        }
-      }
-    }
-
-    return totals;
-  }
-
-  function hydrateManifestCounts(manifest) {
-    manifestMonthCounts = new Map();
-    manifestTotalCount = 0;
-
-    if (!manifest || typeof manifest !== 'object') return;
-
-    if (Array.isArray(manifest)) {
-      for (const entry of manifest) {
-        const key = entry?.key;
-        const count = Number(entry?.count) || 0;
-        if (typeof key === 'string' && count > 0) {
-          manifestMonthCounts.set(key, count);
-          manifestTotalCount += count;
-        }
-      }
-      return;
-    }
-
-    for (const months of Object.values(manifest)) {
-      if (months && typeof months === 'object') {
-        for (const [month, count] of Object.entries(months)) {
-          const numeric = Number(count) || 0;
-          if (numeric > 0) {
-            manifestMonthCounts.set(month, numeric);
-            manifestTotalCount += numeric;
-          }
-        }
-      }
-    }
-  }
-
-  function normalizeYearList(data) {
-    if (!data) return null;
-
-    const years = [];
-
-    const addYear = (val) => {
-      const yearStr = String(val || '').trim();
-      if (/^\d{4}$/.test(yearStr)) {
-        years.push(yearStr);
-      }
-    };
-
-    if (Array.isArray(data) && data.length) {
-      for (const item of data) {
-        if (typeof item === 'string' || typeof item === 'number') {
-          addYear(item);
-        } else if (item && typeof item === 'object' && typeof item.key === 'string') {
-          const match = item.key.match(/^(\d{4})-/);
-          if (match) addYear(match[1]);
-        }
-      }
-      return years.length ? years : null;
-    }
-
-    if (typeof data === 'object') {
-      const keys = Object.keys(data);
-      if (keys.length) {
-        keys.forEach((k) => addYear(k));
-        return years.length ? years : null;
-      }
-    }
-
-    return null;
-  }
-
   function sortYearsDesc(years) {
     return Array.from(new Set(years)).sort((a, b) => Number(b) - Number(a));
   }
 
-  async function getYearIndexYears() {
-    let manifestData = null;
+  async function getMonthIndexYears() {
     try {
-      const res = await fetch(YEAR_INDEX_MANIFEST_URL);
-      if (res.ok) {
-        manifestData = await res.json();
-        const normalized = normalizeYearList(manifestData);
-        if (normalized) {
-          return { years: sortYearsDesc(normalized), fromManifest: true, manifest: manifestData };
-        }
+      const res = await fetch(MONTH_INDEX_MANIFEST_URL);
+      if (!res.ok) {
+        throw new Error(`Failed to load manifest: ${res.status}`);
+      }
+
+      const manifestData = await res.json();
+
+      const years = Object.keys(manifestData).filter((key) => /^\d{4}$/.test(key));
+
+      if (years.length > 0) {
+        return {
+          years: sortYearsDesc(years),
+          fromManifest: true,
+          manifest: manifestData
+        };
       }
     } catch (e) {
-      console.warn('Failed to load year index manifest', e);
+      console.warn('Failed to load month index manifest', e);
     }
 
-    try {
-      const res = await fetch(YEAR_INDEX_LIST_URL);
-      if (res.ok) {
-        const data = await res.json();
-        const normalized = normalizeYearList(data);
-        if (normalized) {
-          return { years: sortYearsDesc(normalized), fromManifest: true, manifest: manifestData };
-        }
-      }
-    } catch (e) {
-      console.warn('Failed to load year list manifest', e);
-    }
-
-    return { years: buildFallbackYearList(), fromManifest: false, manifest: manifestData };
+    throw new Error('Month index manifest not available');
   }
 
-  function mergeYearData(data) {
+  function mergeMonthData(data) {
     let updated = false;
     if (data && typeof data === 'object') {
       for (const [key, ids] of Object.entries(data)) {
@@ -406,10 +286,10 @@
     }
   }
 
-  async function loadYearFile(year) {
-    const res = await fetch(`${YEAR_INDEX_BASE_URL}/${year}.json`);
+  async function loadMonthIndexFile(year) {
+    const res = await fetch(`${MONTH_INDEX_BASE_URL}/${year}.json`);
     if (!res.ok) {
-      throw new Error(`Failed to load year index ${year}: ${res.status}`);
+      throw new Error(`Failed to load month index ${year}: ${res.status}`);
     }
     const data = await res.json();
     return data;
@@ -427,7 +307,7 @@
 
   async function loadNoDateIndex() {
     try {
-      const res = await fetch(YEAR_INDEX_NO_DATE_URL);
+      const res = await fetch(MONTH_INDEX_NO_DATE_URL);
       if (res.status === 404) return null;
       if (!res.ok) {
         throw new Error(`Failed to load no-date index: ${res.status}`);
@@ -447,16 +327,24 @@
   }
 
   async function loadMonthIndex() {
-    const { years: yearsToLoad, fromManifest, manifest } = await getYearIndexYears();
+    const { years: yearsToLoad, fromManifest, manifest } = await getMonthIndexYears();
     if (!yearsToLoad || yearsToLoad.length === 0) {
-      throw new Error('No year indexes available');
+      throw new Error('No month indexes available');
     }
-    hydrateManifestCounts(manifest);
+
+    manifestMonthCounts = new Map();
+    if (manifest) {
+      for (const yearData of Object.values(manifest)) {
+        for (const [key, count] of Object.entries(yearData)) {
+          manifestMonthCounts.set(key, count);
+        }
+      }
+    }
 
     const sortedYears = sortYearsDesc(yearsToLoad);
     const [newestYear, ...otherYears] = sortedYears;
     if (!newestYear) {
-      throw new Error('No year indexes available');
+      throw new Error('No month indexes available');
     }
 
     const initialYears = [newestYear];
@@ -465,9 +353,9 @@
 
     for (const year of initialYears) {
       try {
-        const data = await loadYearFile(year);
-        loadedYears.add(year);
-        mergeYearData(data);
+        const data = await loadMonthIndexFile(year);
+        loadedMonthFiles.add(year);
+        mergeMonthData(data);
       } catch (e) {
         loadErrors.push(e);
       }
@@ -476,22 +364,22 @@
     finalizeMonthIndex();
 
     if (Object.keys(monthIndex).length === 0) {
-      const message = loadErrors[0]?.message || 'Failed to load year indexes';
+      const message = loadErrors[0]?.message || 'Failed to load month indexes';
       throw new Error(message);
     }
 
     return { remainingYears, fromManifest, loadErrors };
   }
 
-  function startBackgroundYearLoad(remainingYears, fromManifest, loadErrors = []) {
+  function startBackgroundMonthLoad(remainingYears, fromManifest, loadErrors = []) {
     const needsNoDate = !noDateLoaded;
     if ((!remainingYears || remainingYears.length === 0) && !needsNoDate) return;
-    backgroundYearLoad = (async () => {
+    backgroundMonthLoad = (async () => {
       const tasks = [];
       if (remainingYears && remainingYears.length > 0) {
         tasks.push(
                 ...remainingYears.map((year) =>
-                        loadYearFile(year).then((data) => ({ type: 'year', year, data }))
+                        loadMonthIndexFile(year).then((data) => ({ type: 'monthFile', year, data }))
                 )
         );
       }
@@ -507,17 +395,17 @@
       for (const result of backgroundResults) {
         if (result.status === 'fulfilled') {
           const payload = result.value;
-          if (payload.type === 'year') {
+          if (payload.type === 'monthFile') {
             const { year, data } = payload;
-            if (!loadedYears.has(year)) {
-              loadedYears.add(year);
-              updated = mergeYearData(data) || updated;
+            if (!loadedMonthFiles.has(year)) {
+              loadedMonthFiles.add(year);
+              updated = mergeMonthData(data) || updated;
             }
           } else if (payload.type === 'noDate') {
             noDateLoaded = true;
             const normalized = normalizeNoDateData(payload.data);
             if (normalized) {
-              updated = mergeYearData(normalized) || updated;
+              updated = mergeMonthData(normalized) || updated;
             }
           }
         } else {
@@ -531,7 +419,7 @@
       }
 
       if (loadErrors.length > 0 && fromManifest) {
-        console.warn('Some year index files failed to load', loadErrors);
+        console.warn('Some month index files failed to load', loadErrors);
       }
       monthFiltersReady = true;
     })();
@@ -541,10 +429,38 @@
     const url = `${INSTITUTION_INDEX_BASE_URL}/${shard}.json`;
     const res = await fetch(url);
     if (!res.ok) {
-      if (res.status === 404) return null; // shard not present
       throw new Error(`Failed to load institution index shard ${shard}: ${res.status}`);
     }
     return res.json();
+  }
+
+  async function getInstitutionShards() {
+    if (Array.isArray(institutionShards) && institutionShards.length > 0) {
+      return institutionShards;
+    }
+
+    try {
+      const res = await fetch(INSTITUTION_INDEX_MANIFEST_URL);
+      if (!res.ok) {
+        throw new Error(`Failed to load institution manifest: ${res.status}`);
+      }
+
+      const manifest = await res.json();
+      const shards = Object.keys(manifest || {}).filter(
+              (key) => manifest[key] && typeof manifest[key] === 'object'
+      );
+
+      if (shards.length === 0) {
+        throw new Error('Institution manifest is empty');
+      }
+
+      institutionShards = shards;
+      return institutionShards;
+    } catch (e) {
+      console.warn('Failed to load institution manifest', e);
+      institutionShards = null;
+      throw e;
+    }
   }
 
   async function loadInstitutionIndex() {
@@ -552,8 +468,13 @@
     institutionIndexError = null;
 
     try {
+      const shards = await getInstitutionShards();
+      if (!shards || shards.length === 0) {
+        throw new Error('Institution index manifest not available');
+      }
+
       const results = await Promise.allSettled(
-              INSTITUTION_SHARDS.map((shard) =>
+              shards.map((shard) =>
                       loadInstitutionShard(shard).then((data) => ({ shard, data }))
               )
       );
@@ -647,30 +568,25 @@
       return baseIds.length;
     }
 
+    const monthCount = (key) => {
+      const manifestVal = manifestMonthCounts.get(key);
+      if (typeof manifestVal === 'number' && manifestVal >= 0) return manifestVal;
+      const ids = monthIndex[key];
+      return Array.isArray(ids) ? ids.length : 0;
+    };
+
     if (selectedMonths.length === 0) {
-      const noDateCount = Array.isArray(monthIndex[NO_DATE_KEY]) ? monthIndex[NO_DATE_KEY].length : 0;
-      const manifestHasNoDate = manifestMonthCounts.has(NO_DATE_KEY);
-      const manifestCount = manifestTotalCount || 0;
-      const total = manifestCount + (manifestHasNoDate ? 0 : noDateCount);
-      return Math.max(baseIds.length, total);
+      const manifestCount = Array.from(manifestMonthCounts.values()).reduce(
+              (sum, val) => sum + (Number(val) || 0),
+              0
+      );
+      return Math.max(baseIds.length, manifestCount);
     }
 
-    let total = 0;
-    const monthSet = new Set(selectedMonths);
-    for (const month of monthSet) {
-      if (month === NO_DATE_KEY) {
-        if (manifestMonthCounts.has(NO_DATE_KEY)) {
-          total += manifestMonthCounts.get(NO_DATE_KEY);
-        } else if (Array.isArray(monthIndex[NO_DATE_KEY])) {
-          total += monthIndex[NO_DATE_KEY].length;
-        }
-      } else if (manifestMonthCounts.has(month)) {
-        total += manifestMonthCounts.get(month);
-      } else if (Array.isArray(monthIndex[month])) {
-        total += monthIndex[month].length;
-      }
-    }
-
+    const total = Array.from(new Set(selectedMonths)).reduce(
+            (sum, month) => sum + monthCount(month),
+            0
+    );
     return Math.max(baseIds.length, total);
   }
 
@@ -1176,9 +1092,15 @@
     return () => document.removeEventListener('click', handleClickOutside);
   });
 
-  function changePage(newPage) {
+  function scrollToResults() {
+    if (!resultsSectionEl) return;
+    resultsSectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function changePage(newPage) {
     if (newPage < 1 || newPage > totalPages || loadingArticles) return;
-    loadPage(newPage);
+    await loadPage(newPage);
+    scrollToResults();
   }
 
   function formatMonthLabel(key) {
@@ -1671,7 +1593,7 @@
         </section>
 
         <!-- Results -->
-        <section class="results-section">
+        <section class="results-section" bind:this={resultsSectionEl}>
           <div class="results-header">
             <h3>Results</h3>
             <p class="results-meta">
@@ -1979,7 +1901,7 @@
 
   .filters-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(260px, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
     margin-bottom: 0.5rem;
     align-items: start;
@@ -1993,7 +1915,6 @@
 
   .search-wrapper {
     flex: 1 1 auto;
-    min-width: 250px;
     max-width: 100%;
     min-height: 100%;
   }
@@ -2191,7 +2112,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    flex: 0 0 auto;
+    flex: 0 1 auto;
   }
 
   .search-help {
