@@ -35,6 +35,7 @@
   const ARTICLE_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/articles';
   const SEARCH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/search_index';
   const FULL_DATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
+  const MIN_YEAR = 2025;
 
   // Performance threshold: if export exceeds this many items, load full dataset at once
   const EXPORT_FULL_DATA_THRESHOLD = 1000;
@@ -60,7 +61,7 @@
   let institutions = [];  // institution names (no _no_org)
 
   let noDateIds = [];     // from monthIndex[NO_DATE_KEY] if present
-  let noDateLoaded = false;
+  let noDateLoaded = true; // ignore no-date bucket for display
   let resultsSectionEl = null;
 
   // Filters (multi-select)
@@ -228,7 +229,9 @@
 
       const manifestData = await res.json();
 
-      const years = Object.keys(manifestData).filter((key) => /^\d{4}$/.test(key));
+      const years = Object.keys(manifestData).filter(
+              (key) => /^\d{4}$/.test(key) && Number(key) >= MIN_YEAR
+      );
 
       if (years.length > 0) {
         return {
@@ -264,12 +267,13 @@
     const manifestKeys = Array.from(manifestMonthCounts.keys());
     const allKeys = Array.from(new Set([...Object.keys(monthIndex), ...manifestKeys]));
 
-    // pull out no-date bucket
-    noDateIds = Array.isArray(monthIndex[NO_DATE_KEY]) ? monthIndex[NO_DATE_KEY] : [];
-
     // months = all keys except NO_DATE_KEY, newest → oldest
     months = allKeys
-            .filter((k) => k !== NO_DATE_KEY)
+            .filter((k) => {
+              if (k === NO_DATE_KEY) return false;
+              const year = Number((k || '').split('-')[0]);
+              return Number.isFinite(year) && year >= MIN_YEAR;
+            })
             .sort()
             .reverse();
 
@@ -281,9 +285,7 @@
         globalIds.push(...ids);
       }
     }
-    if (noDateIds.length > 0) {
-      globalIds.push(...noDateIds);
-    }
+    noDateIds = []; // exclude no-date bucket from filters/results
   }
 
   async function loadMonthIndexFile(year) {
@@ -334,9 +336,15 @@
 
     manifestMonthCounts = new Map();
     if (manifest) {
-      for (const yearData of Object.values(manifest)) {
-        for (const [key, count] of Object.entries(yearData)) {
-          manifestMonthCounts.set(key, count);
+      for (const [yearKey, yearData] of Object.entries(manifest)) {
+        if (!/^\d{4}$/.test(yearKey) || Number(yearKey) < MIN_YEAR) continue;
+        if (yearData && typeof yearData === 'object') {
+          for (const [key, count] of Object.entries(yearData)) {
+            const year = Number((key || '').split('-')[0]);
+            if (Number.isFinite(year) && year >= MIN_YEAR) {
+              manifestMonthCounts.set(key, count);
+            }
+          }
         }
       }
     }
@@ -2112,7 +2120,6 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    flex: 0 1 auto;
   }
 
   .search-help {

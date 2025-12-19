@@ -35,8 +35,10 @@
   // AWS S3 configuration
   const LOCATION_DATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/location.json';
   const S3_BUCKET_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
-  const MONTH_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index.json';
-  const INSTITUTION_INDEX_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index.json';
+  const MONTH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index';
+  const MONTH_INDEX_MANIFEST_URL = `${MONTH_INDEX_BASE_URL}/manifest.json`; // { "2025": { "2025-12": count, ... }, ... }
+  const INSTITUTION_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index';
+  const INSTITUTION_INDEX_MANIFEST_URL = `${INSTITUTION_INDEX_BASE_URL}/manifest.json`; // { "a": { "American University": 503, ... }, ... }
   let schoolData = [];
   let allArticles = [];
   let articlesByDate = {};
@@ -426,26 +428,47 @@
   }
 
   async function loadMonthIndex() {
-    const res = await fetch(MONTH_INDEX_URL);
-    if (!res.ok) return null;
-    const data = await res.json();
-    let total = 0;
-    Object.keys(data).forEach((key) => {
-      const arr = data[key];
-      if (Array.isArray(arr)) total += arr.length;
-    });
-    indexTotalRecords = total;
-    return data;
+    try {
+      const res = await fetch(MONTH_INDEX_MANIFEST_URL);
+      if (!res.ok) throw new Error('Failed to load month index manifest');
+      const manifest = await res.json();
+
+      let total = 0;
+      Object.values(manifest || {}).forEach((yearData) => {
+        if (yearData && typeof yearData === 'object') {
+          Object.values(yearData).forEach((count) => {
+            const num = Number(count);
+            if (Number.isFinite(num)) {
+              total += num;
+            }
+          });
+        }
+      });
+
+      indexTotalRecords = total;
+      return manifest;
+    } catch (err) {
+      console.warn('Could not load month index manifest:', err);
+      return null;
+    }
   }
 
   async function loadInstitutionIndex() {
     try {
-      const res = await fetch(INSTITUTION_INDEX_URL);
-      if (!res.ok) throw new Error('Failed to load institution index');
-      const data = await res.json();
-      institutionIndex = data;
-      institutionNames = Object.keys(data).filter((k) => k !== '_no_org');
-      return data;
+      const res = await fetch(INSTITUTION_INDEX_MANIFEST_URL);
+      if (!res.ok) throw new Error('Failed to load institution manifest');
+      const manifest = await res.json();
+
+      const mergedInstitutions = {};
+      Object.values(manifest || {}).forEach((shard) => {
+        if (shard && typeof shard === 'object') {
+          Object.assign(mergedInstitutions, shard);
+        }
+      });
+
+      institutionIndex = mergedInstitutions;
+      institutionNames = Object.keys(mergedInstitutions).filter((k) => k !== '_no_org');
+      return manifest;
     } catch (err) {
       console.warn('Could not load institution index:', err);
       institutionIndexLoadFailed = true;
