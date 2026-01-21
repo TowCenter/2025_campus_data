@@ -110,6 +110,8 @@
   let searchError = null;
   let searchTimeout;
   let searchProgress = 0;
+  let searchAbortController = null;
+  let searchRunId = 0;
   let exporting = false;
   let exportProgress = 0;
   // shardKey -> { token: [ids...] }
@@ -611,7 +613,24 @@
     return null; // no shard for non-letter queries
   }
 
-  async function ensureShardLoaded(shardKey, onProgress = null) {
+  function startSearchRun() {
+    searchRunId += 1;
+    if (searchAbortController) {
+      searchAbortController.abort();
+    }
+    searchAbortController = new AbortController();
+    return { runId: searchRunId, signal: searchAbortController.signal };
+  }
+
+  function isActiveSearch(runId) {
+    return runId === searchRunId;
+  }
+
+  function isAbortError(error) {
+    return error && error.name === 'AbortError';
+  }
+
+  async function ensureShardLoaded(shardKey, onProgress = null, options = {}) {
     if (!shardKey) return null;
 
     if (searchShardCache.has(shardKey)) {
@@ -622,11 +641,15 @@
       const shard = await fetchJsonWithProgress(
               `${SEARCH_INDEX_BASE_URL}/${shardKey}.json`,
               onProgress,
-              { errorLabel: `search index shard '${shardKey}'` }
+              {
+                ...options,
+                errorLabel: options.errorLabel || `search index shard '${shardKey}'`
+              }
       );
       searchShardCache.set(shardKey, shard);
       return shard;
     } catch (e) {
+      if (isAbortError(e)) return null;
       console.error(e);
       searchError = e.message;
       return null;
@@ -655,6 +678,7 @@
   }
 
   async function applyFiltersAndSearch() {
+    const { runId, signal } = startSearchRun();
     const baseIds = getBaseIdsFromFilters();
     const baseIdsSet = new Set(baseIds);
     const quotedPhrase = getQuotedPhrase(searchTerm);
@@ -669,19 +693,25 @@
 
       try {
         const progressHandler = (loaded, total) => {
-          searchProgress = Math.min(1, loaded / total);
+          if (!isActiveSearch(runId)) return;
+          if (total && total > 0) {
+            searchProgress = Math.min(1, loaded / total);
+          } else {
+            searchProgress = Math.min(0.95, searchProgress + 0.02);
+          }
         };
         const shouldTrackProgress = !fullDatasetCache && !fullDatasetMap;
         const datasetMap = await ensureFullDatasetMap(
-                shouldTrackProgress ? progressHandler : null
+                shouldTrackProgress ? progressHandler : null,
+                { signal }
         );
-        if (!shouldTrackProgress) {
-          searchProgress = 1;
-        }
+        if (!isActiveSearch(runId)) return;
+        searchProgress = 1;
         const phraseRegex = new RegExp(`(^|\\b)${escapeRegExp(quotedPhrase)}(\\b|$)`, 'i');
         const matchedIds = [];
 
         for (const id of baseIds) {
+          if (!isActiveSearch(runId)) return;
           let item;
           try {
             item = await getArticleForSearch(id, datasetMap);
@@ -700,19 +730,25 @@
           }
         }
 
+        if (!isActiveSearch(runId)) return;
         activeIds = matchedIds;
         expectedTotalCount = matchedIds.length;
         currentPage = 1;
-        await loadPage(1);
+        if (!isActiveSearch(runId)) return;
+        await loadPage(1, { runId });
       } catch (e) {
+        if (isAbortError(e)) return;
         console.error(e);
         searchError = e.message;
         activeIds = [];
         expectedTotalCount = 0;
         currentPage = 1;
-        await loadPage(1);
+        if (!isActiveSearch(runId)) return;
+        await loadPage(1, { runId });
       } finally {
-        searchLoading = false;
+        if (isActiveSearch(runId)) {
+          searchLoading = false;
+        }
       }
       return;
     }
@@ -725,7 +761,7 @@
       searchLoading = false;
       activeIds = baseIds;
       currentPage = 1;
-      await loadPage(1);
+      await loadPage(1, { runId });
       return;
     }
 
@@ -743,7 +779,7 @@
       searchLoading = false;
       activeIds = [];
       currentPage = 1;
-      await loadPage(1);
+      await loadPage(1, { runId });
       return;
     }
 
@@ -755,12 +791,14 @@
     const totalShards = shardKeys.length;
     let loadedShards = 0;
     const updateProgress = (currentShardProgress) => {
+      if (!isActiveSearch(runId)) return;
       const normalized = Math.min(Math.max(currentShardProgress, 0), 1);
       searchProgress = Math.min(1, (loadedShards + normalized) / Math.max(totalShards, 1));
     };
 
     try {
       for (const key of shardKeys) {
+        if (!isActiveSearch(runId)) return;
         if (searchShardCache.has(key)) {
           loadedShards += 1;
           updateProgress(0);
@@ -770,13 +808,15 @@
 
         let shardProgress = 0;
         const shard = await ensureShardLoaded(key, (loaded, total) => {
+          if (!isActiveSearch(runId)) return;
           if (total && total > 0) {
             shardProgress = loaded / total;
           } else {
             shardProgress = Math.min(0.95, shardProgress + 0.02);
           }
           updateProgress(shardProgress);
-        });
+        }, { signal });
+        if (!isActiveSearch(runId)) return;
         loadedShards += 1;
         updateProgress(0);
         if (shard) {
@@ -785,10 +825,12 @@
       }
 
       if (shardMap.size === 0) {
+        if (!isActiveSearch(runId)) return;
         activeIds = [];
         expectedTotalCount = 0;
         currentPage = 1;
-        await loadPage(1);
+        if (!isActiveSearch(runId)) return;
+        await loadPage(1, { runId });
         return;
       }
 
@@ -813,10 +855,12 @@
       }
 
       if (scoreMap.size === 0) {
+        if (!isActiveSearch(runId)) return;
         activeIds = [];
         expectedTotalCount = 0;
         currentPage = 1;
-        await loadPage(1);
+        if (!isActiveSearch(runId)) return;
+        await loadPage(1, { runId });
         return;
       }
 
@@ -829,10 +873,12 @@
       }
 
       if (buckets.size === 0) {
+        if (!isActiveSearch(runId)) return;
         activeIds = [];
         expectedTotalCount = 0;
         currentPage = 1;
-        await loadPage(1);
+        if (!isActiveSearch(runId)) return;
+        await loadPage(1, { runId });
         return;
       }
 
@@ -842,12 +888,16 @@
         filteredBySearch.push(...buckets.get(score));
       }
 
+      if (!isActiveSearch(runId)) return;
       activeIds = filteredBySearch;
       expectedTotalCount = activeIds.length;
       currentPage = 1;
-      await loadPage(1);
+      if (!isActiveSearch(runId)) return;
+      await loadPage(1, { runId });
     } finally {
-      searchLoading = false;
+      if (isActiveSearch(runId)) {
+        searchLoading = false;
+      }
     }
   }
 
@@ -866,11 +916,16 @@
     return data;
   }
 
-  async function loadPage(page) {
+  async function loadPage(page, options = {}) {
+    const { runId = null } = options;
+    const isActiveRun = () => runId === null || isActiveSearch(runId);
+    if (!isActiveRun()) return;
+
     const ids = activeIds;
     const totalCount = Math.max(ids?.length || 0, expectedTotalCount || 0);
 
     if (!ids || ids.length === 0) {
+      if (!isActiveRun()) return;
       articles = [];
       currentPage = 1;
       totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -890,18 +945,24 @@
     const end = start + pageSize;
     const pageIds = ids.slice(start, end);
 
+    if (!isActiveRun()) return;
     loadingArticles = true;
     error = null;
 
     try {
       const promises = pageIds.map((id) => getArticleById(id));
 
-      articles = await Promise.all(promises);
+      const nextArticles = await Promise.all(promises);
+      if (!isActiveRun()) return;
+      articles = nextArticles;
     } catch (e) {
+      if (!isActiveRun()) return;
       console.error(e);
       error = e.message;
     } finally {
-      loadingArticles = false;
+      if (isActiveRun()) {
+        loadingArticles = false;
+      }
     }
   }
 
@@ -1020,8 +1081,8 @@
   }
 
   async function fetchJsonWithProgress(url, onProgress = null, options = {}) {
-    const { errorLabel = 'data' } = options;
-    const res = await fetch(url);
+    const { errorLabel = 'data', signal = null } = options;
+    const res = await fetch(url, signal ? { signal } : undefined);
     if (!res.ok) {
       throw new Error(`Failed to load ${errorLabel}: ${res.status}`);
     }
@@ -1050,11 +1111,12 @@
     return JSON.parse(result);
   }
 
-  async function getFullDataset(onProgress = null) {
+  async function getFullDataset(onProgress = null, options = {}) {
     if (fullDatasetCache && !onProgress) return fullDatasetCache;
 
     const data = await fetchJsonWithProgress(FULL_DATA_URL, onProgress, {
-      errorLabel: 'full dataset'
+      ...options,
+      errorLabel: options.errorLabel || 'full dataset'
     });
     fullDatasetCache = data;
     return data;
@@ -1065,9 +1127,9 @@
     return item.id || item._id?.$oid || item._id || item.document_id || null;
   }
 
-  async function ensureFullDatasetMap(onProgress = null) {
+  async function ensureFullDatasetMap(onProgress = null, options = {}) {
     if (fullDatasetMap) return fullDatasetMap;
-    const data = await getFullDataset(onProgress);
+    const data = await getFullDataset(onProgress, options);
     const map = new Map();
     if (Array.isArray(data)) {
       data.forEach((item) => {
