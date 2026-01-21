@@ -109,7 +109,9 @@
   let searchLoading = false;
   let searchError = null;
   let searchTimeout;
+  let searchProgress = 0;
   let exporting = false;
+  let exportProgress = 0;
   // shardKey -> { token: [ids...] }
   const searchShardCache = new Map();
   let fullDatasetCache = null;
@@ -117,6 +119,7 @@
 
   $: quotedPhraseDisplay = getQuotedPhrase(searchTerm);
   $: exactMatchActive = Boolean(quotedPhraseDisplay);
+  $: searchPercent = Math.round(Math.min(Math.max(searchProgress, 0), 1) * 100);
   $: searchMatchDescription = (() => {
     const trimmedTerm = (searchTerm || '').trim();
     if (!trimmedTerm) return '';
@@ -608,30 +611,25 @@
     return null; // no shard for non-letter queries
   }
 
-  async function ensureShardLoaded(shardKey) {
+  async function ensureShardLoaded(shardKey, onProgress = null) {
     if (!shardKey) return null;
 
     if (searchShardCache.has(shardKey)) {
       return searchShardCache.get(shardKey);
     }
 
-    searchLoading = true;
-    searchError = null;
-
     try {
-      const res = await fetch(`${SEARCH_INDEX_BASE_URL}/${shardKey}.json`);
-      if (!res.ok) {
-        throw new Error(`Failed to load search index shard '${shardKey}': ${res.status}`);
-      }
-      const shard = await res.json();
+      const shard = await fetchJsonWithProgress(
+              `${SEARCH_INDEX_BASE_URL}/${shardKey}.json`,
+              onProgress,
+              { errorLabel: `search index shard '${shardKey}'` }
+      );
       searchShardCache.set(shardKey, shard);
       return shard;
     } catch (e) {
       console.error(e);
       searchError = e.message;
       return null;
-    } finally {
-      searchLoading = false;
     }
   }
 
@@ -663,13 +661,23 @@
     const phraseTokens = quotedPhrase ? getSearchTokens(quotedPhrase) : [];
     const useExactPhraseSearch = quotedPhrase && phraseTokens.length > 1;
     expectedTotalCount = computeExpectedTotal(baseIds);
+    searchProgress = 0;
 
     if (useExactPhraseSearch) {
       searchLoading = true;
       searchError = null;
 
       try {
-        const datasetMap = await ensureFullDatasetMap();
+        const progressHandler = (loaded, total) => {
+          searchProgress = Math.min(1, loaded / total);
+        };
+        const shouldTrackProgress = !fullDatasetCache && !fullDatasetMap;
+        const datasetMap = await ensureFullDatasetMap(
+                shouldTrackProgress ? progressHandler : null
+        );
+        if (!shouldTrackProgress) {
+          searchProgress = 1;
+        }
         const phraseRegex = new RegExp(`(^|\\b)${escapeRegExp(quotedPhrase)}(\\b|$)`, 'i');
         const matchedIds = [];
 
@@ -713,6 +721,8 @@
 
     // No search term: just filtered timeline
     if (tokens.length === 0) {
+      searchProgress = 0;
+      searchLoading = false;
       activeIds = baseIds;
       currentPage = 1;
       await loadPage(1);
@@ -729,83 +739,116 @@
     );
 
     if (shardKeys.length === 0) {
+      searchProgress = 0;
+      searchLoading = false;
       activeIds = [];
       currentPage = 1;
       await loadPage(1);
       return;
     }
+
+    searchLoading = true;
+    searchError = null;
 
     // load all needed shards
     const shardMap = new Map();
-    for (const key of shardKeys) {
-      const shard = await ensureShardLoaded(key);
-      if (shard) {
-        shardMap.set(key, shard);
+    const totalShards = shardKeys.length;
+    let loadedShards = 0;
+    const updateProgress = (currentShardProgress) => {
+      const normalized = Math.min(Math.max(currentShardProgress, 0), 1);
+      searchProgress = Math.min(1, (loadedShards + normalized) / Math.max(totalShards, 1));
+    };
+
+    try {
+      for (const key of shardKeys) {
+        if (searchShardCache.has(key)) {
+          loadedShards += 1;
+          updateProgress(0);
+          shardMap.set(key, searchShardCache.get(key));
+          continue;
+        }
+
+        let shardProgress = 0;
+        const shard = await ensureShardLoaded(key, (loaded, total) => {
+          if (total && total > 0) {
+            shardProgress = loaded / total;
+          } else {
+            shardProgress = Math.min(0.95, shardProgress + 0.02);
+          }
+          updateProgress(shardProgress);
+        });
+        loadedShards += 1;
+        updateProgress(0);
+        if (shard) {
+          shardMap.set(key, shard);
+        }
       }
-    }
 
-    if (shardMap.size === 0) {
-      activeIds = [];
-      expectedTotalCount = 0;
-      currentPage = 1;
-      await loadPage(1);
-      return;
-    }
-
-    // Exact-match search; score by how many tokens an item matches, ordered by score then date
-    const scoreMap = new Map(); // id -> count of matched tokens
-
-    for (const term of tokens) {
-      const key = getShardKey(term);
-      if (!key) continue;
-
-      const shard = shardMap.get(key);
-      if (!shard) continue;
-
-      const ids = shard[term];
-      if (!Array.isArray(ids)) continue;
-
-      for (const id of ids) {
-        if (!baseIdsSet.has(id)) continue; // respect filters
-        const prev = scoreMap.get(id) || 0;
-        scoreMap.set(id, prev + 1);
+      if (shardMap.size === 0) {
+        activeIds = [];
+        expectedTotalCount = 0;
+        currentPage = 1;
+        await loadPage(1);
+        return;
       }
-    }
 
-    if (scoreMap.size === 0) {
-      activeIds = [];
-      expectedTotalCount = 0;
+      // Exact-match search; score by how many tokens an item matches, ordered by score then date
+      const scoreMap = new Map(); // id -> count of matched tokens
+
+      for (const term of tokens) {
+        const key = getShardKey(term);
+        if (!key) continue;
+
+        const shard = shardMap.get(key);
+        if (!shard) continue;
+
+        const ids = shard[term];
+        if (!Array.isArray(ids)) continue;
+
+        for (const id of ids) {
+          if (!baseIdsSet.has(id)) continue; // respect filters
+          const prev = scoreMap.get(id) || 0;
+          scoreMap.set(id, prev + 1);
+        }
+      }
+
+      if (scoreMap.size === 0) {
+        activeIds = [];
+        expectedTotalCount = 0;
+        currentPage = 1;
+        await loadPage(1);
+        return;
+      }
+
+      const buckets = new Map(); // score -> ids in base order
+      for (const id of baseIds) {
+        const score = scoreMap.get(id);
+        if (!score) continue;
+        if (!buckets.has(score)) buckets.set(score, []);
+        buckets.get(score).push(id);
+      }
+
+      if (buckets.size === 0) {
+        activeIds = [];
+        expectedTotalCount = 0;
+        currentPage = 1;
+        await loadPage(1);
+        return;
+      }
+
+      const sortedScores = [...buckets.keys()].sort((a, b) => b - a);
+      const filteredBySearch = [];
+      for (const score of sortedScores) {
+        filteredBySearch.push(...buckets.get(score));
+      }
+
+      activeIds = filteredBySearch;
+      expectedTotalCount = activeIds.length;
       currentPage = 1;
       await loadPage(1);
-      return;
+    } finally {
+      searchLoading = false;
     }
-
-    const buckets = new Map(); // score -> ids in base order
-    for (const id of baseIds) {
-      const score = scoreMap.get(id);
-      if (!score) continue;
-      if (!buckets.has(score)) buckets.set(score, []);
-      buckets.get(score).push(id);
-    }
-
-    if (buckets.size === 0) {
-      activeIds = [];
-      expectedTotalCount = 0;
-      currentPage = 1;
-      await loadPage(1);
-      return;
-    }
-
-    const sortedScores = [...buckets.keys()].sort((a, b) => b - a);
-    const filteredBySearch = [];
-    for (const score of sortedScores) {
-      filteredBySearch.push(...buckets.get(score));
-    }
-
-    activeIds = filteredBySearch;
-    expectedTotalCount = activeIds.length;
-    currentPage = 1;
-    await loadPage(1);
   }
 
     // --- Paging + article loading ---
@@ -976,15 +1019,45 @@
     await applyFiltersAndSearch();
   }
 
-  async function getFullDataset() {
-    if (fullDatasetCache) return fullDatasetCache;
-
-    const res = await fetch(FULL_DATA_URL);
+  async function fetchJsonWithProgress(url, onProgress = null, options = {}) {
+    const { errorLabel = 'data' } = options;
+    const res = await fetch(url);
     if (!res.ok) {
-      throw new Error(`Failed to load full dataset: ${res.status}`);
+      throw new Error(`Failed to load ${errorLabel}: ${res.status}`);
     }
-    fullDatasetCache = await res.json();
-    return fullDatasetCache;
+
+    const total = Number(res.headers.get('content-length')) || null;
+    const reader = res.body?.getReader ? res.body.getReader() : null;
+    if (!reader) {
+      const data = await res.json();
+      if (onProgress) onProgress(total || 1, total || 1);
+      return data;
+    }
+
+    const decoder = new TextDecoder();
+    let result = '';
+    let loaded = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      loaded += value?.length || 0;
+      result += decoder.decode(value, { stream: true });
+      if (onProgress) onProgress(loaded, total);
+    }
+    result += decoder.decode();
+    if (onProgress) onProgress(total || loaded, total);
+    return JSON.parse(result);
+  }
+
+  async function getFullDataset(onProgress = null) {
+    if (fullDatasetCache && !onProgress) return fullDatasetCache;
+
+    const data = await fetchJsonWithProgress(FULL_DATA_URL, onProgress, {
+      errorLabel: 'full dataset'
+    });
+    fullDatasetCache = data;
+    return data;
   }
 
   function getItemId(item) {
@@ -992,9 +1065,9 @@
     return item.id || item._id?.$oid || item._id || item.document_id || null;
   }
 
-  async function ensureFullDatasetMap() {
+  async function ensureFullDatasetMap(onProgress = null) {
     if (fullDatasetMap) return fullDatasetMap;
-    const data = await getFullDataset();
+    const data = await getFullDataset(onProgress);
     const map = new Map();
     if (Array.isArray(data)) {
       data.forEach((item) => {
@@ -1026,6 +1099,8 @@
     });
   }
 
+  $: exportPercent = Math.round(Math.min(Math.max(exportProgress, 0), 1) * 100);
+
   async function exportResults() {
     if (!activeIds || activeIds.length === 0) {
       alert('No data to export');
@@ -1033,6 +1108,7 @@
     }
 
     exporting = true;
+    exportProgress = 0;
 
     try {
       const useFullDataset =
@@ -1042,25 +1118,43 @@
       let articlesToExport;
 
       if (useFullDataset) {
+        const progressHandler = (loaded, total) => {
+          if (total && total > 0) {
+            exportProgress = Math.min(0.95, loaded / total);
+          } else {
+            exportProgress = Math.min(0.95, exportProgress + 0.02);
+          }
+        };
+
         if (isUnfiltered()) {
-          articlesToExport = await getFullDataset();
+          articlesToExport = await getFullDataset(progressHandler);
         } else {
-          const datasetMap = await ensureFullDatasetMap();
+          const datasetMap = await ensureFullDatasetMap(progressHandler);
           articlesToExport = activeIds
                   .map((id) => datasetMap.get(id))
                   .filter(Boolean);
         }
       } else {
-        articlesToExport = await Promise.all(activeIds.map((id) => getArticleById(id)));
+        const total = activeIds.length;
+        let completed = 0;
+        const track = async (id) => {
+          const article = await getArticleById(id);
+          completed += 1;
+          exportProgress = Math.min(1, completed / Math.max(total, 1));
+          return article;
+        };
+        articlesToExport = await Promise.all(activeIds.map((id) => track(id)));
       }
 
       const cleanData = cleanDataForExport(articlesToExport);
+      exportProgress = 1;
       await downloadCSV(cleanData);
     } catch (e) {
       console.error(e);
       alert('Error exporting data: ' + e.message);
     } finally {
       exporting = false;
+      exportProgress = 0;
     }
   }
 
@@ -1632,8 +1726,15 @@
                         disabled={exporting || loadingArticles || activeIds.length === 0}
                 >
                   {#if exporting}
-                    <span class="btn-spinner"></span>
-                    Exporting...
+                    <div class="export-progress">
+                      <div class="export-progress-bar">
+                        <div
+                                class="export-progress-fill"
+                                style={`width: ${exportPercent}%;`}
+                        ></div>
+                      </div>
+                      <span class="export-progress-text">Exporting {exportPercent}%</span>
+                    </div>
                   {:else}
                     Export {Math.max(expectedTotalCount || 0, activeIds.length).toLocaleString()} items
                   {/if}
@@ -1681,7 +1782,11 @@
 
           {#if loadingArticles}
             <div class="loading">
-              <div class="spinner"></div>
+              <div class="spinner">
+                {#if searchTerm.trim()}
+                  <span class="spinner-label">{searchPercent}%</span>
+                {/if}
+              </div>
               <p>Loading database...</p>
               {#if exactMatchActive}
                 <p class="loading-note">Exact phrase searches take longer. Thanks for your patience.</p>
@@ -1689,7 +1794,11 @@
             </div>
           {:else if searchLoading}
             <div class="loading">
-              <div class="spinner"></div>
+              <div class="spinner">
+                {#if searchTerm.trim()}
+                  <span class="spinner-label">{searchPercent}%</span>
+                {/if}
+              </div>
               <p>Loading database...</p>
               {#if exactMatchActive}
                 <p class="loading-note">Exact phrase searches take longer. Thanks for your patience.</p>
@@ -1917,6 +2026,17 @@
     height: 50px;
     animation: spin 1s linear infinite;
     margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .spinner-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #254c6f;
+    animation: spin-reverse 1s linear infinite;
   }
 
   .loading-note {
@@ -1932,6 +2052,15 @@
     }
     100% {
       transform: rotate(360deg);
+    }
+  }
+
+  @keyframes spin-reverse {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(-360deg);
     }
   }
 
@@ -2210,6 +2339,31 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+  }
+  .export-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  .export-progress-bar {
+    flex: 1 1 140px;
+    height: 8px;
+    background: #e6eef5;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .export-progress-fill {
+    height: 100%;
+    background: #d6613a;
+    width: 0%;
+    transition: width 0.2s ease;
+  }
+  .export-progress-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #254c6f;
+    white-space: nowrap;
   }
 
   .search-help {
