@@ -54,6 +54,7 @@
   let monthlyBarData = [];
   let locationDataLoaded = false;
   let locationDataLoadFailed = false;
+  let exporting = false;
   
   // Filter school locations to only those in our dataset (institution index)
   $: institutionNameSet = new Set(
@@ -475,6 +476,86 @@
     }
   }
 
+  function cleanDataForExport(data) {
+    return data.map((item) => {
+      const { llm_response, scraper, ...cleanItem } = item;
+      return cleanItem;
+    });
+  }
+
+  async function downloadAllData() {
+    exporting = true;
+
+    try {
+      // Fetch all data from S3
+      const response = await fetch(S3_BUCKET_URL);
+      if (!response.ok) throw new Error('Failed to fetch data');
+      const data = await response.json();
+
+      const cleanData = cleanDataForExport(data);
+      await downloadCSV(cleanData);
+    } catch (e) {
+      console.error(e);
+      alert('Error downloading data: ' + e.message);
+    } finally {
+      exporting = false;
+    }
+  }
+
+  async function downloadCSV(data) {
+    if (!data.length) {
+      alert('No data to download');
+      return;
+    }
+
+    const allKeys = new Set();
+    data.forEach((item) => {
+      Object.keys(item).forEach((key) => allKeys.add(key));
+    });
+
+    const headers = Array.from(allKeys);
+
+    function flattenValue(value) {
+      if (value === null || value === undefined) {
+        return '';
+      }
+      if (typeof value === 'object') {
+        if (value.$oid) return value.$oid;
+        if (value.$date) return new Date(value.$date).toISOString();
+        return JSON.stringify(value).replace(/"/g, '""');
+      }
+      const str = String(value);
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    }
+
+    const csvContent = [
+      headers.join(','),
+      ...data.map((row) => headers.map((header) => flattenValue(row[header])).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `university_responses_all_${new Date().toISOString().split('T')[0]}.csv`);
+
+    // Track download event in Umami
+    if (window.umami) {
+      window.umami.track('csv-download-all', {
+        items_count: data.length,
+        source: 'methodology'
+      });
+    }
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
   // Load S3 data for record count and US states map
   onMount(async () => {
     pageStartTime = Date.now();
@@ -646,192 +727,6 @@
         </div>
       </section>
 
-      <!-- Charts Section -->
-      {#if monthManifestLoaded && monthlyBarData.length > 0}
-        <section class="charts-section">
-          <h3>Article Frequency Over Time</h3>
-
-          <!-- Bar Chart -->
-          <div class="chart-container">
-            <h4>Monthly Article Count</h4>
-            <p class="chart-dek">
-              Number of articles published each month (Total articles: {indexTotalRecords?.toLocaleString() ?? 'N/A'},
-              Months: {monthlyBarData.length},
-              Date range: {monthlyBarData.length > 0 ? `${monthlyBarData[0][0].slice(0, 7)} to ${monthlyBarData[monthlyBarData.length - 1][0].slice(0, 7)}` : 'N/A'})
-            </p>
-            <div class="bar-chart-wrapper">
-                {#if monthlyBarData.length > 0}
-                  {@const maxCount = Math.max(...monthlyBarData.map(m => m[1].count), 1)}
-                  {@const chartHeight = 400}
-                  {@const chartWidth = 800}
-                  {@const leftMargin = 50}
-                  {@const bottomMargin = 40}
-                  {@const chartAreaWidth = chartWidth - leftMargin}
-                  {@const chartAreaHeight = chartHeight - bottomMargin}
-                  {@const yAxisMax = (() => {
-                    const max = maxCount * 1.1;
-                    if (max <= 500) return 500;
-                    if (max <= 1000) return 1000;
-                    if (max <= 1500) return 1500;
-                    if (max <= 2000) return 2000;
-                    if (max <= 2500) return 2500;
-                    return Math.ceil(max / 500) * 500;
-                  })()}
-                  {@const yAxisSteps = (() => {
-                    if (yAxisMax <= 500) return 5;  // 0, 100, 200, 300, 400, 500
-                    if (yAxisMax <= 1000) return 5; // 0, 200, 400, 600, 800, 1000
-                    if (yAxisMax <= 2000) return 4; // 0, 500, 1000, 1500, 2000
-                    return 5;
-                  })()}
-                  {@const yAxisValues = Array.from({length: yAxisSteps + 1}, (_, i) => (yAxisMax / yAxisSteps) * i)}
-                  {@const formatNumber = (num) => {
-                    if (num === 0) return '0';
-                    if (num >= 1000) {
-                      const k = num / 1000;
-                      return k % 1 === 0 ? k + 'k' : k.toFixed(1) + 'k';
-                    }
-                    return num.toString();
-                  }}
-                  {@const dateToTimestamp = (dateKey) => {
-                    const [year, month, day] = dateKey.split('-').map(Number);
-                    return Date.UTC(year, (month || 1) - 1, day || 1);
-                  }}
-                  {@const minTimestamp = dateToTimestamp(monthlyBarData[0][0])}
-                  {@const maxTimestamp = dateToTimestamp(monthlyBarData[monthlyBarData.length - 1][0])}
-                  {@const timeRange = maxTimestamp - minTimestamp || 1}
-                  {@const barWidth = Math.max(1, chartAreaWidth / monthlyBarData.length * 0.8)}
-                  {@const bars = monthlyBarData.map(([key, data]) => {
-                    const timestamp = dateToTimestamp(key);
-                    const x = leftMargin + ((timestamp - minTimestamp) / timeRange) * chartAreaWidth;
-                    const barHeight = (data.count / yAxisMax) * (chartAreaHeight - 10);
-                    const zeroY = (chartAreaHeight - 10) * ((yAxisValues.length - 1) / (yAxisValues.length - 1)) + 5;
-                    const y = zeroY - barHeight;
-                    return { x, y, height: barHeight, count: data.count, date: key.slice(0, 7) };
-                  })}
-                  {@const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']}
-                  {@const monthLabels = bars.map((bar, idx) => {
-                    const [year, month] = bar.date.split('-').map(Number);
-                    const name = monthNames[(month || 1) - 1] || '';
-                    const label = month === 1 || idx === 0 ? `${name} ${year}` : name;
-                    return { x: bar.x, label };
-                  })}
-
-                  {@const reversedYAxisValues = [...yAxisValues].reverse()}
-                  {@const zeroLineY = chartAreaHeight - 5}
-
-                  <div class="bar-chart-container">
-                    <!-- Chart SVG -->
-                    <div class="bar-chart-svg-container">
-                      <svg viewBox="0 0 {chartWidth} {chartHeight}" class="bar-chart-svg">
-                        <!-- Y-axis labels -->
-                        <g class="y-axis-labels">
-                          {#each reversedYAxisValues as value, i}
-                            {@const y = (chartAreaHeight - 10) * (i / (yAxisValues.length - 1)) + 5}
-                            <text
-                              x="5"
-                              y={y}
-                              text-anchor="start"
-                              dominant-baseline="middle"
-                              class="y-axis-label"
-                            >
-                              {formatNumber(value)}
-                            </text>
-                          {/each}
-                        </g>
-
-                        <!-- Grid lines (only show horizontal lines, very subtle) -->
-                        <g class="grid-lines">
-                          {#each reversedYAxisValues as value, i}
-                            {@const y = (chartAreaHeight - 10) * (i / (yAxisValues.length - 1)) + 5}
-                            {@const isZeroLine = value === 0}
-                            {#if !isZeroLine}
-                              <line
-                                x1={leftMargin}
-                                y1={y}
-                                x2={chartWidth}
-                                y2={y}
-                                stroke="#f0f0f0"
-                                stroke-width="0.5"
-                              />
-                            {/if}
-                          {/each}
-                        </g>
-
-                        <!-- Bars -->
-                        <g class="bars">
-                          {#each bars as bar}
-                            <rect
-                              x={bar.x - barWidth / 2}
-                              y={bar.y}
-                              width={barWidth}
-                              height={bar.height}
-                              fill="#254c6f"
-                              opacity="0.9"
-                              class="bar"
-                            >
-                              <title>{bar.date}: {bar.count.toLocaleString()} articles</title>
-                            </rect>
-                          {/each}
-                        </g>
-
-                        <!-- Zero baseline (drawn after bars to appear on top) -->
-                        <line
-                          x1={leftMargin}
-                          y1={zeroLineY}
-                          x2={chartWidth}
-                          y2={zeroLineY}
-                          stroke="#888"
-                          stroke-width="1.5"
-                        />
-
-                        <!-- X-axis tick marks -->
-                        <g class="x-axis-ticks">
-                          {#each monthLabels as monthLabel}
-                            <line
-                              x1={monthLabel.x}
-                              y1={zeroLineY}
-                              x2={monthLabel.x}
-                              y2={zeroLineY + 5}
-                              stroke="#888"
-                              stroke-width="1"
-                            />
-                          {/each}
-                        </g>
-
-                        <!-- X-axis labels -->
-                        <g class="x-axis-labels">
-                          {#each monthLabels as monthLabel}
-                            <text
-                              x={monthLabel.x}
-                              y={chartAreaHeight + 20}
-                              text-anchor="middle"
-                              class="bar-label"
-                            >
-                              {monthLabel.label}
-                            </text>
-                          {/each}
-                        </g>
-                      </svg>
-                    </div>
-                  </div>
-                {:else}
-                  <p class="loading-text">No monthly bar data available.</p>
-                {/if}
-              </div>
-            </div>
-        </section>
-      {:else}
-        <section class="charts-section">
-          <p class="loading-text">
-            {#if monthManifestLoadFailed}
-              Unable to load monthly data from the manifest.
-            {:else}
-              Loading monthly data...
-            {/if}
-          </p>
-        </section>
-      {/if}
-
       <!-- Methodology Content -->
       <section class="methodology-content">
         <h3>Dataset Methodology</h3>
@@ -934,6 +829,26 @@
             </div>
           {/if}
         </div>
+      </section>
+
+      <!-- Download All Data Section -->
+      <section class="download-section">
+        <h3>Download All Data</h3>
+        <p>
+          Download the complete dataset as a CSV file. This includes all {indexTotalRecords?.toLocaleString() ?? ''} records
+          from {totalSchools} universities.
+        </p>
+        <button
+          class="download-button"
+          on:click={downloadAllData}
+          disabled={exporting}
+        >
+          {#if exporting}
+            Downloading...
+          {:else}
+            Download All Data (CSV)
+          {/if}
+        </button>
       </section>
     </div>
   </div>
@@ -1343,9 +1258,61 @@
     padding: 2rem;
   }
 
+  /* Download Section */
+  .download-section {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: #fafafa;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .download-section h3 {
+    font-size: 1.8rem;
+    color: #254c6f;
+    margin-bottom: 1rem;
+    margin-top: 0;
+    font-family: "Lyon Display Web", serif;
+    font-weight: 700;
+  }
+
+  .download-section p {
+    color: #444;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .download-button {
+    background: #254c6f33;
+    border: 1px solid #254c6f;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.95rem;
+    color: #43485a;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: "Graphik Web", sans-serif;
+    font-weight: 400;
+  }
+
+  .download-button:hover:not(:disabled) {
+    background: #254c6f;
+    color: #fff;
+    border-color: #254c6f;
+  }
+
+  .download-button:disabled {
+    background: #ccc;
+    border-color: #999;
+    color: #666;
+    cursor: not-allowed;
+  }
+
   /* Methodology Content */
   .methodology-content {
-    margin-top: 4rem;
+    margin-top: 2rem;
     padding: 2rem;
     background: #fafafa;
     border-radius: 8px;
