@@ -4,10 +4,6 @@
   import * as d3 from 'd3-geo';
 
   let mapContainer;
-  let hoveredSchool = null;
-  let tooltipX = 0;
-  let tooltipY = 0;
-  let showTooltip = false;
   let statesGeoJSON = null;
 
   // Calendar tooltip
@@ -16,6 +12,11 @@
   let calendarTooltipY = 0;
   let showCalendarTooltip = false;
   let calendarContainer;
+
+  // Map tooltip
+  let mapTooltip = null;
+  let mapTooltipX = 0;
+  let mapTooltipY = 0;
 
   // FAQ accordion
   let openFaqIndex = null;
@@ -112,57 +113,63 @@
   $: totalStates = Object.keys(stateGroups).length;
   $: totalRecords = indexTotalRecords ?? allArticles.length;
 
-  // Group schools by proximity and calculate offset positions
+  // Beeswarm algorithm - push overlapping dots apart while keeping them close to original position
   function getSchoolPositions(schools) {
-    const positions = new Map();
-    const proximityThreshold = 10; // pixels - schools within this distance are considered overlapping
+    const dotRadius = 5; // matches the r="5" in the SVG
+    const minDistance = dotRadius * 2 + 1; // minimum distance between dot centers
+    const iterations = 50; // number of iterations to resolve collisions
+    const pullStrength = 0.05; // how strongly dots are pulled back to original position
 
-    schools.forEach(school => {
+    // Initialize positions at true coordinates
+    const positions = schools.map(school => {
       const coords = projectCoordinates(school.lat, school.lng);
+      return {
+        ...school,
+        baseCoords: coords,
+        displayCoords: { x: coords.x, y: coords.y }
+      };
+    }).filter(s => s.baseCoords.x !== 0 || s.baseCoords.y !== 0);
 
-      // Find if there's already a school at roughly this location
-      let cluster = null;
-      for (const [key, group] of positions.entries()) {
-        const [cx, cy] = key.split(',').map(Number);
-        const distance = Math.sqrt(Math.pow(coords.x - cx, 2) + Math.pow(coords.y - cy, 2));
-        if (distance < proximityThreshold) {
-          cluster = key;
-          break;
+    // Iteratively resolve collisions
+    for (let iter = 0; iter < iterations; iter++) {
+      let moved = false;
+
+      for (let i = 0; i < positions.length; i++) {
+        for (let j = i + 1; j < positions.length; j++) {
+          const a = positions[i];
+          const b = positions[j];
+
+          const dx = b.displayCoords.x - a.displayCoords.x;
+          const dy = b.displayCoords.y - a.displayCoords.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < minDistance && distance > 0) {
+            // Push dots apart
+            const overlap = minDistance - distance;
+            const pushX = (dx / distance) * overlap * 0.5;
+            const pushY = (dy / distance) * overlap * 0.5;
+
+            a.displayCoords.x -= pushX;
+            a.displayCoords.y -= pushY;
+            b.displayCoords.x += pushX;
+            b.displayCoords.y += pushY;
+            moved = true;
+          }
         }
       }
 
-      if (cluster) {
-        positions.get(cluster).push({ ...school, baseCoords: coords });
-      } else {
-        const key = `${coords.x},${coords.y}`;
-        positions.set(key, [{ ...school, baseCoords: coords }]);
+      // Pull dots back toward their original positions
+      for (const pos of positions) {
+        const pullX = (pos.baseCoords.x - pos.displayCoords.x) * pullStrength;
+        const pullY = (pos.baseCoords.y - pos.displayCoords.y) * pullStrength;
+        pos.displayCoords.x += pullX;
+        pos.displayCoords.y += pullY;
       }
-    });
 
-    // Calculate offset positions for clustered schools
-    const result = [];
-    for (const group of positions.values()) {
-      if (group.length === 1) {
-        result.push({ ...group[0], displayCoords: group[0].baseCoords });
-      } else {
-        // Arrange schools in a circle around the centroid
-        const radius = 8; // offset distance
-        group.forEach((school, i) => {
-          const angle = (i / group.length) * 2 * Math.PI;
-          const offsetX = Math.cos(angle) * radius;
-          const offsetY = Math.sin(angle) * radius;
-          result.push({
-            ...school,
-            displayCoords: {
-              x: school.baseCoords.x + offsetX,
-              y: school.baseCoords.y + offsetY
-            }
-          });
-        });
-      }
+      if (!moved) break;
     }
 
-    return result;
+    return positions;
   }
 
   $: schoolPositions = getSchoolPositions(visibleSchools);
@@ -182,49 +189,6 @@
     return { x: coords[0], y: coords[1] };
   }
   
-  function handleDotHover(school, event) {
-    hoveredSchool = school;
-    showTooltip = true;
-    updateTooltipPosition(event);
-
-    // Track map interaction in Umami
-    if (window.umami) {
-      window.umami.track('map-school-hover', {
-        school: school.name,
-        state: school.state
-      });
-    }
-  }
-  
-  function handleDotLeave() {
-    hoveredSchool = null;
-    showTooltip = false;
-  }
-  
-  function updateTooltipPosition(event) {
-    if (mapContainer) {
-      const rect = mapContainer.getBoundingClientRect();
-      tooltipX = event.clientX - rect.left;
-      tooltipY = event.clientY - rect.top;
-      
-      if (tooltipX > rect.width - 200) {
-        tooltipX = tooltipX - 200;
-      }
-      
-      if (tooltipY < 60) {
-        tooltipY = tooltipY + 20;
-      } else {
-        tooltipY = tooltipY - 60;
-      }
-    }
-  }
-  
-  function handleMouseMove(event) {
-    if (showTooltip) {
-      updateTooltipPosition(event);
-    }
-  }
-
   // Calendar tooltip handlers
   function handleCalendarDayHover(dayInfo, event) {
     calendarTooltip = dayInfo;
@@ -258,6 +222,24 @@
   function handleCalendarMouseMove(event) {
     if (showCalendarTooltip) {
       updateCalendarTooltipPosition(event);
+    }
+  }
+
+  // Map tooltip handlers
+  function handleDotEnter(school, event) {
+    mapTooltip = school;
+    mapTooltipX = event.clientX;
+    mapTooltipY = event.clientY;
+  }
+
+  function handleDotLeave() {
+    mapTooltip = null;
+  }
+
+  function handleDotMove(event) {
+    if (mapTooltip) {
+      mapTooltipX = event.clientX;
+      mapTooltipY = event.clientY;
     }
   }
   
@@ -608,46 +590,22 @@
 <div class="methodology-container">
   <div class="container">
     <div class="content-wrapper">
-      <!-- Statistics Header -->
+      <!-- Header -->
       <section class="stats-header">
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-number">{totalSchools}</div>
-            <div class="stat-label">Universities</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">{totalStates}</div>
-            <div class="stat-label">States</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">
-              {#if indexTotalRecords !== null}
-                {indexTotalRecords.toLocaleString()}
-              {:else if loadingArticles}
-                <span class="loading-text">Loading...</span>
-              {:else}
-                {totalRecords.toLocaleString()}
-              {/if}
-            </div>
-            <div class="stat-label">Total Records</div>
-          </div>
-        </div>
         <div class="header-text">
-          <h2>Mapping University Responses</h2>
+          <h2>Universities with tracked communications</h2>
           <p class="subhead">
-            Comprehensive tracking of institutional responses to campus protests and federal actions 
-            across major universities nationwide.
+            Tracking {indexTotalRecords?.toLocaleString() ?? totalRecords.toLocaleString()} official announcements from {totalSchools} universities across {totalStates} states.
           </p>
         </div>
       </section>
 
       <!-- Interactive Map -->
       <section class="map-section">
-        <div 
-          class="map-container" 
-          bind:this={mapContainer} 
-          on:mousemove={handleMouseMove}
-          role="img" 
+        <div
+          class="map-container"
+          bind:this={mapContainer}
+          role="img"
           aria-label="Interactive map of universities"
         >
           <!-- US States Map -->
@@ -659,8 +617,8 @@
                   <path
                     class="state-path"
                     d={geoJSONToPath(state)}
-                    fill="#f9f9f9"
-                    stroke="#c0c0c0"
+                    fill="#e8e8e8"
+                    stroke="#fff"
                     stroke-width="1"
                   />
                 {/each}
@@ -677,31 +635,27 @@
                 cy={school.displayCoords.y}
                 r="5"
                 class="school-dot"
-                class:hovered={hoveredSchool === school}
-                on:mouseenter={(event) => handleDotHover(school, event)}
-                on:mouseleave={handleDotLeave}
-                style="--delay: {i * 0.01}s"
-                role="button"
-                tabindex="0"
-                aria-label="View details for {school.name}"
+                role="img"
+                aria-label="{school.name}, {school.state}"
+                onmouseenter={(e) => handleDotEnter(school, e)}
+                onmouseleave={handleDotLeave}
+                onmousemove={handleDotMove}
               />
             {/each}
           </svg>
-          
-          <!-- Tooltip -->
-          {#if showTooltip && hoveredSchool}
-            <div 
-              class="tooltip" 
-              style="left: {tooltipX}px; top: {tooltipY}px;"
-            >
-              <div class="tooltip-content">
-                <div class="tooltip-title">{hoveredSchool.name}</div>
-                <div class="tooltip-state">{hoveredSchool.state}</div>
-              </div>
-            </div>
-          {/if}
         </div>
-        
+
+        <!-- Map Tooltip -->
+        {#if mapTooltip}
+          <div
+            class="map-tooltip"
+            style="left: {mapTooltipX + 12}px; top: {mapTooltipY - 10}px;"
+          >
+            <div class="map-tooltip-name">{mapTooltip.name}</div>
+            <div class="map-tooltip-location">{mapTooltip.state}</div>
+          </div>
+        {/if}
+
         {#if missingLocations.length > 0}
           <div class="data-warning" role="status">
             <div class="warning-title">Missing location data</div>
@@ -767,7 +721,7 @@
         <h3>Frequently Asked Questions</h3>
 
         <div class="faq-item">
-          <button class="faq-question" on:click={() => toggleFaq(0)}>
+          <button class="faq-question" onclick={() => toggleFaq(0)}>
             <span>What is available for any given school?</span>
             <span class="faq-icon">{openFaqIndex === 0 ? '−' : '+'}</span>
           </button>
@@ -779,7 +733,7 @@
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" on:click={() => toggleFaq(2)}>
+          <button class="faq-question" onclick={() => toggleFaq(2)}>
             <span>What types of schools are included?</span>
             <span class="faq-icon">{openFaqIndex === 2 ? '−' : '+'}</span>
           </button>
@@ -791,7 +745,7 @@
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" on:click={() => toggleFaq(1)}>
+          <button class="faq-question" onclick={() => toggleFaq(1)}>
             <span>Do you have data from before January 2025?</span>
             <span class="faq-icon">{openFaqIndex === 1 ? '−' : '+'}</span>
           </button>
@@ -805,7 +759,7 @@
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" on:click={() => toggleFaq(3)}>
+          <button class="faq-question" onclick={() => toggleFaq(3)}>
             <span>How often does the data update?</span>
             <span class="faq-icon">{openFaqIndex === 3 ? '−' : '+'}</span>
           </button>
@@ -817,7 +771,7 @@
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" on:click={() => toggleFaq(4)}>
+          <button class="faq-question" onclick={() => toggleFaq(4)}>
             <span>I noticed an issue with the data.</span>
             <span class="faq-icon">{openFaqIndex === 4 ? '−' : '+'}</span>
           </button>
@@ -840,7 +794,7 @@
         </p>
         <button
           class="download-button"
-          on:click={downloadAllData}
+          onclick={downloadAllData}
           disabled={exporting}
         >
           {#if exporting}
@@ -861,8 +815,9 @@
   }
 
   .container {
-    max-width: 1100px;
-    margin: 0 auto;
+    max-width: none;
+    width: 100%;
+    margin: 0;
     padding: 0 3rem;
   }
 
@@ -870,43 +825,10 @@
     padding: 2rem 0 4rem;
   }
 
-  /* Statistics Header */
+  /* Header */
   .stats-header {
-    margin-bottom: 3rem;
-  }
-
-  .stats-grid {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    margin-bottom: 2rem;
-  }
-
-  .stat-card {
+    margin-bottom: 1rem;
     text-align: center;
-    padding: 1rem 1.5rem;
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    min-width: 120px;
-  }
-
-  .stat-number {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #254c6f;
-    font-family: "Lyon Display Web", serif;
-    line-height: 1;
-    margin-bottom: 0.25rem;
-  }
-
-  .stat-label {
-    font-size: 0.85rem;
-    color: #666;
-    font-family: "Graphik Web", sans-serif;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
   }
 
   .header-text {
@@ -916,23 +838,25 @@
   }
 
   .header-text h2 {
-    font-size: 2.5rem;
-    margin: 0 0 1rem;
-    color: #254c6f;
+    font-size: 1.75rem;
+    margin: 0 0 0.75rem;
+    color: #222;
     font-weight: 700;
     font-family: "Lyon Display Web", serif;
+    line-height: 1.3;
   }
 
   .subhead {
-    font-size: 1.1rem;
-    line-height: 1.7;
-    color: #444;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #666;
     margin: 0;
+    font-family: "Graphik Web", sans-serif;
   }
 
   /* Map Section */
   .map-section {
-    margin: 4rem 0;
+    margin: 1rem 0 3rem;
     background: white;
   }
 
@@ -955,55 +879,38 @@
 
   .school-dot {
     fill: #254c6f;
-    stroke: white;
-    stroke-width: 2;
+    stroke: #fff;
+    stroke-width: 1;
     cursor: pointer;
-    opacity: 1;
-    transition: all 0.3s ease;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    pointer-events: all;
   }
 
-  .school-dot:hover,
-  .school-dot.hovered {
-    fill: #1e3d57;
-    stroke: #254c6f;
-    stroke-width: 3;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  .school-dot:hover {
+    fill: #d6613a;
   }
 
-  /* Tooltip */
-  .tooltip {
-    position: absolute;
-    z-index: 1000;
-    pointer-events: none;
-  }
-
-  .tooltip-content {
+  /* Map Tooltip */
+  .map-tooltip {
+    position: fixed;
     background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    min-width: 200px;
-    animation: tooltipAppear 0.2s ease;
-  }
-
-  @keyframes tooltipAppear {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .tooltip-title {
-    font-weight: 600;
-    color: #222;
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 10px 14px;
+    pointer-events: none;
+    z-index: 1000;
     font-family: "Graphik Web", sans-serif;
   }
 
-  .tooltip-state {
-    color: #666;
+  .map-tooltip-name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #222;
+    margin-bottom: 2px;
+  }
+
+  .map-tooltip-location {
     font-size: 0.9rem;
+    color: #666;
   }
 
   /* Map Legend */
@@ -1026,16 +933,14 @@
   }
 
   .legend-dot {
-    width: 16px;
-    height: 16px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     flex-shrink: 0;
   }
 
   .legend-dot.single {
     background: #254c6f;
-    border: 2px solid white;
-    box-shadow: 0 0 0 1px #254c6f;
   }
 
   .data-warning {
@@ -1280,7 +1185,7 @@
     color: #444;
     line-height: 1.7;
     margin-bottom: 1.5rem;
-    max-width: 600px;
+    max-width: 800px;
     margin-left: auto;
     margin-right: auto;
   }
