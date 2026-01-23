@@ -9,7 +9,7 @@
    * - month_index/{year}.json: Per-year month to article IDs for chronological filtering
    * - institution_index.json: Maps institutions to article IDs for institution filtering
    * - articles/: Individual JSON files per article, loaded on demand
-   * - search_terms/: Per-token files for fast keyword matching
+   * - search_term/: Per-token files for fast keyword matching
    * - data.json: Full dataset, loaded only for large exports or exact phrase searches
    *
    * Key Features:
@@ -626,6 +626,12 @@
   async function ensureTokenLoaded(token, onProgress = null, options = {}) {
     if (!token) return null;
 
+    const {
+      missingBehavior = 'empty',
+      suppressError = false,
+      ...fetchOptions
+    } = options;
+
     if (searchTokenCache.has(token)) {
       return searchTokenCache.get(token);
     }
@@ -636,11 +642,13 @@
               `${SEARCH_TERM_BASE_URL}/${safeToken}.json`,
               onProgress,
               {
-                ...options,
-                emptyOn404: true,
-                errorLabel: options.errorLabel || `search index token '${token}'`
+                ...fetchOptions,
+                emptyOn404: missingBehavior === 'empty',
+                returnNullOn404: missingBehavior === 'null',
+                errorLabel: fetchOptions.errorLabel || `search index token '${token}'`
               }
       );
+      if (ids === null) return null;
       if (!Array.isArray(ids)) {
         throw new Error(`Unexpected search index format for token '${token}'`);
       }
@@ -649,7 +657,9 @@
     } catch (e) {
       if (isAbortError(e)) return null;
       console.error(e);
-      searchError = e.message;
+      if (!suppressError) {
+        searchError = e.message;
+      }
       return null;
     }
   }
@@ -664,6 +674,10 @@
             .split(/\s+/)
             .map((t) => t.replace(/^"+|"+$/g, ''))
             .filter(Boolean);
+  }
+
+  function buildPhraseToken(tokens) {
+    return tokens.join('_');
   }
 
   // If the entire term is quoted, return the inner phrase
@@ -698,6 +712,28 @@
             searchProgress = Math.min(0.95, searchProgress + 0.02);
           }
         };
+        const phraseToken = phraseTokens.length ? buildPhraseToken(phraseTokens) : null;
+        if (phraseToken) {
+          const phraseIds = await ensureTokenLoaded(
+                  phraseToken,
+                  progressHandler,
+                  { signal, missingBehavior: 'null', suppressError: true }
+          );
+          if (!isActiveSearch(runId)) return;
+          if (Array.isArray(phraseIds)) {
+            searchProgress = 1;
+            const phraseSet = new Set(phraseIds);
+            const matchedIds = baseIds.filter((id) => phraseSet.has(id));
+            activeIds = matchedIds;
+            expectedTotalCount = matchedIds.length;
+            currentPage = 1;
+            if (!isActiveSearch(runId)) return;
+            await loadPage(1, { runId });
+            return;
+          }
+          searchProgress = 0;
+        }
+
         const shouldTrackProgress = !fullDatasetCache && !fullDatasetMap;
         const datasetMap = await ensureFullDatasetMap(
                 shouldTrackProgress ? progressHandler : null,
@@ -1057,11 +1093,16 @@
   }
 
   async function fetchJsonWithProgress(url, onProgress = null, options = {}) {
-    const { errorLabel = 'data', signal = null, emptyOn404 = false } = options;
+    const {
+      errorLabel = 'data',
+      signal = null,
+      emptyOn404 = false,
+      returnNullOn404 = false
+    } = options;
     const res = await fetch(url, signal ? { signal } : undefined);
-    if (res.status === 404 && emptyOn404) {
+    if (res.status === 404 && (emptyOn404 || returnNullOn404)) {
       if (onProgress) onProgress(1, 1);
-      return [];
+      return returnNullOn404 ? null : [];
     }
     if (!res.ok) {
       throw new Error(`Failed to load ${errorLabel}: ${res.status}`);
@@ -1587,7 +1628,9 @@
 
       {#if loading}
         <div class="loading">
-          <div class="spinner"></div>
+          <div class="spinner">
+            <div class="spinner-ring"></div>
+          </div>
           <p>Loading database...</p>
         </div>
       {:else if error}
@@ -1825,6 +1868,7 @@
           {#if loadingArticles}
             <div class="loading">
               <div class="spinner">
+                <div class="spinner-ring"></div>
                 {#if searchTerm.trim()}
                   <span class="spinner-label">{searchPercent}%</span>
                 {/if}
@@ -1837,6 +1881,7 @@
           {:else if searchLoading}
             <div class="loading">
               <div class="spinner">
+                <div class="spinner-ring"></div>
                 {#if searchTerm.trim()}
                   <span class="spinner-label">{searchPercent}%</span>
                 {/if}
@@ -2061,24 +2106,30 @@
   }
 
   .spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #254c6f;
-    border-radius: 50%;
     width: 50px;
     height: 50px;
-    animation: spin 1s linear infinite;
     margin: 0 auto 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     position: relative;
   }
 
+  .spinner-ring {
+    position: absolute;
+    inset: 0;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #254c6f;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
   .spinner-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.75rem;
     font-weight: 700;
     color: #254c6f;
-    animation: spin-reverse 1s linear infinite;
   }
 
   .loading-note {
@@ -2097,14 +2148,6 @@
     }
   }
 
-  @keyframes spin-reverse {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(-360deg);
-    }
-  }
 
   .error {
     color: #dc3545;
