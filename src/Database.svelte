@@ -645,6 +645,8 @@
                 ...fetchOptions,
                 emptyOn404: missingBehavior === 'empty',
                 returnNullOn404: missingBehavior === 'null',
+                emptyOn403: missingBehavior === 'empty',
+                returnNullOn403: missingBehavior === 'null',
                 errorLabel: fetchOptions.errorLabel || `search index token '${token}'`
               }
       );
@@ -1097,12 +1099,17 @@
       errorLabel = 'data',
       signal = null,
       emptyOn404 = false,
-      returnNullOn404 = false
+      returnNullOn404 = false,
+      emptyOn403 = false,
+      returnNullOn403 = false
     } = options;
     const res = await fetch(url, signal ? { signal } : undefined);
-    if (res.status === 404 && (emptyOn404 || returnNullOn404)) {
+    if (
+      (res.status === 404 && (emptyOn404 || returnNullOn404)) ||
+      (res.status === 403 && (emptyOn403 || returnNullOn403))
+    ) {
       if (onProgress) onProgress(1, 1);
-      return returnNullOn404 ? null : [];
+      return returnNullOn404 || returnNullOn403 ? null : [];
     }
     if (!res.ok) {
       throw new Error(`Failed to load ${errorLabel}: ${res.status}`);
@@ -1390,6 +1397,23 @@
 
   function highlight(text, term) {
     if (!text) return '';
+    const quotedPhrase = getQuotedPhrase(term);
+    if (quotedPhrase) {
+      const phraseRegex = buildPhraseRegex(quotedPhrase, 'gi');
+      const tokenRegex = buildExactTokenRegex(quotedPhrase, 'gi');
+      const chosenRegex = phraseRegex || tokenRegex;
+      if (!chosenRegex) return escapeHtml(text);
+
+      const parts = text.split(chosenRegex);
+      return parts
+              .map((part, i) =>
+                      i % 2 === 1
+                              ? `<mark>${escapeHtml(part)}</mark>`
+                              : escapeHtml(part)
+              )
+              .join('');
+    }
+
     const phraseRegex = buildPhraseRegex(term, 'gi');
     const tokenRegex = buildExactTokenRegex(term, 'gi');
     if (!tokenRegex) return escapeHtml(text);
