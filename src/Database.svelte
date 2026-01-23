@@ -26,7 +26,6 @@
    */
 
   import { onMount } from 'svelte';
-  import TimelineSidebar from './TimelineSidebar.svelte';
 
   // AWS S3 data URLs - all data is hosted in a public S3 bucket
   const MONTH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index';
@@ -1974,14 +1973,46 @@
       {/if}
     </div>
 
-    <!-- Timeline Sidebar -->
-    {#if !loading && !error}
-      <TimelineSidebar
-        {monthIndex}
-        {activeIds}
-        currentMonth={selectedMonths.length === 1 ? selectedMonths[0] : null}
-        onMonthClick={handleTimelineMonthClick}
-      />
+    <!-- Timeline Bar Sidebar -->
+    {#if !loading && !error && months.length > 0}
+      {@const monthNames = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.']}
+      {@const formatCount = (num) => {
+        if (num >= 1000) {
+          const k = num / 1000;
+          return k % 1 === 0 ? k + 'K' : k.toFixed(1) + 'K';
+        }
+        return num.toString();
+      }}
+      {@const barData = months.map(key => {
+        const count = manifestMonthCounts.get(key) || (monthIndex[key]?.length || 0);
+        const [year, month] = key.split('-').map(Number);
+        const monthName = monthNames[(month || 1) - 1];
+        return { key, count, monthName, year };
+      })}
+      {@const maxCount = Math.max(...barData.map(d => d.count), 1)}
+      <aside class="timeline-bar-sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-total">{Math.max(expectedTotalCount || 0, activeIds.length).toLocaleString()}</div>
+          <div class="sidebar-label">results</div>
+        </div>
+        <div class="sidebar-bars">
+          {#each barData as bar}
+            {@const barWidth = (bar.count / maxCount) * 100}
+            <button
+              class="sidebar-bar-row"
+              class:active={selectedMonths.length === 1 && selectedMonths[0] === bar.key}
+              onclick={() => handleTimelineMonthClick(bar.key)}
+              type="button"
+            >
+              <span class="sidebar-month">{bar.monthName}</span>
+              <div class="sidebar-bar-track">
+                <div class="sidebar-bar-fill" style="width: {barWidth}%;"></div>
+              </div>
+              <span class="sidebar-count">{formatCount(bar.count)}</span>
+            </button>
+          {/each}
+        </div>
+      </aside>
     {/if}
   </div>
 </div>
@@ -2514,6 +2545,106 @@
     height: 16px;
     animation: spin 0.8s linear infinite;
     display: inline-block;
+  }
+
+  /* Timeline Bar Sidebar */
+  .timeline-bar-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    padding: 1rem;
+    background: #fafafa;
+    border-left: 1px solid #e0e0e0;
+    position: sticky;
+    top: 0;
+    height: fit-content;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-header {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .sidebar-total {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #254c6f;
+    font-family: "Lyon Display Web", serif;
+    line-height: 1;
+  }
+
+  .sidebar-label {
+    font-size: 0.8rem;
+    color: #666;
+    font-family: "Graphik Web", sans-serif;
+    margin-top: 0.25rem;
+  }
+
+  .sidebar-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .sidebar-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+    width: 100%;
+    text-align: left;
+  }
+
+  .sidebar-bar-row:hover {
+    background: #f0f0f0;
+  }
+
+  .sidebar-bar-row.active {
+    background: #e8f0f8;
+  }
+
+  .sidebar-month {
+    width: 32px;
+    font-size: 0.75rem;
+    color: #666;
+    font-family: "Graphik Web", sans-serif;
+    flex-shrink: 0;
+  }
+
+  .sidebar-bar-track {
+    flex: 1;
+    height: 12px;
+    background: #e8e8e8;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .sidebar-bar-fill {
+    height: 100%;
+    background: #254c6f;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .sidebar-bar-row.active .sidebar-bar-fill {
+    background: #1a3a52;
+  }
+
+  .sidebar-count {
+    width: 36px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #254c6f;
+    font-family: "Graphik Web", sans-serif;
+    text-align: right;
+    flex-shrink: 0;
   }
 
   /* Results Section */
