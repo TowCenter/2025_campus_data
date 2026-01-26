@@ -1,4 +1,6 @@
 <script>
+	import { page } from '$app/stores';
+
 	/**
 	 * @typedef {Object} NavItem
 	 * @property {string} href - Link anchor
@@ -15,20 +17,29 @@
     let { 
 		children,
 		navItems = [
-			{ href: 'https://towcenter.columbia.edu/news/platforms-and-publishers', label: 'Platforms and Publishers Project' },
-			{ href: 'https://tow.cjr.org/platform-timeline/', label: 'P&P Timeline' },
-			{ href: 'https://www.cjr.org/tow-center', label: 'Other Tow Center Reports' }
+			{ href: 'https://towcenter.columbia.edu', label: 'Page 1' },
+			{ href: 'https://towcenter.columbia.edu', label: 'Page 2' },
+			{ href: 'https://towcenter.columbia.edu', label: 'Page 3' }
 		]
 	} = $props();
+
+	// Filter out the current page from navigation
+	const currentPath = $derived($page.url.pathname);
+	const filteredNavItems = $derived(navItems.filter(item => {
+		// Normalize hrefs - remove trailing slashes for comparison
+		const itemPath = item.href.replace(/\/$/, '') || '/';
+		const current = currentPath.replace(/\/$/, '') || '/';
+		return itemPath !== current;
+	}));
 </script>
 
 <div class="container-lg">
     <div class="row">
-        {#if navItems && navItems.length > 0}
+        {#if filteredNavItems && filteredNavItems.length > 0}
             <div class="col-sm-2">
                 <nav class="left-nav" aria-label="Page navigation">
                     <ul>
-                        {#each navItems as item}
+                        {#each filteredNavItems as item}
                             <li>
                                 <a href={item.href}>{item.label}</a>
                             </li>

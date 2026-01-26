@@ -41,12 +41,15 @@ export const parseDate = memoizePrimitive(parseDateImpl, parseDateCache, 500);
 
 /**
  * Groups items by month and year
+ * @param {Array<Object>} items - Array of data items
+ * @param {string} [dateField='date'] - Field name in items that contains the date
  */
-export function groupByMonth(items) {
+export function groupByMonth(items, dateField = 'date') {
 	const groups = {};
 	items.forEach((item) => {
-		if (!item.date) return;
-		const dateObj = parseDate(item.date);
+		const dateValue = item[dateField];
+		if (!dateValue) return;
+		const dateObj = parseDate(dateValue);
 		if (isNaN(dateObj.getTime())) return;
 		const key = `${dateObj.toLocaleString('default', {
 			month: 'long'
@@ -58,8 +61,8 @@ export function groupByMonth(items) {
 	// Sort items within each group by date descending
 	Object.keys(groups).forEach(key => {
 		groups[key].sort((a, b) => {
-			const aDate = parseDate(a.date);
-			const bDate = parseDate(b.date);
+			const aDate = parseDate(a[dateField]);
+			const bDate = parseDate(b[dateField]);
 			return bDate.getTime() - aDate.getTime();
 		});
 	});
@@ -71,8 +74,8 @@ export function groupByMonth(items) {
 			const firstItemA = groups[a][0];
 			const firstItemB = groups[b][0];
 			if (!firstItemA || !firstItemB) return 0;
-			const dateA = parseDate(firstItemA.date);
-			const dateB = parseDate(firstItemB.date);
+			const dateA = parseDate(firstItemA[dateField]);
+			const dateB = parseDate(firstItemB[dateField]);
 			return dateB.getTime() - dateA.getTime();
 		})
 		.forEach((key) => {

@@ -1,24 +1,49 @@
-# Tow Design System
+# Tow Design System Template
 
-A collection of Svelte components for journalism projects, developed by the Tow Center for Digital Journalism.
+A customizable template with Svelte components for building journalism trackers and projects, developed by the Tow Center for Digital Journalism.
 
-## Installation
+## Quick Start
 
-### From GitHub
+### Using as a Template
+
+1. **Clone or download this repository**
+   ```bash
+   git clone https://github.com/TowCenter/website-design-template.git my-project
+   cd my-project
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start development server**
+   ```bash
+   npm run dev
+   ```
+
+4. **Customize your project**
+   - Edit `src/routes/+page.svelte` to build your page
+   - Import and use components from `src/lib/`
+   - Modify or remove components you don't need
+
+### Using as an NPM Package
+
+You can also install this as a package in another SvelteKit project:
 
 ```bash
 npm install github:TowCenter/website-design-template
 ```
 
-## Usage
-
-### Import Components
+Then import components:
 
 ```javascript
 import {
   Article,
   Body,
   BodyText,
+  CardView,
+  Filters,
   Footer,
   Head,
   Header,
@@ -77,25 +102,57 @@ import { towCSS, cjrCSS } from '@tow/website-design-template';
 <Footer />
 ```
 
-## Components
+## Available Components
 
+### Layout Components
 - **Article**: Main article container
 - **Body**: Article body container
 - **BodyText**: Text content component
+- **Header**: Site header
 - **Footer**: Site footer
 - **Head**: Document head with metadata
-- **Header**: Site header
 - **Headline**: Article headline with byline and date
+
+### Data Display Components
+- **CardView**: Display data as cards
+- **Card**: Individual card component
+- **CardContent**: Card content wrapper
+- **CardHeader**: Card header section
+- **CardField**: Individual field in a card
+- **Table**: Table component for data display
+- **Timeline**: Timeline visualization
+
+### Filter Components
+- **Filters**: Main filter container
+- **FilterBar**: Filter controls bar
+- **SearchBar**: Search input component
+- **MultiSelect**: Multi-select dropdown
+- **HierarchicalFilter**: Two-level hierarchical filter
+
+### Utility Components
 - **TowPartnerLogo**: Tow Center partner logo
+- **StatusBadge**: Status indicator badge
+- **InteractionTag**: Interaction type tag
+- **SourcesList**: List of sources with links
+- **HighlightedText**: Text with search highlighting
+
+## Customization
+
+All components in `src/lib/` are yours to modify. You can:
+- Edit existing components to match your design
+- Remove components you don't need
+- Add new components for your project
+- Customize styles in `src/lib/cjr.css` and `src/lib/tow.css`
+
+See `TEMPLATE_USAGE.md` for detailed customization instructions.
 
 ## Development
 
-This package is built with SvelteKit. To contribute:
-
 1. Clone the repository
 2. Install dependencies: `npm install`
-3. Run the demo app: `cd demo-app && npm run dev`
-4. Build the package: `npm run build`
+3. Run dev server: `npm run dev`
+4. Build for production: `npm run build`
+5. Package as npm module: `npm run package`
 
 ## License
 

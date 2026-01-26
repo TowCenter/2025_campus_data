@@ -13,8 +13,20 @@
 
 	const inputId = `search-input-${Math.random().toString(36).substr(2, 9)}`;
 
+	const exampleSearches = [
+		'funding cut',
+		'ICE',
+		'Office of Civil Rights',
+		'visa',
+		'antisemitism'
+	];
+
 	function handleClear() {
 		onSearchChange('');
+	}
+
+	function handleExampleClick(example) {
+		onSearchChange(example);
 	}
 </script>
 
@@ -40,6 +52,18 @@
 				✕
 			</button>
 		{/if}
+	</div>
+	<div class="example-searches">
+		<span class="example-label">Example searches:</span>
+		{#each exampleSearches as example}
+			<button
+				class="example-link"
+				onclick={() => handleExampleClick(example)}
+				type="button"
+			>
+				{example}
+			</button>
+		{/each}
 	</div>
 </div>
 
@@ -110,6 +134,36 @@
 		color: #333;
 	}
 
+	.example-searches {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 0.5rem;
+	}
+
+	.example-label {
+		font-size: 0.7rem;
+		color: #666;
+		font-weight: 400;
+	}
+
+	.example-link {
+		background: none;
+		border: none;
+		padding: 0;
+		font-size: 0.7rem;
+		color: #254c6f;
+		text-decoration: underline;
+		cursor: pointer;
+		font-family: inherit;
+		transition: color 0.2s ease;
+	}
+
+	.example-link:hover {
+		color: #1a3a52;
+	}
+
 	@media screen and (max-width: 768px) {
 		.search-bar-container {
 			width: 100%;
@@ -117,6 +171,10 @@
 
 		.search-input {
 			font-size: 16px; /* Prevents zoom on iOS */
+		}
+
+		.example-searches {
+			font-size: 0.65rem;
 		}
 	}
 </style>

@@ -70,17 +70,33 @@ export function normalizeData(rawDataArray) {
 }
 
 /**
- * Gets the latest "Last Modified" date from data and formats it
+ * Gets the latest date from data and formats it
  * @param {Array<Object>} data - Data array
+ * @param {string} [dateField='last_updated'] - Field name for last updated date
+ * @param {string} [fallbackField='date'] - Fallback field name for date
  * @returns {string} Formatted date string
  */
-export function getLatestDate(data) {
+export function getLatestDate(data, dateField = 'last_updated', fallbackField = 'date') {
 	if (!Array.isArray(data) || data.length === 0) {
 		return 'Date unavailable';
 	}
 	
+	// Try to get dates from the specified field, fallback to date field
 	const dates = data
-		.map(row => row['Last Modified'])
+		.map(row => {
+			// Try dateField first (e.g., 'last_updated'), then fallbackField (e.g., 'date')
+			return row[dateField] || row[fallbackField] || row['Last Modified'] || row['date'];
+		})
+		.filter(Boolean)
+		.map(dateStr => {
+			// Handle ISO date strings and other formats
+			if (typeof dateStr === 'string') {
+				// If it's an ISO string, parse it
+				const date = new Date(dateStr);
+				return isNaN(date.getTime()) ? null : dateStr;
+			}
+			return dateStr;
+		})
 		.filter(Boolean)
 		.sort()
 		.reverse();

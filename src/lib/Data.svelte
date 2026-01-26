@@ -1,0 +1,647 @@
+<script>
+	import { onMount, onDestroy } from 'svelte';
+	import FilterBar from './FilterBar.svelte';
+	import { applyFilters } from './generic-filter-utils.js';
+	import { groupByMonth } from './date-utils.js';
+	import './cjr.css';
+
+	/**
+	 * @typedef {Object} FilterConfigItem
+	 * @property {'multi-select' | 'hierarchical' | 'date-range' | 'search'} type - Filter type
+	 * @property {string} [column] - Column name (display name) - required for multi-select, optional for search/date-range
+	 * @property {string} label - Display label
+	 * @property {string} [dataKey] - Data key (if different from column)
+	 * @property {string} [parentColumn] - Parent column for hierarchical filters
+	 * @property {string} [childColumn] - Child column for hierarchical filters
+	 */
+
+	/**
+	 * @typedef {Object} Props
+	 * @property {any[]} [data=[]] - Data array
+	 * @property {Record<string, string>} [categoryDefinitions={}] - Category definitions
+	 * @property {FilterConfigItem[]} [filterConfig] - Custom filter configuration (optional, uses default if not provided)
+	 * @property {string} [dateField='date'] - Field name in data that contains dates
+	 * @property {number} [initialVisibleCount=20] - Initial number of items to show
+	 * @property {any} [itemComponent] - Component to render each item (optional, uses slot if not provided)
+	 * @property {string} [displayMode='list'] - Display mode: 'list', 'table', 'grid', etc. (for styling purposes)
+	 * @property {boolean} [showTimeline=false] - Whether to show timeline UI with date grouping
+	 * @property {boolean} [showYearNavigation=false] - Whether to show year navigation sidebar
+	 * @property {(args: {item: any, index: number, searchQuery: string, filterValues: Record<string, any>}) => any} [children] - Slot content for custom item rendering
+	 */
+
+	/** @type {Props} */
+	let { 
+		data = [], 
+		categoryDefinitions = {},
+		filterConfig = undefined,
+		dateField = 'date',
+		initialVisibleCount = 20,
+		itemComponent = undefined,
+		displayMode = 'list',
+		showTimeline = false,
+		showYearNavigation = false,
+		children = undefined
+	} = $props();
+
+	// Filter state for FilterBar
+	let filterValues = $state({});
+	let searchQuery = $state('');
+	let visibleCount = $state(initialVisibleCount);
+	let isLoading = $state(false);
+
+	/** @type {HTMLElement | undefined} */
+	let filterBarRef
+	let isFilterBarSticky = $state(false);
+	let filterBarInitialTop = 0;
+	/** @type {number} */
+	let filterBarHeight = $state(0);
+	const increment = 20;
+
+	// Default filter configuration - can be overridden via prop
+	/** @type {FilterConfigItem[]} */
+	const defaultFilterConfig = [
+		{
+			type: 'multi-select',
+			column: 'Platform',
+			label: 'Platform',
+			dataKey: 'platform'
+		},
+		{
+			type: 'multi-select',
+			column: 'Category',
+			label: 'Category',
+			dataKey: 'category'
+		},
+		{
+			type: 'date-range',
+			label: 'Date Range',
+			dataKey: 'date'
+		},
+		{
+			type: 'search',
+			label: 'Search'
+		}
+	];
+
+	// Use provided filterConfig or default
+	/** @type {FilterConfigItem[]} */
+	const activeFilterConfig = $derived(filterConfig || defaultFilterConfig);
+
+	function loadMore() {
+		if (isLoading) return;
+		isLoading = true;
+		setTimeout(() => {
+			visibleCount += increment;
+			isLoading = false;
+		}, 300);
+	}
+
+	/**
+	 * @param {string} filterId
+	 * @param {any} value
+	 */
+	function handleFilterChange(filterId, value) {
+		filterValues = { ...filterValues, [filterId]: value };
+		
+		// Also update searchQuery if search filter changes
+		if (filterId === 'search') {
+			searchQuery = value;
+		}
+	}
+
+	function handleScroll() {
+		if (typeof window === 'undefined') return;
+		
+		const scrollY = window.scrollY || window.pageYOffset;
+		
+		// Check if filter bar should be sticky when its top reaches the top of the viewport
+		if (filterBarInitialTop > 0) {
+			const wasSticky = isFilterBarSticky;
+			// Once sticky, keep it sticky - don't unstick unless scrolled back to very top
+			const threshold = 5; // Small threshold to prevent flickering
+			
+			// If already sticky, keep it sticky unless we've scrolled back above the threshold
+			if (wasSticky) {
+				// Only unstick if we've scrolled back above the threshold
+				isFilterBarSticky = scrollY >= filterBarInitialTop - threshold;
+			} else {
+				// If not sticky yet, make it sticky when we reach the initial position
+				isFilterBarSticky = scrollY >= filterBarInitialTop;
+			}
+			
+			// Update filter bar height when it becomes sticky - measure immediately
+			if (isFilterBarSticky && (!wasSticky || filterBarHeight === 0) && filterBarRef) {
+				const rect = filterBarRef.getBoundingClientRect();
+				filterBarHeight = rect.height;
+			}
+		} else if (filterBarRef) {
+			// Initialize on first scroll if not already set
+			// Only initialize if filter bar is not sticky (otherwise getBoundingClientRect won't work correctly)
+			if (!isFilterBarSticky) {
+				const rect = filterBarRef.getBoundingClientRect();
+				filterBarInitialTop = rect.top + scrollY;
+				isFilterBarSticky = scrollY >= filterBarInitialTop;
+				if (isFilterBarSticky) {
+					filterBarHeight = rect.height;
+				}
+			}
+		}
+	}
+
+
+
+	const filteredData = $derived.by(() => {
+		// Use generic filter function that works with any filterConfig
+		return applyFilters(data, filterValues, activeFilterConfig, dateField);
+	});
+
+	// Group data by month if timeline is enabled
+	const groupedData = $derived.by(() => {
+		if (!showTimeline) return {};
+		return groupByMonth(filteredData, dateField);
+	});
+	
+	// Get visible items - sorted by date descending or grouped by timeline
+	const visibleItems = $derived.by(() => {
+		if (showTimeline) {
+			// For timeline, return grouped data structure
+			const grouped = groupedData;
+			const allItems = [];
+			let currentCount = 0;
+			
+			// Flatten grouped data while respecting visibleCount
+			for (const [dateKey, items] of Object.entries(grouped)) {
+				if (currentCount >= visibleCount) break;
+				for (const item of items) {
+					if (currentCount >= visibleCount) break;
+					allItems.push({ ...item, dateKey });
+					currentCount++;
+				}
+			}
+			return allItems;
+		} else {
+		// Sort by date descending
+		const sorted = [...filteredData].sort((a, b) => {
+			const dateA = a[dateField] ? new Date(a[dateField]) : new Date(0);
+			const dateB = b[dateField] ? new Date(b[dateField]) : new Date(0);
+			return dateB.getTime() - dateA.getTime();
+		});
+		return sorted.slice(0, visibleCount);
+		}
+	});
+	
+	// Reset visible count when filters change
+	$effect(() => {
+		// Track filteredData changes to reset pagination
+		filteredData;
+		visibleCount = initialVisibleCount; // Reset to initial count when filters change
+	});
+
+	// Compute padding top for sticky filter bar
+	/** @type {string} */
+	const paddingTop = $derived.by(() => {
+		if (isFilterBarSticky && filterBarHeight > 0) {
+			return `${Number(filterBarHeight) + 40}px`;
+		}
+		return '';
+	});
+
+	onMount(() => {
+		// Initialize filter bar position
+		if (filterBarRef && typeof window !== 'undefined') {
+			const rect = filterBarRef.getBoundingClientRect();
+			const scrollY = window.scrollY || window.pageYOffset;
+			filterBarInitialTop = rect.top + scrollY;
+			// Store initial height
+			filterBarHeight = rect.height;
+		}
+
+		// Add scroll listener
+		if (typeof window !== 'undefined') {
+			window.addEventListener('scroll', handleScroll, { passive: true });
+			// Check initial scroll position immediately
+			handleScroll();
+		}
+		
+		// Also check after a brief delay to catch any layout shifts
+		const initialCheck = () => {
+			if (filterBarRef && typeof window !== 'undefined') {
+				// Only recalculate if not sticky and initialTop is 0 or incorrect
+				if (!isFilterBarSticky) {
+					const rect = filterBarRef.getBoundingClientRect();
+					const scrollY = window.scrollY || window.pageYOffset;
+					if (filterBarInitialTop === 0 || Math.abs(filterBarInitialTop - (rect.top + scrollY)) > 10) {
+						filterBarInitialTop = rect.top + scrollY;
+						isFilterBarSticky = scrollY >= filterBarInitialTop;
+						if (isFilterBarSticky) {
+							filterBarHeight = rect.height;
+						}
+					}
+				}
+				handleScroll();
+			}
+		};
+		
+		// Use requestAnimationFrame for immediate check after layout
+		requestAnimationFrame(() => {
+			requestAnimationFrame(initialCheck);
+		});
+		
+		// Recalculate on resize
+		const handleResize = () => {
+			if (filterBarRef && typeof window !== 'undefined') {
+				// Only recalculate initialTop if not sticky (when sticky, getBoundingClientRect gives wrong position)
+				if (!isFilterBarSticky && filterBarInitialTop === 0) {
+					const rect = filterBarRef.getBoundingClientRect();
+					const scrollY = window.scrollY || window.pageYOffset;
+					filterBarInitialTop = rect.top + scrollY;
+				}
+				// Always update height if sticky
+				if (isFilterBarSticky) {
+					const rect = filterBarRef.getBoundingClientRect();
+					filterBarHeight = rect.height;
+				}
+				// Re-check sticky state
+				handleScroll();
+			}
+		};
+		
+		if (typeof window !== 'undefined') {
+			window.addEventListener('resize', handleResize, { passive: true });
+		}
+
+		return () => {
+			if (typeof window !== 'undefined') {
+				window.removeEventListener('scroll', handleScroll);
+				window.removeEventListener('resize', handleResize);
+			}
+		};
+	});
+</script>
+
+<div class="filter-bar-wrapper" class:sticky={isFilterBarSticky} bind:this={filterBarRef}>
+<FilterBar 
+	data={data}
+	filterConfig={activeFilterConfig}
+	{filterValues}
+	{searchQuery}
+	filteredRowCount={filteredData.length}
+		{categoryDefinitions}
+	onFilterChange={handleFilterChange}
+	isSticky={isFilterBarSticky}
+/>
+</div>
+
+
+<div class="data-container data-{displayMode}" class:timeline={showTimeline} style={paddingTop ? `padding-top: ${paddingTop};` : ''}>
+	{#if showTimeline}
+		<!-- Timeline view with date grouping -->
+		{@const allGroupedEntries = Object.entries(groupedData)}
+		{@const getVisibleItemsForGroups = (() => {
+			let totalShown = 0;
+			const result = [];
+			for (const [dateKey, items] of allGroupedEntries) {
+				if (totalShown >= visibleCount) break;
+				const remaining = visibleCount - totalShown;
+				const visibleItems = items.slice(0, Math.min(remaining, items.length));
+				if (visibleItems.length > 0) {
+					result.push({ dateKey, items: visibleItems, allItems: items });
+					totalShown += visibleItems.length;
+				}
+			}
+			return result;
+		})()}
+		{#each getVisibleItemsForGroups as { dateKey, items: visibleGroupItems, allItems }}
+			{@const firstItem = allItems[0]}
+			{@const displayDate = firstItem?.date ? new Date(firstItem.date) : null}
+			{@const displayDateKey = displayDate && !isNaN(displayDate.getTime()) ? displayDate.toLocaleString('default', { month: 'long', day: 'numeric', year: 'numeric' }) : dateKey}
+			<div class="timeline-row">
+				<div class="timeline-date">
+					<div class="date-tag">
+						<span class="date-month-day">{displayDateKey.split(',').slice(0, 1).join(',').trim()}</span>
+						<span class="date-year">{displayDateKey.split(',').slice(1).join(',').trim()}</span>
+					</div>
+				</div>
+				<div class="timeline-divider"></div>
+				<div class="timeline-content">
+					{#if itemComponent}
+						{#each visibleGroupItems as item, index}
+							{@const Component = itemComponent}
+							{@const itemDate = item.date ? new Date(item.date) : null}
+							{@const itemDateKey = itemDate && !isNaN(itemDate.getTime()) ? itemDate.toLocaleString('default', { month: 'long', day: 'numeric', year: 'numeric' }) : ''}
+							<Component 
+								{item}
+								dateKey={itemDateKey}
+								{index}
+								{searchQuery}
+								{filterValues}
+							/>
+						{/each}
+					{:else if children}
+						{#each visibleGroupItems as item, index}
+							{@render children({ item, index, searchQuery, filterValues })}
+					{/each}
+					{/if}
+				</div>
+			</div>
+		{/each}
+	{:else}
+		<!-- Simple list or table view -->
+		{#if displayMode === 'table'}
+			<!-- Table view -->
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th class="table-header">Date</th>
+						<th class="table-header">Organization</th>
+						<th class="table-header">Title</th>
+						<th class="table-header">Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#if itemComponent}
+						{#each visibleItems as item, index}
+							{@const Component = itemComponent}
+							<Component 
+								{item}
+								{index}
+								{searchQuery}
+								{filterValues}
+								dateField={dateField}
+							/>
+						{/each}
+					{:else if children}
+						{#each visibleItems as item, index}
+							{@render children({ item, index, searchQuery, filterValues })}
+						{/each}
+					{/if}
+				</tbody>
+			</table>
+		{:else}
+			<!-- List view -->
+			{#if itemComponent}
+				<!-- Use provided component to render items -->
+				{#each visibleItems as item, index}
+					{@const Component = itemComponent}
+					<Component 
+						{item}
+						{index}
+						{searchQuery}
+						{filterValues}
+					/>
+				{/each}
+			{:else if children}
+				<!-- Use slot for custom rendering -->
+				{#each visibleItems as item, index}
+					{@render children({ item, index, searchQuery, filterValues })}
+				{/each}
+			{/if}
+		{/if}
+	{/if}
+	{#if isLoading}<p class="loading">Loading more...</p>{/if}
+</div>
+<style>
+	/* Filter Bar Wrapper */
+	.filter-bar-wrapper {
+		position: relative;
+		z-index: 9999;
+		width: 100%;
+		margin: 2rem;
+	}
+	
+	.filter-bar-wrapper.sticky {
+		position: fixed;
+		left: 0;
+		top: 0;
+		width: 100%;
+		margin: 0;
+		padding: 0;
+		background-color: #fafafa;
+		border-bottom: 1px solid #e0e0e0;
+		display: flex;
+		justify-content: center;
+	}
+
+	@media screen and (max-width: 768px) {
+		.filter-bar-wrapper {
+			margin: 1rem auto;
+			padding: 0 1rem;
+		}
+	}
+
+	/* Data Container */
+	.data-container {
+		max-width: 900px;
+		margin: 0 auto;
+		padding: 0 15px 4rem;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.data-container.data-list {
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+		margin-top: 2rem;
+	}
+
+	.data-container.data-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+		gap: 2rem;
+		margin-top: 2rem;
+	}
+
+	.data-table {
+		width: 100%;
+		max-width: 100%;
+		border-collapse: collapse;
+		background-color: white;
+		margin: 0;
+		table-layout: auto;
+		box-sizing: border-box;
+	}
+
+	.table-header {
+		padding: 1rem;
+		text-align: left;
+		font-weight: 600;
+		font-size: 0.7rem;
+		color: #666;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		border-bottom: 2px solid #e0e0e0;
+		background-color: #fafafa;
+	}
+
+	@media (max-width: 768px) {
+		.data-table {
+			display: block;
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		.table-header {
+			padding: 0.75rem 0.5rem;
+		}
+	}
+
+	.data-container.data-table {
+		margin: 2rem auto;
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+		padding: 0;
+		display: flex;
+		justify-content: center;
+		align-items: flex-start;
+	}
+
+	.data-container.data-table .data-table {
+		width: auto;
+		max-width: 100%;
+		table-layout: auto;
+		margin: 0 auto;
+		display: table;
+	}
+
+
+	/* Timeline view styles */
+	.data-container.timeline {
+		max-width: 1000px;
+		padding: 0 3rem 2rem;
+	}
+
+	.timeline-row {
+		display: grid;
+		grid-template-columns: 100px 2px 1fr;
+		gap: 0.75rem;
+		align-items: flex-start;
+		margin-bottom: 1.5rem;
+		overflow: visible;
+	}
+
+	.timeline-divider {
+		background: #e0e0e0;
+		width: 1.5px;
+		height: 100%;
+		opacity: 1;
+	}
+
+	.timeline-date {
+		position: sticky;
+		top: calc(200px + 1rem);
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		padding-right: 0.75rem;
+		margin-right: 0;
+		z-index: 900;
+		padding-top: 0.5rem;
+		line-height: 1.2;
+	}
+
+	.date-tag {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		font-family: inherit;
+		width: 100%;
+		min-width: 80px;
+	}
+
+	.date-month-day {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: #1a1a1a;
+		text-transform: capitalize;
+		line-height: 1.3;
+		text-align: right;
+		white-space: nowrap;
+	}
+
+	.date-year {
+		font-size: 0.75rem;
+		color: #666;
+		margin-top: 0.15rem;
+		font-weight: 400;
+		text-align: right;
+		white-space: nowrap;
+	}
+
+	.timeline-content {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		overflow: visible;
+		min-width: 0;
+		width: 100%;
+	}
+
+
+	.loading {
+		text-align: center;
+		padding: 1rem;
+		color: #6b7280;
+		font-size: 0.875rem;
+	}
+
+	/* Responsive */
+	@media screen and (max-width: 768px) {
+		.filter-bar-wrapper {
+			margin: 0.5rem;
+		}
+
+		.data-container {
+			padding: 0 1rem 2rem;
+		}
+
+		.data-container.data-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.data-container.timeline {
+			padding: 0 1rem 2rem;
+		}
+
+		.timeline-row {
+			display: flex;
+			flex-direction: column;
+			margin-bottom: 1rem;
+			gap: 0;
+		}
+
+		.timeline-date {
+			flex-direction: row;
+			justify-content: flex-start;
+			align-items: baseline;
+			font-size: 1.25rem;
+			position: static;
+			padding: 0;
+			padding-bottom: 1rem;
+			margin-bottom: 1rem;
+			margin-right: 0;
+			border-bottom: 2px solid #DE5A35;
+		}
+
+		.date-tag {
+			flex-direction: row;
+			align-items: baseline;
+		}
+
+		.date-month-day {
+			font-size: 0.875rem;
+		}
+
+		.date-year {
+			font-size: 0.75rem;
+			margin-top: 0;
+			margin-left: 0.25rem;
+			color: #666;
+		}
+
+		.timeline-content {
+			gap: 0.25rem;
+		}
+	}
+</style>
