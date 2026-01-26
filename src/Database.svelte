@@ -26,7 +26,6 @@
    */
 
   import { onMount } from 'svelte';
-  import TimelineSidebar from './TimelineSidebar.svelte';
 
   // AWS S3 data URLs - all data is hosted in a public S3 bucket
   const MONTH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index';
@@ -106,6 +105,7 @@
 
   // --- Search state (using per-token index files) ---
   let searchTerm = '';
+  let hasSearched = false;
   let searchLoading = false;
   let searchError = null;
   let searchTimeout;
@@ -1055,23 +1055,29 @@
 
   function handleSearchInput(event) {
     searchTerm = event.target.value;
+  }
 
-    if (searchTimeout) {
-      clearTimeout(searchTimeout);
+  async function performSearch() {
+    hasSearched = true;
+    currentPage = 1;
+
+    // Track search usage
+    if (window.umami && searchTerm.trim().length > 0) {
+      window.umami.track('search-query', {
+        query_length: searchTerm.trim().length,
+        has_quotes: searchTerm.includes('"'),
+        has_filters: selectedMonths.length > 0 || selectedInstitutions.length > 0
+      });
     }
 
-    searchTimeout = setTimeout(() => {
-      // Track search usage
-      if (window.umami && searchTerm.trim().length > 0) {
-        window.umami.track('search-query', {
-          query_length: searchTerm.trim().length,
-          has_quotes: searchTerm.includes('"'),
-          has_filters: selectedMonths.length > 0 || selectedInstitutions.length > 0
-        });
-      }
+    await applyFiltersAndSearch();
+  }
 
-      applyFiltersAndSearch();
-    }, 1000); // debounce
+  async function clearSearch() {
+    searchTerm = '';
+    hasSearched = false;
+    currentPage = 1;
+    await applyFiltersAndSearch();
   }
 
   const isUnfiltered = () =>
@@ -1084,13 +1090,14 @@
    */
   async function quickSearch(term) {
     searchTerm = term;
+    hasSearched = true;
     currentPage = 1;
-    
+
     // Track quick search usage
     if (window.umami) {
       window.umami.track('quick-search', { term });
     }
-    
+
     await applyFiltersAndSearch();
   }
 
@@ -1794,9 +1801,9 @@
               </div>
             </div>
 
-            <div class="filter-group search-export-group">
-              <label for="search-input">Search and Export</label>
-              <div class="search-export-row">
+            <div class="filter-group search-group">
+              <label for="search-input">Search</label>
+              <div class="search-row">
                 <div class="search-wrapper">
                   <div class="search-input-row">
                     <input
@@ -1804,6 +1811,7 @@
                             type="text"
                             bind:value={searchTerm}
                             oninput={handleSearchInput}
+                            onkeydown={(e) => e.key === 'Enter' && performSearch()}
                             placeholder="Search title, institution, or content..."
                             class="search-input"
                     />
@@ -1816,6 +1824,16 @@
                       </div>
                     </button>
                   </div>
+                  <div class="search-buttons">
+                    <button type="button" class="search-btn" onclick={performSearch}>
+                      Search
+                    </button>
+                    {#if hasSearched || searchTerm}
+                      <button type="button" class="clear-btn" onclick={clearSearch}>
+                        Clear
+                      </button>
+                    {/if}
+                  </div>
                   <span class="quick-search-label">Example searches:</span>
                   <div class="quick-search-buttons">
                     <button type="button" class="quick-search-btn" onclick={() => quickSearch('"funding cut"')}>funding cut</button>
@@ -1823,12 +1841,26 @@
                     <button type="button" class="quick-search-btn" onclick={() => quickSearch('"Office of Civil Rights"')}>Office of Civil Rights</button>
                     <button type="button" class="quick-search-btn" onclick={() => quickSearch('visa')}>visa</button>
                     <button type="button" class="quick-search-btn" onclick={() => quickSearch('antisemitism')}>antisemitism</button>
-
                   </div>
                   {#if searchError}
                     <span class="search-status error-text">Search error: {searchError}</span>
                   {/if}
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Results -->
+        <section class="results-section" bind:this={resultsSectionEl}>
+          {#if !hasSearched}
+            <div class="search-prompt">
+              <p>Enter a search term above and click <strong>Search</strong> to find articles, or click <strong>Search</strong> with an empty field to browse all data.</p>
+            </div>
+          {:else}
+            <div class="results-header">
+              <div class="results-header-top">
+                <h3>Results</h3>
                 <button
                         onclick={exportResults}
                         class="export-btn"
@@ -1845,49 +1877,41 @@
                       <span class="export-progress-text">Exporting {exportPercent}%</span>
                     </div>
                   {:else}
-                    Export {Math.max(expectedTotalCount || 0, activeIds.length).toLocaleString()} items
+                    Download {Math.max(expectedTotalCount || 0, activeIds.length).toLocaleString()} items
                   {/if}
                 </button>
               </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Results -->
-        <section class="results-section" bind:this={resultsSectionEl}>
-          <div class="results-header">
-            <h3>Results</h3>
-            <p class="results-meta">
-              {#if selectedMonths.length === 0 && selectedInstitutions.length === 0 && !searchTerm}
-                Showing {articles.length} article(s) — page {currentPage} of {totalPages}
-              {:else}
-                Showing {articles.length} article(s)
-                {#if selectedInstitutions.length === 1}
-                  from {selectedInstitutions[0]}
-                {:else if selectedInstitutions.length > 1}
-                  from {selectedInstitutions.length} institutions
-                {/if}
-                {#if selectedMonths.length === 0}
-                  across all months
-                {:else if selectedMonths.length === 1}
-                  {#if selectedMonths[0] === NO_DATE_KEY}
-                    with no date
-                  {:else}
-                    in {formatMonthLabel(selectedMonths[0])}
-                  {/if}
+              <p class="results-meta">
+                {#if selectedMonths.length === 0 && selectedInstitutions.length === 0 && !searchTerm}
+                  Showing {articles.length} article(s) — page {currentPage} of {totalPages}
                 {:else}
-                  in {selectedMonths.length} month selections
-                  {#if selectedMonths.includes(NO_DATE_KEY)}
-                    (includes No Date)
+                  Showing {articles.length} article(s)
+                  {#if selectedInstitutions.length === 1}
+                    from {selectedInstitutions[0]}
+                  {:else if selectedInstitutions.length > 1}
+                    from {selectedInstitutions.length} institutions
                   {/if}
+                  {#if selectedMonths.length === 0}
+                    across all months
+                  {:else if selectedMonths.length === 1}
+                    {#if selectedMonths[0] === NO_DATE_KEY}
+                      with no date
+                    {:else}
+                      in {formatMonthLabel(selectedMonths[0])}
+                    {/if}
+                  {:else}
+                    in {selectedMonths.length} month selections
+                    {#if selectedMonths.includes(NO_DATE_KEY)}
+                      (includes No Date)
+                    {/if}
+                  {/if}
+                  {#if searchMatchDescription}
+                    {searchMatchDescription}
+                  {/if}
+                  — page {currentPage} of {totalPages}
                 {/if}
-                {#if searchMatchDescription}
-                  {searchMatchDescription}
-                {/if}
-                — page {currentPage} of {totalPages}
-              {/if}
-            </p>
-          </div>
+              </p>
+            </div>
 
           {#if loadingArticles}
             <div class="loading">
@@ -2019,18 +2043,51 @@
 
             </div>
           {/if}
+          {/if}
         </section>
       {/if}
     </div>
 
-    <!-- Timeline Sidebar -->
-    {#if !loading && !error}
-      <TimelineSidebar
-        {monthIndex}
-        {activeIds}
-        currentMonth={selectedMonths.length === 1 ? selectedMonths[0] : null}
-        onMonthClick={handleTimelineMonthClick}
-      />
+    <!-- Timeline Bar Sidebar -->
+    {#if !loading && !error && months.length > 0}
+      {@const monthNames = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.']}
+      {@const formatCount = (num) => {
+        if (num >= 1000) {
+          const k = num / 1000;
+          return k % 1 === 0 ? k + 'K' : k.toFixed(1) + 'K';
+        }
+        return num.toString();
+      }}
+      {@const barData = months.map(key => {
+        const count = manifestMonthCounts.get(key) || (monthIndex[key]?.length || 0);
+        const [year, month] = key.split('-').map(Number);
+        const monthName = monthNames[(month || 1) - 1];
+        return { key, count, monthName, year };
+      })}
+      {@const maxCount = Math.max(...barData.map(d => d.count), 1)}
+      <aside class="timeline-bar-sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-total">{Math.max(expectedTotalCount || 0, activeIds.length).toLocaleString()}</div>
+          <div class="sidebar-label">results</div>
+        </div>
+        <div class="sidebar-bars">
+          {#each barData as bar}
+            {@const barWidth = (bar.count / maxCount) * 100}
+            <button
+              class="sidebar-bar-row"
+              class:active={selectedMonths.length === 1 && selectedMonths[0] === bar.key}
+              onclick={() => handleTimelineMonthClick(bar.key)}
+              type="button"
+            >
+              <span class="sidebar-month">{bar.monthName}</span>
+              <div class="sidebar-bar-track">
+                <div class="sidebar-bar-fill" style="width: {barWidth}%;"></div>
+              </div>
+              <span class="sidebar-count">{formatCount(bar.count)}</span>
+            </button>
+          {/each}
+        </div>
+      </aside>
     {/if}
   </div>
 </div>
@@ -2434,6 +2491,11 @@
     border-color: #254c6f;
   }
 
+  .quick-search-btn:active {
+    background: #1a3a52;
+    border-color: #1a3a52;
+  }
+
   .export-btn {
     background: #254c6f;
     color: #ffffff;
@@ -2473,6 +2535,87 @@
     font-weight: 600;
     color: #254c6f;
     white-space: nowrap;
+  }
+
+  /* Search and Clear buttons */
+  .search-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .search-btn {
+    background: #254c6f;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: "Graphik Web", sans-serif;
+    transition: all 0.15s ease;
+  }
+
+  .search-btn:hover {
+    background: #1a3a52;
+  }
+
+  .search-btn:active {
+    background: #0f2433;
+  }
+
+  .clear-btn {
+    background: white;
+    color: #666;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: "Graphik Web", sans-serif;
+    transition: all 0.15s ease;
+  }
+
+  .clear-btn:hover {
+    background: #f0f0f0;
+    border-color: #ccc;
+  }
+
+  .clear-btn:active {
+    background: #e0e0e0;
+  }
+
+  /* Search prompt */
+  .search-prompt {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #666;
+    font-family: "Graphik Web", sans-serif;
+  }
+
+  .search-prompt p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  /* Results header with export button */
+  .results-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .results-header-top h3 {
+    margin: 0;
+  }
+
+  .search-row {
+    display: flex;
+    gap: 1rem;
+    align-items: start;
   }
 
   .search-help {
@@ -2539,10 +2682,13 @@
   }
 
   .export-btn:hover:not(:disabled) {
-    background: #254c6f;
+    background: #1a3a52;
     color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-1px);
+  }
+
+  .export-btn:active:not(:disabled) {
+    background: #0f2433;
   }
 
   .export-btn:disabled {
@@ -2561,6 +2707,110 @@
     height: 16px;
     animation: spin 0.8s linear infinite;
     display: inline-block;
+  }
+
+  /* Timeline Bar Sidebar */
+  .timeline-bar-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    padding: 1rem;
+    background: #fafafa;
+    border-left: 1px solid #e0e0e0;
+    position: sticky;
+    top: 0;
+    height: fit-content;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-header {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .sidebar-total {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #254c6f;
+    font-family: "Lyon Display Web", serif;
+    line-height: 1;
+  }
+
+  .sidebar-label {
+    font-size: 0.8rem;
+    color: #666;
+    font-family: "Graphik Web", sans-serif;
+    margin-top: 0.25rem;
+  }
+
+  .sidebar-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .sidebar-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+    width: 100%;
+    text-align: left;
+  }
+
+  .sidebar-bar-row:hover {
+    background: #e8e8e8;
+  }
+
+  .sidebar-bar-row:active {
+    background: #d8d8d8;
+  }
+
+  .sidebar-bar-row.active {
+    background: #d8e8f5;
+  }
+
+  .sidebar-month {
+    width: 32px;
+    font-size: 0.75rem;
+    color: #666;
+    font-family: "Graphik Web", sans-serif;
+    flex-shrink: 0;
+  }
+
+  .sidebar-bar-track {
+    flex: 1;
+    height: 12px;
+    background: #e8e8e8;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .sidebar-bar-fill {
+    height: 100%;
+    background: #254c6f;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .sidebar-bar-row.active .sidebar-bar-fill {
+    background: #1a3a52;
+  }
+
+  .sidebar-count {
+    width: 36px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #254c6f;
+    font-family: "Graphik Web", sans-serif;
+    text-align: right;
+    flex-shrink: 0;
   }
 
   /* Results Section */
@@ -2656,10 +2906,11 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
   .page-btn:hover:not(:disabled) {
-    background: #f8f9fa;
+    background: #e8e8e8;
     border-color: #254c6f;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transform: translateY(-1px);
+  }
+  .page-btn:active:not(:disabled) {
+    background: #d0d0d0;
   }
   .page-btn:disabled {
     opacity: 0.5;
@@ -2714,7 +2965,7 @@
       flex-direction: column;
     }
 
-    .container :global(.timeline-sidebar) {
+    .timeline-bar-sidebar {
       display: none;
     }
     h2 {
