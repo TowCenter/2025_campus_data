@@ -9,7 +9,7 @@
    * - month_index/{year}.json: Per-year month to article IDs for chronological filtering
    * - institution_index.json: Maps institutions to article IDs for institution filtering
    * - articles/: Individual JSON files per article, loaded on demand
-   * - search_index/: Pre-built search indices for fast keyword matching
+   * - search_term/: Per-token files for fast keyword matching
    * - data.json: Full dataset, loaded only for large exports or exact phrase searches
    *
    * Key Features:
@@ -33,7 +33,7 @@
   const INSTITUTION_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index';
   const INSTITUTION_INDEX_MANIFEST_URL = `${INSTITUTION_INDEX_BASE_URL}/manifest.json`;
   const ARTICLE_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/articles';
-  const SEARCH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/search_index';
+  const SEARCH_TERM_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/search_term';
   const FULL_DATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
   const MIN_YEAR = 2025;
 
@@ -103,7 +103,7 @@
   // Cache of article JSONs
   const articleCache = new Map();
 
-  // --- Search state (using search_index shards) ---
+  // --- Search state (using per-token index files) ---
   let searchTerm = '';
   let hasSearched = false;
   let searchLoading = false;
@@ -114,8 +114,8 @@
   let searchRunId = 0;
   let exporting = false;
   let exportProgress = 0;
-  // shardKey -> { token: [ids...] }
-  const searchShardCache = new Map();
+  // token -> [ids...]
+  const searchTokenCache = new Map();
   let fullDatasetCache = null;
   let fullDatasetMap = null;
 
@@ -606,13 +606,6 @@
 
   // --- Search index helpers ---
 
-  function getShardKey(term) {
-    if (!term) return null;
-    const first = term[0].toLowerCase();
-    if (first >= 'a' && first <= 'z') return first;
-    return null; // no shard for non-letter queries
-  }
-
   function startSearchRun() {
     searchRunId += 1;
     if (searchAbortController) {
@@ -630,28 +623,45 @@
     return error && error.name === 'AbortError';
   }
 
-  async function ensureShardLoaded(shardKey, onProgress = null, options = {}) {
-    if (!shardKey) return null;
+  async function ensureTokenLoaded(token, onProgress = null, options = {}) {
+    if (!token) return null;
 
-    if (searchShardCache.has(shardKey)) {
-      return searchShardCache.get(shardKey);
+    const {
+      missingBehavior = 'empty',
+      suppressError = false,
+      ...fetchOptions
+    } = options;
+
+    if (searchTokenCache.has(token)) {
+      return searchTokenCache.get(token);
     }
 
     try {
-      const shard = await fetchJsonWithProgress(
-              `${SEARCH_INDEX_BASE_URL}/${shardKey}.json`,
+      const safeToken = encodeURIComponent(token);
+      const ids = await fetchJsonWithProgress(
+              `${SEARCH_TERM_BASE_URL}/${safeToken}.json`,
               onProgress,
               {
-                ...options,
-                errorLabel: options.errorLabel || `search index shard '${shardKey}'`
+                ...fetchOptions,
+                emptyOn404: missingBehavior === 'empty',
+                returnNullOn404: missingBehavior === 'null',
+                emptyOn403: missingBehavior === 'empty',
+                returnNullOn403: missingBehavior === 'null',
+                errorLabel: fetchOptions.errorLabel || `search index token '${token}'`
               }
       );
-      searchShardCache.set(shardKey, shard);
-      return shard;
+      if (ids === null) return null;
+      if (!Array.isArray(ids)) {
+        throw new Error(`Unexpected search index format for token '${token}'`);
+      }
+      searchTokenCache.set(token, ids);
+      return ids;
     } catch (e) {
       if (isAbortError(e)) return null;
       console.error(e);
-      searchError = e.message;
+      if (!suppressError) {
+        searchError = e.message;
+      }
       return null;
     }
   }
@@ -666,6 +676,10 @@
             .split(/\s+/)
             .map((t) => t.replace(/^"+|"+$/g, ''))
             .filter(Boolean);
+  }
+
+  function buildPhraseToken(tokens) {
+    return tokens.join('_');
   }
 
   // If the entire term is quoted, return the inner phrase
@@ -700,6 +714,28 @@
             searchProgress = Math.min(0.95, searchProgress + 0.02);
           }
         };
+        const phraseToken = phraseTokens.length ? buildPhraseToken(phraseTokens) : null;
+        if (phraseToken) {
+          const phraseIds = await ensureTokenLoaded(
+                  phraseToken,
+                  progressHandler,
+                  { signal, missingBehavior: 'null', suppressError: true }
+          );
+          if (!isActiveSearch(runId)) return;
+          if (Array.isArray(phraseIds)) {
+            searchProgress = 1;
+            const phraseSet = new Set(phraseIds);
+            const matchedIds = baseIds.filter((id) => phraseSet.has(id));
+            activeIds = matchedIds;
+            expectedTotalCount = matchedIds.length;
+            currentPage = 1;
+            if (!isActiveSearch(runId)) return;
+            await loadPage(1, { runId });
+            return;
+          }
+          searchProgress = 0;
+        }
+
         const shouldTrackProgress = !fullDatasetCache && !fullDatasetMap;
         const datasetMap = await ensureFullDatasetMap(
                 shouldTrackProgress ? progressHandler : null,
@@ -765,66 +801,50 @@
       return;
     }
 
-    // unique shard keys (one per first letter)
-    const shardKeys = Array.from(
-            new Set(
-                    tokens
-                            .map((t) => getShardKey(t))
-                            .filter((k) => k !== null)
-            )
-    );
-
-    if (shardKeys.length === 0) {
-      searchProgress = 0;
-      searchLoading = false;
-      activeIds = [];
-      currentPage = 1;
-      await loadPage(1, { runId });
-      return;
-    }
+    const uniqueTokens = Array.from(new Set(tokens));
 
     searchLoading = true;
     searchError = null;
 
-    // load all needed shards
-    const shardMap = new Map();
-    const totalShards = shardKeys.length;
-    let loadedShards = 0;
-    const updateProgress = (currentShardProgress) => {
+    // load all needed tokens
+    const tokenMap = new Map();
+    const totalTokens = uniqueTokens.length;
+    let loadedTokens = 0;
+    const updateProgress = (currentTokenProgress) => {
       if (!isActiveSearch(runId)) return;
-      const normalized = Math.min(Math.max(currentShardProgress, 0), 1);
-      searchProgress = Math.min(1, (loadedShards + normalized) / Math.max(totalShards, 1));
+      const normalized = Math.min(Math.max(currentTokenProgress, 0), 1);
+      searchProgress = Math.min(1, (loadedTokens + normalized) / Math.max(totalTokens, 1));
     };
 
     try {
-      for (const key of shardKeys) {
+      for (const token of uniqueTokens) {
         if (!isActiveSearch(runId)) return;
-        if (searchShardCache.has(key)) {
-          loadedShards += 1;
+        if (searchTokenCache.has(token)) {
+          loadedTokens += 1;
           updateProgress(0);
-          shardMap.set(key, searchShardCache.get(key));
+          tokenMap.set(token, searchTokenCache.get(token));
           continue;
         }
 
-        let shardProgress = 0;
-        const shard = await ensureShardLoaded(key, (loaded, total) => {
+        let tokenProgress = 0;
+        const ids = await ensureTokenLoaded(token, (loaded, total) => {
           if (!isActiveSearch(runId)) return;
           if (total && total > 0) {
-            shardProgress = loaded / total;
+            tokenProgress = loaded / total;
           } else {
-            shardProgress = Math.min(0.95, shardProgress + 0.02);
+            tokenProgress = Math.min(0.95, tokenProgress + 0.02);
           }
-          updateProgress(shardProgress);
+          updateProgress(tokenProgress);
         }, { signal });
         if (!isActiveSearch(runId)) return;
-        loadedShards += 1;
+        loadedTokens += 1;
         updateProgress(0);
-        if (shard) {
-          shardMap.set(key, shard);
+        if (Array.isArray(ids)) {
+          tokenMap.set(token, ids);
         }
       }
 
-      if (shardMap.size === 0) {
+      if (tokenMap.size === 0) {
         if (!isActiveSearch(runId)) return;
         activeIds = [];
         expectedTotalCount = 0;
@@ -838,13 +858,7 @@
       const scoreMap = new Map(); // id -> count of matched tokens
 
       for (const term of tokens) {
-        const key = getShardKey(term);
-        if (!key) continue;
-
-        const shard = shardMap.get(key);
-        if (!shard) continue;
-
-        const ids = shard[term];
+        const ids = tokenMap.get(term);
         if (!Array.isArray(ids)) continue;
 
         for (const id of ids) {
@@ -1088,8 +1102,22 @@
   }
 
   async function fetchJsonWithProgress(url, onProgress = null, options = {}) {
-    const { errorLabel = 'data', signal = null } = options;
+    const {
+      errorLabel = 'data',
+      signal = null,
+      emptyOn404 = false,
+      returnNullOn404 = false,
+      emptyOn403 = false,
+      returnNullOn403 = false
+    } = options;
     const res = await fetch(url, signal ? { signal } : undefined);
+    if (
+      (res.status === 404 && (emptyOn404 || returnNullOn404)) ||
+      (res.status === 403 && (emptyOn403 || returnNullOn403))
+    ) {
+      if (onProgress) onProgress(1, 1);
+      return returnNullOn404 || returnNullOn403 ? null : [];
+    }
     if (!res.ok) {
       throw new Error(`Failed to load ${errorLabel}: ${res.status}`);
     }
@@ -1376,6 +1404,23 @@
 
   function highlight(text, term) {
     if (!text) return '';
+    const quotedPhrase = getQuotedPhrase(term);
+    if (quotedPhrase) {
+      const phraseRegex = buildPhraseRegex(quotedPhrase, 'gi');
+      const tokenRegex = buildExactTokenRegex(quotedPhrase, 'gi');
+      const chosenRegex = phraseRegex || tokenRegex;
+      if (!chosenRegex) return escapeHtml(text);
+
+      const parts = text.split(chosenRegex);
+      return parts
+              .map((part, i) =>
+                      i % 2 === 1
+                              ? `<mark>${escapeHtml(part)}</mark>`
+                              : escapeHtml(part)
+              )
+              .join('');
+    }
+
     const phraseRegex = buildPhraseRegex(term, 'gi');
     const tokenRegex = buildExactTokenRegex(term, 'gi');
     if (!tokenRegex) return escapeHtml(text);
@@ -1614,7 +1659,9 @@
 
       {#if loading}
         <div class="loading">
-          <div class="spinner"></div>
+          <div class="spinner">
+            <div class="spinner-ring"></div>
+          </div>
           <p>Loading database...</p>
         </div>
       {:else if error}
@@ -1869,6 +1916,7 @@
           {#if loadingArticles}
             <div class="loading">
               <div class="spinner">
+                <div class="spinner-ring"></div>
                 {#if searchTerm.trim()}
                   <span class="spinner-label">{searchPercent}%</span>
                 {/if}
@@ -1881,6 +1929,7 @@
           {:else if searchLoading}
             <div class="loading">
               <div class="spinner">
+                <div class="spinner-ring"></div>
                 {#if searchTerm.trim()}
                   <span class="spinner-label">{searchPercent}%</span>
                 {/if}
@@ -2138,24 +2187,30 @@
   }
 
   .spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #254c6f;
-    border-radius: 50%;
     width: 50px;
     height: 50px;
-    animation: spin 1s linear infinite;
     margin: 0 auto 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     position: relative;
   }
 
+  .spinner-ring {
+    position: absolute;
+    inset: 0;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #254c6f;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
   .spinner-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.75rem;
     font-weight: 700;
     color: #254c6f;
-    animation: spin-reverse 1s linear infinite;
   }
 
   .loading-note {
@@ -2174,14 +2229,6 @@
     }
   }
 
-  @keyframes spin-reverse {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(-360deg);
-    }
-  }
 
   .error {
     color: #dc3545;
