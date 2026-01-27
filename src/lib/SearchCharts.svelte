@@ -412,7 +412,7 @@
 	.charts-toggle {
 		width: 100%;
 		padding: 0.75rem 1rem;
-		background: #fafafa;
+		background: #FFFFFF;
 		border: none;
 		border-bottom: 1px solid #e0e0e0;
 		cursor: pointer;
@@ -483,8 +483,8 @@
 	/* Line Chart */
 	.line-chart-wrapper {
 		width: 100%;
-		background: #fafafa;
-		border-radius: 4px;
+		background: #FFFFFF;
+		border-radius: 0px;
 		padding: 1rem;
 		box-sizing: border-box;
 		position: relative;
@@ -542,7 +542,7 @@
 	/* Bar Chart */
 	.bar-chart-wrapper {
 		width: 100%;
-		background: #fafafa;
+		background: #FFFFFF;
 		border-radius: 4px;
 		padding: 1rem;
 		box-sizing: border-box;
