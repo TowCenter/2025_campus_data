@@ -197,7 +197,7 @@
 
   function handleDotLeave() {
     hoveredSchool = null;
-    showTooltip = false;
+    showTooltip = true;
   }
 
   function updateTooltipPosition(event) {
@@ -572,8 +572,8 @@
                     <path
                       class="state-path"
                       d={geoJSONToPath(state)}
-                      fill="#f9f9f9"
-                      stroke="#c0c0c0"
+                      fill="#D9D9D9"
+                      stroke="#FFFFFF"
                       stroke-width="1"
                     />
                   {/each}
@@ -799,8 +799,8 @@
     width: 100%;
     max-width: 100%;
     height: 350px;
-    background: #fafafa;
-    border: 1px solid #e0e0e0;
+    background: #FFFFFF;
+    border: 0px solid #e0e0e0;
     overflow: visible;
   }
 
@@ -1073,7 +1073,7 @@
 
   .y-axis-label {
     font-size: 11px;
-    fill: #888;
+    fill: #FFFFFF;
   }
 
   .bar-chart-svg-container {
@@ -1104,7 +1104,7 @@
 
   .bar-label {
     font-size: 11px;
-    fill: #666;
+    fill: #FFFFFF;
   }
 
   /* Calendar Heatmap */
