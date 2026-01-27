@@ -798,7 +798,7 @@
     position: relative;
     width: 100%;
     max-width: 100%;
-    height: 350px;
+    height: 450px;
     background: #FFFFFF;
     border: 0px solid #e0e0e0;
     overflow: visible;
@@ -1313,7 +1313,7 @@
     }
 
     .map-container {
-      height: 300px;
+      height: 400px;
     }
 
     .map-legend {
