@@ -56,6 +56,8 @@
 	let filterBarInitialTop = 0;
 	/** @type {number} */
 	let filterBarHeight = $state(0);
+	let filterBarWidth = $state(0);
+	let filterBarLeft = $state(0);
 	const increment = 20;
 
 	// Default filter configuration - can be overridden via prop
@@ -112,24 +114,40 @@
 
 	function handleScroll() {
 		if (typeof window === 'undefined') return;
-		
+
 		const scrollY = window.scrollY || window.pageYOffset;
-		
+
 		// Check if filter bar should be sticky when its top reaches the top of the viewport
 		if (filterBarInitialTop > 0) {
 			const wasSticky = isFilterBarSticky;
 			// Once sticky, keep it sticky - don't unstick unless scrolled back to very top
 			const threshold = 5; // Small threshold to prevent flickering
-			
+
 			// If already sticky, keep it sticky unless we've scrolled back above the threshold
 			if (wasSticky) {
 				// Only unstick if we've scrolled back above the threshold
 				isFilterBarSticky = scrollY >= filterBarInitialTop - threshold;
+				// When becoming unsticky, recapture dimensions
+				if (!isFilterBarSticky && filterBarRef) {
+					setTimeout(() => {
+						if (filterBarRef && !isFilterBarSticky) {
+							const rect = filterBarRef.getBoundingClientRect();
+							filterBarWidth = rect.width;
+							filterBarLeft = rect.left;
+						}
+					}, 50);
+				}
 			} else {
+				// Before becoming sticky, capture current dimensions
+				if (scrollY >= filterBarInitialTop && filterBarRef) {
+					const rect = filterBarRef.getBoundingClientRect();
+					if (filterBarWidth === 0) filterBarWidth = rect.width;
+					if (filterBarLeft === 0) filterBarLeft = rect.left;
+				}
 				// If not sticky yet, make it sticky when we reach the initial position
 				isFilterBarSticky = scrollY >= filterBarInitialTop;
 			}
-			
+
 			// Update filter bar height when it becomes sticky - measure immediately
 			if (isFilterBarSticky && (!wasSticky || filterBarHeight === 0) && filterBarRef) {
 				const rect = filterBarRef.getBoundingClientRect();
@@ -141,6 +159,8 @@
 			if (!isFilterBarSticky) {
 				const rect = filterBarRef.getBoundingClientRect();
 				filterBarInitialTop = rect.top + scrollY;
+				filterBarWidth = rect.width;
+				filterBarLeft = rect.left;
 				isFilterBarSticky = scrollY >= filterBarInitialTop;
 				if (isFilterBarSticky) {
 					filterBarHeight = rect.height;
@@ -208,13 +228,15 @@
 	});
 
 	onMount(() => {
-		// Initialize filter bar position
+		// Initialize filter bar position and dimensions
 		if (filterBarRef && typeof window !== 'undefined') {
 			const rect = filterBarRef.getBoundingClientRect();
 			const scrollY = window.scrollY || window.pageYOffset;
 			filterBarInitialTop = rect.top + scrollY;
-			// Store initial height
+			// Store initial dimensions
 			filterBarHeight = rect.height;
+			filterBarWidth = rect.width;
+			filterBarLeft = rect.left;
 		}
 
 		// Add scroll listener
@@ -233,6 +255,8 @@
 					const scrollY = window.scrollY || window.pageYOffset;
 					if (filterBarInitialTop === 0 || Math.abs(filterBarInitialTop - (rect.top + scrollY)) > 10) {
 						filterBarInitialTop = rect.top + scrollY;
+						filterBarWidth = rect.width;
+						filterBarLeft = rect.left;
 						isFilterBarSticky = scrollY >= filterBarInitialTop;
 						if (isFilterBarSticky) {
 							filterBarHeight = rect.height;
@@ -251,11 +275,16 @@
 		// Recalculate on resize
 		const handleResize = () => {
 			if (filterBarRef && typeof window !== 'undefined') {
-				// Only recalculate initialTop if not sticky (when sticky, getBoundingClientRect gives wrong position)
-				if (!isFilterBarSticky && filterBarInitialTop === 0) {
+				// Only recalculate position/dimensions if not sticky (when sticky, getBoundingClientRect gives wrong position)
+				if (!isFilterBarSticky) {
 					const rect = filterBarRef.getBoundingClientRect();
 					const scrollY = window.scrollY || window.pageYOffset;
-					filterBarInitialTop = rect.top + scrollY;
+					if (filterBarInitialTop === 0) {
+						filterBarInitialTop = rect.top + scrollY;
+					}
+					// Always update width and left on resize when not sticky
+					filterBarWidth = rect.width;
+					filterBarLeft = rect.left;
 				}
 				// Always update height if sticky
 				if (isFilterBarSticky) {
@@ -280,7 +309,14 @@
 	});
 </script>
 
-<div class="filter-bar-wrapper" class:sticky={isFilterBarSticky} bind:this={filterBarRef}>
+<h3 class="explore-title">Explore the Data</h3>
+
+<div
+	class="filter-bar-wrapper"
+	class:sticky={isFilterBarSticky}
+	bind:this={filterBarRef}
+	style={isFilterBarSticky && filterBarWidth > 0 ? `width: ${filterBarWidth}px; left: ${filterBarLeft}px;` : ''}
+>
 <FilterBar
 	data={data}
 	filterConfig={activeFilterConfig}
@@ -415,18 +451,28 @@
 	{#if isLoading}<p class="loading">Loading more...</p>{/if}
 </div>
 <style>
+	/* Explore Title */
+	.explore-title {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: #1a1a1a;
+		margin: 0 0 1.5rem 0;
+		padding: 0;
+	}
+
 	/* Filter Bar Wrapper */
 	.filter-bar-wrapper {
 		position: relative;
 		z-index: 9999;
 		width: 100%;
-		margin: 2rem;
+		margin: 0 0 1.5rem 0;
 	}
 
 	.search-charts-wrapper {
-		max-width: 900px;
-		margin: 0 auto;
-		padding: 0 1.5rem;
+		min-width: 863px;
+		width: 100%;
+		padding: 0;
+		margin-bottom: 2rem;
 	}
 
 	.sticky-spacer {
@@ -436,30 +482,30 @@
 	
 	.filter-bar-wrapper.sticky {
 		position: fixed;
-		left: 0;
 		top: 0;
-		width: 100%;
 		margin: 0;
 		padding: 0;
 		background-color: #fafafa;
 		border-bottom: 1px solid #e0e0e0;
-		display: flex;
-		justify-content: center;
+		z-index: 9999;
 	}
 
 	@media screen and (max-width: 768px) {
+		.explore-title {
+			font-size: 1.125rem;
+			margin: 0 0 1rem 0;
+		}
+
 		.filter-bar-wrapper {
-			margin: 1rem auto;
-			padding: 0 1rem;
+			margin: 0 0 1rem 0;
 		}
 	}
 
 	/* Data Container */
 	.data-container {
-		max-width: 900px;
-		margin: 0 auto;
-		padding: 0 15px 4rem;
 		width: 100%;
+		padding: 0 0 4rem;
+		margin: 0;
 		box-sizing: border-box;
 	}
 
@@ -475,6 +521,8 @@
 		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 		gap: 2rem;
 		margin-top: 2rem;
+		min-width: 863px
+
 	}
 
 	.data-table {
@@ -499,7 +547,7 @@
 		background-color: #fafafa;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: px) {
 		.data-table {
 			display: block;
 			overflow-x: auto;
@@ -512,13 +560,12 @@
 	}
 
 	.data-container.data-table {
-		margin: 2rem auto;
+		margin: 2rem 0 0 0;
 		width: 100%;
-		max-width: 100%;
 		box-sizing: border-box;
 		padding: 0;
 		display: flex;
-		justify-content: center;
+		justify-content: flex-start;
 		align-items: flex-start;
 	}
 

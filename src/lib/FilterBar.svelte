@@ -256,19 +256,27 @@
 
 		<div class="filter-row-2">
 			{#if searchFilter}
-				<SearchBar 
+				<SearchBar
 					searchQuery={searchQuery}
 					onSearchChange={handleSearchChange}
 				/>
 			{/if}
 
-			<button 
-				class="download-csv-btn" 
+			<button
+				class="search-btn"
+				type="button"
+				aria-label="Search {filteredRowCount} items"
+			>
+				Search
+			</button>
+
+			<button
+				class="export-btn"
 				onclick={onDownloadCSV}
 				type="button"
 				aria-label="Export {filteredRowCount} items"
 			>
-				Export {filteredRowCount} items
+				Export
 			</button>
 		</div>
 	</div>
@@ -279,15 +287,15 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
-		max-width: 900px;
+		width: 100%;
 		padding: 1.5rem;
 		background-color: #fafafa;
+		min-width: 863px;
 		border: 1px solid #e0e0e0;
-		width: 100%;
 		position: relative;
 		z-index: 9999;
 		box-sizing: border-box;
-		margin: 0 auto;
+		margin: 0;
 	}
 
 	.filter-bar.sticky {
@@ -333,7 +341,7 @@
 		flex: 0 0 auto;
 	}
 
-	.download-csv-btn {
+	.search-btn {
 		padding: 0.6rem 1.5rem;
 		background-color: #254c6f;
 		color: white;
@@ -350,8 +358,29 @@
 		margin-top: 1.5rem;
 	}
 
-	.download-csv-btn:hover {
+	.search-btn:hover {
 		background-color: #1a3a52;
+	}
+
+	.export-btn {
+		padding: 0.6rem 1.5rem;
+		background-color: white;
+		color: #254c6f;
+		border: 1px solid #254c6f;
+		border-radius: 0;
+		cursor: pointer;
+		font-size: 0.95rem;
+		font-family: inherit;
+		font-weight: 500;
+		box-sizing: border-box;
+		line-height: 1.5;
+		height: 44px;
+		white-space: nowrap;
+		margin-top: 1.5rem;
+	}
+
+	.export-btn:hover {
+		background-color: #f5f5f5;
 	}
 
 	/* Date Range Dropdown Styles */
@@ -557,10 +586,12 @@
 			min-width: unset;
 		}
 
-		.download-csv-btn {
+		.search-btn,
+		.export-btn {
 			width: 100%;
 			padding: 0.5rem 1rem;
 			font-size: 0.85rem;
+			margin-top: 0;
 		}
 
 		.dropdown-header {

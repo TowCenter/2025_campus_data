@@ -3,13 +3,6 @@
   import * as topojson from 'topojson-client';
   import * as d3 from 'd3-geo';
 
-  // Sidebar navigation items
-  const sidebarNavItems = [
-    { href: '/', label: 'Home' },
-    { href: '/announcements', label: 'Search' },
-    { href: '/methodology', label: 'Methodology' }
-  ];
-
   let mapContainer;
   let hoveredSchool = null;
   let tooltipX = 0;
@@ -531,174 +524,153 @@
   });
 </script>
 
-<div class="methodology-container">
-  <div class="container">
-    <div class="content-wrapper">
-      <!-- Sidebar Navigation -->
-      <nav class="left-nav" aria-label="Page navigation">
-        <ul>
-          {#each sidebarNavItems as item}
-            <li>
-              <a href={item.href} class:active={item.href === '/methodology'}>{item.label}</a>
-            </li>
-          {/each}
-        </ul>
-      </nav>
-
-      <!-- Main Content -->
-      <div class="main-content">
-      <!-- Statistics Header -->
-      <section class="stats-header">
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-number">{totalSchools}</div>
-            <div class="stat-label">Universities</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">{totalStates}</div>
-            <div class="stat-label">States</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">
-              {#if indexTotalRecords !== null}
-                {indexTotalRecords.toLocaleString()}
-              {:else if loadingArticles}
-                <span class="loading-text">Loading...</span>
-              {:else}
-                {totalRecords.toLocaleString()}
-              {/if}
-            </div>
-            <div class="stat-label">Total Records</div>
-          </div>
-        </div>
-        <div class="header-text">
-          <h2>Mapping University Responses</h2>
-          <p class="subhead">
-            Comprehensive tracking of institutional responses to campus protests and federal actions
-            across major universities nationwide.
-          </p>
-        </div>
-      </section>
-
-      <!-- Interactive Map -->
-      <section class="map-section">
-        <div
-          class="map-container"
-          bind:this={mapContainer}
-          on:mousemove={handleMouseMove}
-          role="img"
-          aria-label="Interactive map of universities"
-        >
-          <!-- US States Map -->
-          <svg viewBox="0 0 960 600" class="map-svg">
-            <!-- Render US States -->
-            {#if statesGeoJSON}
-              <g id="us-states">
-                {#each statesGeoJSON.features as state}
-                  <path
-                    class="state-path"
-                    d={geoJSONToPath(state)}
-                    fill="#f9f9f9"
-                    stroke="#c0c0c0"
-                    stroke-width="1"
-                  />
-                {/each}
-              </g>
+<div class="methodology-wrapper">
+      <!-- Statistics as inline info -->
+      <div class="stats-inline">
+        <span class="stat-inline"><strong>{totalSchools}</strong> Universities</span>
+        <span class="stat-separator">•</span>
+        <span class="stat-inline"><strong>{totalStates}</strong> States</span>
+        <span class="stat-separator">•</span>
+        <span class="stat-inline">
+          <strong>
+            {#if indexTotalRecords !== null}
+              {indexTotalRecords.toLocaleString()}
+            {:else if loadingArticles}
+              ...
             {:else}
-              <!-- Loading placeholder -->
-              <text x="480" y="300" text-anchor="middle" fill="#ccc" font-size="14">Loading map...</text>
+              {totalRecords.toLocaleString()}
             {/if}
+          </strong> Total Records
+        </span>
+      </div>
 
-            <!-- School Dots -->
-            {#each schoolPositions as school, i}
-              <circle
-                cx={school.displayCoords.x}
-                cy={school.displayCoords.y}
-                r="5"
-                class="school-dot"
-                class:hovered={hoveredSchool === school}
-                on:mouseenter={(event) => handleDotHover(school, event)}
-                on:mouseleave={handleDotLeave}
-                style="--delay: {i * 0.01}s"
-                role="button"
-                tabindex="0"
-                aria-label="View details for {school.name}"
-              />
-            {/each}
-          </svg>
+      <!-- Methodology Content -->
+      <section class="methodology-content">
+        <h3>Methodology</h3>
 
-          <!-- Tooltip -->
-          {#if showTooltip && hoveredSchool}
-            <div
-              class="tooltip"
-              style="left: {tooltipX}px; top: {tooltipY}px;"
-            >
-              <div class="tooltip-content">
-                <div class="tooltip-title">{hoveredSchool.name}</div>
-                <div class="tooltip-state">{hoveredSchool.state}</div>
+        <p>
+          This database includes public announcements from higher education institutions that the U.S. Department of Education has publicly said are under federal investigation since President Donald Trump took office. If an investigation ends, the database will continue to collect and display public communications from that institution.
+        </p>
+
+        <p>
+          Institutions are identified by tracking public announcements from the Department of Education and verifying them against multiple independent sources. We also cross-check institutions using <a href="https://hechingerreport.org/which-schools-and-colleges-are-being-investigated-by-the-trump-administration/" target="_blank" rel="noopener noreferrer">The Hechinger Report's investigation tracker</a> as an additional verification step to help keep the list of universities current.
+        </p>
+
+        <!-- Interactive Map embedded in text -->
+        <div class="map-embed">
+          <div
+            class="map-container"
+            bind:this={mapContainer}
+            onmousemove={handleMouseMove}
+            role="img"
+            aria-label="Interactive map of universities"
+          >
+            <svg viewBox="0 0 960 600" class="map-svg">
+              {#if statesGeoJSON}
+                <g id="us-states">
+                  {#each statesGeoJSON.features as state}
+                    <path
+                      class="state-path"
+                      d={geoJSONToPath(state)}
+                      fill="#f9f9f9"
+                      stroke="#c0c0c0"
+                      stroke-width="1"
+                    />
+                  {/each}
+                </g>
+              {:else}
+                <text x="480" y="300" text-anchor="middle" fill="#ccc" font-size="14">Loading map...</text>
+              {/if}
+
+              {#each schoolPositions as school, i}
+                <circle
+                  cx={school.displayCoords.x}
+                  cy={school.displayCoords.y}
+                  r="5"
+                  class="school-dot"
+                  class:hovered={hoveredSchool === school}
+                  onmouseenter={(event) => handleDotHover(school, event)}
+                  onmouseleave={handleDotLeave}
+                  style="--delay: {i * 0.01}s"
+                  role="button"
+                  tabindex="0"
+                  aria-label="View details for {school.name}"
+                />
+              {/each}
+            </svg>
+
+            {#if showTooltip && hoveredSchool}
+              <div class="tooltip" style="left: {tooltipX}px; top: {tooltipY}px;">
+                <div class="tooltip-content">
+                  <div class="tooltip-title">{hoveredSchool.name}</div>
+                  <div class="tooltip-state">{hoveredSchool.state}</div>
+                </div>
               </div>
-            </div>
-          {/if}
+            {/if}
+          </div>
+          <div class="map-caption">Each dot represents a university</div>
         </div>
 
         {#if missingLocations.length > 0}
           <div class="data-warning" role="status">
             <div class="warning-title">Missing location data</div>
             <div class="warning-text">
-              {missingLocations.length} institution(s) are in the dataset but missing coordinates in location.
-            </div>
-            <div class="warning-list">
-              {#if missingLocations.length <= 5}
-                Missing: {missingLocations.join(', ')}
-              {:else}
-                Examples: {missingLocations.slice(0, 5).join(', ')}, +{missingLocations.length - 5} more
-              {/if}
+              {missingLocations.length} institution(s) are in the dataset but missing coordinates.
             </div>
           </div>
         {/if}
 
-        <!-- Map Legend -->
-        <div class="map-legend">
-          <div class="legend-item">
-            <div class="legend-dot single"></div>
-            <span>Each dot represents a university</span>
-          </div>
-        </div>
+        <p>
+          We collect official announcements and statements from each institution's primary announcements or news page, as well as from the websites of the president or chancellor, the provost, the board of trustees (or equivalent governing body), and offices related to student affairs or international students. When substantively identical statements are published across multiple pages, duplicates are removed before the data is published. Each institution has at least three official webpages monitored and included in the database.
+        </p>
+
+        <p>
+          Data is collected using the Tow Center's Scraper Factory infrastructure, an AI-assisted system used to identify and collect relevant public-facing university webpages. To learn more about this infrastructure or our data collection methods, please contact us.
+        </p>
+
+        <p>
+          The database does not include private or internal communications, content published in non-Latin characters, social media posts, individual department or faculty webpages, or any content that requires a login or password to access.
+        </p>
+
+        <p>
+          In the case of blank entries with titles, there will be a reasoning in the data as to why. These are most often due to the link being primarily a video or filled with non-text elements.
+        </p>
+
+        <p>
+          Each entry includes the date the statement was published and the date it was collected. The database reflects information available as of the most recent weekly update and may not capture statements that were modified or removed prior to collection.
+        </p>
+
+        <p>
+          This dataset is open source and updated weekly as new university communications are published. Users are free to download and analyze the data. If you publish findings based on this dataset, you must credit the Tow Center.
+        </p>
+
+        <p>
+          The purpose of this database is to help journalists, researchers, and the public examine how universities communicate during periods of federal scrutiny and how those communications change over time. For technical questions about data collection methods or to report potential data quality issues, please <a href="mailto:tktk@columbia.edu">contact us</a>.
+        </p>
       </section>
 
-      <!-- Charts Section -->
-      <!-- Methodology Content -->
+      <!-- Ethical Considerations Section -->
       <section class="methodology-content">
-        <h3>Dataset Methodology</h3>
+        <h3>Ethical Considerations</h3>
 
-        <h4>Overview</h4>
         <p>
-          This database tracks public communications from 100+ universities during a period of heightened federal oversight. The data contains official announcements and statements from universities starting from January 2025 and can provide instights into how institutions of higher education respond to regulatory pressure.
+          This database is produced in line with established journalistic and research ethics standards and is compiled in the public interest to support transparency and accountability in higher education and government oversight.
         </p>
 
-        <h4>Collection</h4>
         <p>
-          The database includes announcements from universities that the Department of Education and other agencies have announced investigations into since President Donald Trump came into office. We rely on the <a href="https://hechingerreport.org/which-schools-and-colleges-are-being-investigated-by-the-trump-administration/" target="_blank" rel="noopener noreferrer">Hechinger Report's investigation tracker</a> to keep the list of universities updated.
-        </p>
-        <p>
-          We collect official announcements and statements from each institution's main announcement webpage, as well as from the websites for the president or chancellor's office, the provost's office, and the board of trustees or equivalent administrative offices.
+          Inclusion in this database does not imply wrongdoing by any institution, nor does it reflect a determination about the merits, status, or outcome of any federal investigation. The database documents publicly available institutional communications and does not make claims beyond the content of those materials.
         </p>
 
-        <h4>Limitations</h4>
         <p>
-          The data does not include private or internal communications, information published in non-latin charcters, social media posts, individual department or faculty pages or any page that requires a login or password to access.
+          To minimize harm, we collect only information that institutions have chosen to publish publicly on their official websites. We do not collect private or internal communications, and we intentionally exclude social media posts, individual faculty pages, and other content that could reasonably be interpreted as personal expression rather than official institutional communication.
         </p>
 
-        <h4>Privacy & Ethics</h4>
         <p>
-          All data collection focuses exclusively on publicly available content that universities have chosen to share openly.
-          No private communications or restricted-access materials are included in the database.
+          We take steps to promote accuracy and fairness by verifying institutions' inclusion using multiple sources and routinely reviewing collected materials for errors or duplication. When inaccuracies or omissions are identified, we work to correct them in a timely manner and note corrections where appropriate.
         </p>
 
-        <h4>Access & Updates</h4>
         <p>
-          This dataset is open-source and updated weekly as new university communications are published. For technical
-          questions about data collection methods or to report data quality issues, please <a href="mailto:tktk@columbia.edu">contact our team</a>.
+          The database is intended to support reporting and research, not to speculate about motives, assign blame, or characterize institutional conduct. We welcome feedback from institutions, journalists, and researchers and provide a clear mechanism for reporting potential inaccuracies or data quality concerns.
         </p>
       </section>
 
@@ -707,137 +679,145 @@
         <h3>Frequently Asked Questions</h3>
 
         <div class="faq-item">
-          <button class="faq-question" on:click={() => toggleFaq(0)}>
-            <span>What is available for any given school?</span>
-            <span class="faq-icon">{openFaqIndex === 0 ? '-' : '+'}</span>
+          <button class="faq-question" onclick={() => toggleFaq(0)}>
+            <span>What information is available for each school?</span>
+            <span class="faq-icon">{openFaqIndex === 0 ? '−' : '+'}</span>
           </button>
           {#if openFaqIndex === 0}
             <div class="faq-answer">
-              <p>The headline, date published, full text and link to any given article.</p>
+              <p>For each institution, the database includes the headline, publication date, full text, and a link to each public announcement or statement.</p>
             </div>
           {/if}
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" on:click={() => toggleFaq(2)}>
+          <button class="faq-question" onclick={() => toggleFaq(1)}>
             <span>What types of schools are included?</span>
-            <span class="faq-icon">{openFaqIndex === 2 ? '-' : '+'}</span>
-          </button>
-          {#if openFaqIndex === 2}
-            <div class="faq-answer">
-              <p>Post-secondary education institutions with degree-granting programs above the high school level that lead to a certificate or degree, including community colleges, technical or trade schools, universities, graduate programs, and vocational schools.</p>
-            </div>
-          {/if}
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question" on:click={() => toggleFaq(1)}>
-            <span>Do you have data from before January 2025?</span>
-            <span class="faq-icon">{openFaqIndex === 1 ? '-' : '+'}</span>
+            <span class="faq-icon">{openFaqIndex === 1 ? '−' : '+'}</span>
           </button>
           {#if openFaqIndex === 1}
             <div class="faq-answer">
-              <p>
-              We do have historical data from before January 1, 2025, but cannot guarantee it's completeness. Please <a href="mailto:tktk@columbia.edu">contact us</a> if you are interested in accessing historical data.
-            </p>
+              <p>The database includes postsecondary education institutions with degree-granting programs beyond the high school level. This includes community colleges, technical and trade schools, vocational schools, universities, and graduate programs.</p>
             </div>
           {/if}
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" on:click={() => toggleFaq(3)}>
-            <span>How often does the data update?</span>
-            <span class="faq-icon">{openFaqIndex === 3 ? '-' : '+'}</span>
+          <button class="faq-question" onclick={() => toggleFaq(2)}>
+            <span>Do you have data from before January 2025?</span>
+            <span class="faq-icon">{openFaqIndex === 2 ? '−' : '+'}</span>
+          </button>
+          {#if openFaqIndex === 2}
+            <div class="faq-answer">
+              <p>The project does not include data before January 1, 2025, yet. We plan on publishing this in the near future.</p>
+            </div>
+          {/if}
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick={() => toggleFaq(3)}>
+            <span>How often is the data updated?</span>
+            <span class="faq-icon">{openFaqIndex === 3 ? '−' : '+'}</span>
           </button>
           {#if openFaqIndex === 3}
             <div class="faq-answer">
-              <p>We aim to update the data every Tuesday. However, we will update more frequently if needed to ensure timely coverage of important developments.</p>
+              <p>We aim to update the database every Tuesday. In some cases, updates may occur more frequently to ensure timely coverage of significant developments. Please refer to the "last updated" date at the top of the page for the most recent update.</p>
             </div>
           {/if}
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" on:click={() => toggleFaq(4)}>
-            <span>I noticed an issue with the data.</span>
-            <span class="faq-icon">{openFaqIndex === 4 ? '-' : '+'}</span>
+          <button class="faq-question" onclick={() => toggleFaq(4)}>
+            <span>Do you have an API?</span>
+            <span class="faq-icon">{openFaqIndex === 4 ? '−' : '+'}</span>
           </button>
           {#if openFaqIndex === 4}
             <div class="faq-answer">
-              <p>
-                Please let us know what you have found. You can contact us by sending an email to <a href="mailto:tktk@columbia.edu">tktk@columbia.edu</a>.
-              </p>
+              <p>Not at this time.</p>
+            </div>
+          {/if}
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick={() => toggleFaq(5)}>
+            <span>Are social media posts included?</span>
+            <span class="faq-icon">{openFaqIndex === 5 ? '−' : '+'}</span>
+          </button>
+          {#if openFaqIndex === 5}
+            <div class="faq-answer">
+              <p>No. Only public announcements and statements posted on official institutional websites are collected. Social media, individual faculty pages, or internal communications are excluded.</p>
+            </div>
+          {/if}
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick={() => toggleFaq(6)}>
+            <span>I noticed an issue with the data. What should I do?</span>
+            <span class="faq-icon">{openFaqIndex === 6 ? '−' : '+'}</span>
+          </button>
+          {#if openFaqIndex === 6}
+            <div class="faq-answer">
+              <p>We welcome feedback and corrections. If you notice a potential error or omission, please contact us at <a href="mailto:tktk@columbia.edu">tktk@columbia.edu</a> with details about the issue.</p>
             </div>
           {/if}
         </div>
       </section>
-      </div><!-- end main-content -->
-    </div>
-  </div>
 </div>
 
 <style>
-  .methodology-container {
-    background: white;
-    min-height: 60vh;
+  .methodology-wrapper {
+    width: 100%;
   }
 
-  .container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 3rem;
-  }
-
-  .content-wrapper {
-    padding: 1.5rem 0 3rem;
+  /* Inline Statistics */
+  .stats-inline {
     display: flex;
-    gap: 2rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1.5rem;
   }
 
-  /* Sidebar Navigation */
-  .left-nav {
-    flex: 0 0 auto;
-    width: 120px;
-    padding-top: 0.5rem;
-  }
-
-  .left-nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    border-left: 2px solid #ccc;
-    padding-left: 1.5rem;
-  }
-
-  .left-nav li {
-    margin-bottom: 1.25rem;
-    line-height: 1.5;
-  }
-
-  .left-nav a {
-    color: #254c6f;
-    text-decoration: none;
-    font-size: 0.95rem;
-    transition: color 0.2s;
-    line-height: 1.6;
-    display: block;
-  }
-
-  .left-nav a:hover {
-    color: #1a3454;
-    text-decoration: underline;
-  }
-
-  .left-nav a.active {
+  .stat-inline strong {
     color: #254c6f;
     font-weight: 600;
   }
 
-  .main-content {
-    flex: 1;
-    min-width: 0;
+  .stat-separator {
+    color: #ccc;
   }
 
-  /* Statistics Header */
+  /* Embedded Map */
+  .map-embed {
+    margin: 2rem 0;
+  }
+
+  .map-embed .map-container {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    height: 350px;
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    overflow: visible;
+  }
+
+  .map-embed .map-svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .map-caption {
+    font-size: 0.85rem;
+    color: #666;
+    font-style: italic;
+    margin-top: 0.5rem;
+    text-align: center;
+  }
+
+  /* Statistics Header - keeping for reference */
   .stats-header {
     margin-bottom: 1.5rem;
   }
@@ -1215,9 +1195,8 @@
   /* Methodology Content */
   .methodology-content {
     margin-top: 2rem;
-    padding: 1.5rem;
-    background: #fafafa;
-    border-radius: 8px;
+    padding: 0;
+    background: transparent;
   }
 
   .methodology-content h3 {

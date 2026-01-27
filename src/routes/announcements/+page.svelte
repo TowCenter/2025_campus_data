@@ -3,7 +3,6 @@
 	import Article from '../../lib/Article.svelte';
 	import Headline from '../../lib/Headline.svelte';
 	import Body from '../../lib/Body.svelte';
-	import BodyText from '../../lib/BodyText.svelte';
 	import Data from '../../lib/Data.svelte';
 	import DataTableRow from '../../lib/DataTableRow.svelte';
 	import Footer from '../../lib/Footer.svelte';
@@ -22,8 +21,8 @@
 <Header />
 <Article>
 	<Headline
-		hed="Search Announcements"
-		subhed={config.subheadline}
+		hed={config.headline}
+		subhed="Browse all announcements with filters. Use the filters to narrow down by organization, date range, or search terms."
 		brand={config.brand}
 		date={lastUpdatedDate}
 		dateLabel={config.dateLabel}
@@ -33,19 +32,17 @@
 	</Headline>
 
 	<Body navItems={config.navItems}>
-		<BodyText text="Browse all announcements with filters. Use the filters above to narrow down by organization, date range, or search terms." />
+		<Data
+			data={config.data}
+			filterConfig={config.filterConfig}
+			dateField={config.dateField}
+			initialVisibleCount={config.initialVisibleCount}
+			showTimeline={false}
+			showYearNavigation={false}
+			{categoryDefinitions}
+			itemComponent={DataTableRow}
+			displayMode="table"
+		/>
 	</Body>
-
-	<Data
-		data={config.data}
-		filterConfig={config.filterConfig}
-		dateField={config.dateField}
-		initialVisibleCount={config.initialVisibleCount}
-		showTimeline={false}
-		showYearNavigation={false}
-		{categoryDefinitions}
-		itemComponent={DataTableRow}
-		displayMode="table"
-	/>
 </Article>
 <Footer />
