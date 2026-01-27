@@ -23,25 +23,26 @@
 		]
 	} = $props();
 
-	// Filter out the current page from navigation
+	// Get current path to highlight active link
 	const currentPath = $derived($page.url.pathname);
-	const filteredNavItems = $derived(navItems.filter(item => {
-		// Normalize hrefs - remove trailing slashes for comparison
-		const itemPath = item.href.replace(/\/$/, '') || '/';
+
+	// Check if a nav item is the current page
+	function isActive(href) {
+		const itemPath = href.replace(/\/$/, '') || '/';
 		const current = currentPath.replace(/\/$/, '') || '/';
-		return itemPath !== current;
-	}));
+		return itemPath === current;
+	}
 </script>
 
 <div class="container-lg">
     <div class="row">
-        {#if filteredNavItems && filteredNavItems.length > 0}
+        {#if navItems && navItems.length > 0}
             <div class="col-sm-2">
                 <nav class="left-nav" aria-label="Page navigation">
                     <ul>
-                        {#each filteredNavItems as item}
+                        {#each navItems as item}
                             <li>
-                                <a href={item.href}>{item.label}</a>
+                                <a href={item.href} class:active={isActive(item.href)}>{item.label}</a>
                             </li>
                         {/each}
                     </ul>
@@ -125,6 +126,11 @@
     .left-nav a:hover {
         color: #1a3454;
         text-decoration: underline;
+    }
+
+    .left-nav a.active {
+        color: #254c6f;
+        font-weight: 600;
     }
 
     @media screen and (max-width: 768px) {

@@ -38,9 +38,8 @@ export const config = createTemplateConfig({
 	// LEFT NAVIGATION - Customize these links
 	navItems: [
 		{ href: '/', label: 'Home' },
-		{ href: '/announcements', label: 'Data' },
-		{ href: '/methodology', label: 'Methodology' },
-		{ href: '#', label: 'Documentation' }
+		{ href: '/announcements', label: 'Search' },
+		{ href: '/methodology', label: 'Methodology' }
 	],
 
 	// HEADLINE CONFIGURATION

@@ -1,6 +1,7 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
 	import FilterBar from './FilterBar.svelte';
+	import SearchCharts from './SearchCharts.svelte';
 	import { applyFilters } from './generic-filter-utils.js';
 	import { groupByMonth } from './date-utils.js';
 	import './cjr.css';
@@ -280,7 +281,7 @@
 </script>
 
 <div class="filter-bar-wrapper" class:sticky={isFilterBarSticky} bind:this={filterBarRef}>
-<FilterBar 
+<FilterBar
 	data={data}
 	filterConfig={activeFilterConfig}
 	{filterValues}
@@ -292,8 +293,21 @@
 />
 </div>
 
+{#if isFilterBarSticky && filterBarHeight > 0}
+	<div class="sticky-spacer" style="height: {filterBarHeight}px;"></div>
+{/if}
 
-<div class="data-container data-{displayMode}" class:timeline={showTimeline} style={paddingTop ? `padding-top: ${paddingTop};` : ''}>
+<div class="search-charts-wrapper">
+	<SearchCharts
+		data={filteredData}
+		{dateField}
+		orgField="org"
+		{searchQuery}
+	/>
+</div>
+
+
+<div class="data-container data-{displayMode}" class:timeline={showTimeline}>
 	{#if showTimeline}
 		<!-- Timeline view with date grouping -->
 		{@const allGroupedEntries = Object.entries(groupedData)}
@@ -407,6 +421,17 @@
 		z-index: 9999;
 		width: 100%;
 		margin: 2rem;
+	}
+
+	.search-charts-wrapper {
+		max-width: 900px;
+		margin: 0 auto;
+		padding: 0 1.5rem;
+	}
+
+	.sticky-spacer {
+		width: 100%;
+		flex-shrink: 0;
 	}
 	
 	.filter-bar-wrapper.sticky {

@@ -13,7 +13,7 @@
 
 	// Get last updated date from data
 	const lastUpdatedDate = getLatestDate(config.data, config.lastUpdatedField, config.dateField);
-	
+
 	// Ensure categoryDefinitions is the right type
 	/** @type {Record<string, string>} */
 	const categoryDefinitions = config.categoryDefinitions || {};
@@ -22,7 +22,7 @@
 <Header />
 <Article>
 	<Headline
-		hed="All Announcements"
+		hed="Search Announcements"
 		subhed={config.subheadline}
 		brand={config.brand}
 		date={lastUpdatedDate}
@@ -36,7 +36,7 @@
 		<BodyText text="Browse all announcements with filters. Use the filters above to narrow down by organization, date range, or search terms." />
 	</Body>
 
-	<Data 
+	<Data
 		data={config.data}
 		filterConfig={config.filterConfig}
 		dateField={config.dateField}
