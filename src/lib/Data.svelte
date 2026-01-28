@@ -670,7 +670,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-end;
-		font-family: inherit;
+		: inherit;
 		width: 100%;
 		min-width: 80px;
 	}

@@ -910,7 +910,7 @@
 		border: none;
 		cursor: pointer;
 		padding: 0.15rem 0.3rem;
-		font-family: inherit;
+		: inherit;
 		transition: all 0.2s ease;
 		position: relative;
 		border-radius: 4px;
@@ -1029,7 +1029,7 @@
 		border: none;
 		cursor: pointer;
 		padding: 0.1rem 0;
-		font-family: inherit;
+		: inherit;
 		display: flex;
 		align-items: center;
 		transition: all 0.2s ease;
@@ -1153,7 +1153,7 @@
 		border: none;
 		cursor: pointer;
 		padding: 0.15rem 0;
-		font-family: inherit;
+		: inherit;
 		display: flex;
 		align-items: center;
 		transition: all 0.2s ease;
@@ -1200,7 +1200,7 @@
 		border: none;
 		cursor: pointer;
 		padding: 0.2rem 0.4rem;
-		font-family: inherit;
+		: inherit;
 		transition: all 0.2s ease;
 		border-radius: 4px;
 		white-space: nowrap;

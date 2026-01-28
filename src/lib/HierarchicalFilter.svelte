@@ -288,7 +288,7 @@
 		justify-content: space-between;
 		align-items: center;
 		font-size: 0.95rem;
-		font-family: inherit;
+		: inherit;
 		appearance: none;
 		-webkit-appearance: none;
 		-moz-appearance: none;
@@ -376,7 +376,7 @@
 		padding: 0.6rem 0.8rem;
 		border: none;
 		font-size: 0.9rem;
-		font-family: inherit;
+		: inherit;
 		box-sizing: border-box;
 		background-color: #fff;
 		color: #333;
@@ -476,7 +476,7 @@
 		border: none;
 		cursor: pointer;
 		font-size: 0.95rem;
-		font-family: inherit;
+		: inherit;
 		font-weight: 500;
 	}
 

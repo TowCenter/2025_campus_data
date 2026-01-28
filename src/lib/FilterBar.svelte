@@ -383,7 +383,7 @@
 		border-radius: 0;
 		cursor: pointer;
 		font-size: 0.95rem;
-		font-family: inherit;
+		: inherit;
 		font-weight: 500;
 		box-sizing: border-box;
 		line-height: 1.5;
@@ -434,7 +434,7 @@
 		border-radius: 0;
 		cursor: pointer;
 		font-size: 0.95rem;
-		font-family: inherit;
+		: inherit;
 		font-weight: 500;
 		box-sizing: border-box;
 		line-height: 1.5;
@@ -467,7 +467,7 @@
 		justify-content: space-between;
 		align-items: center;
 		transition: border-color 0.2s ease;
-		font-family: inherit;
+		: inherit;
 		width: 100%;
 		box-sizing: border-box;
 		min-height: 44px;
@@ -531,7 +531,7 @@
 	.date-inputs input[type='date'] {
 		padding: 0.6rem 0.8rem;
 		border: 1px solid #ccc;
-		font-family: inherit;
+		: inherit;
 		font-size: 0.95rem;
 		width: 100%;
 		box-sizing: border-box;
@@ -551,7 +551,7 @@
 		border-radius: 0;
 		cursor: pointer;
 		font-size: 0.95rem;
-		font-family: inherit;
+		: inherit;
 		font-weight: 500;
 		transition: all 0.2s ease;
 		width: 100%;
@@ -589,7 +589,7 @@
 			border: none;
 			border-bottom: 1px solid #e0e0e0;
 			cursor: pointer;
-			font-family: inherit;
+			: inherit;
 			font-size: 0.8rem;
 			font-weight: 500;
 			color: #254c6f;

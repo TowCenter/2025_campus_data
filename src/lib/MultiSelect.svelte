@@ -156,7 +156,7 @@
 		justify-content: space-between;
 		align-items: center;
 		font-size: 0.95rem;
-		font-family: inherit;
+		: inherit;
 	}
 
 	.multiselect-trigger:hover {
@@ -224,7 +224,7 @@
 		border: none;
 		border-bottom: 1px solid #eee;
 		font-size: 0.9rem;
-		font-family: inherit;
+		: inherit;
 		box-sizing: border-box;
 	}
 

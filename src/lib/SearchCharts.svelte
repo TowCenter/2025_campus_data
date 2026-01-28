@@ -539,7 +539,7 @@
 		border: none;
 		border-bottom: 1px solid #e0e0e0;
 		cursor: pointer;
-		font-family: inherit;
+		: inherit;
 		font-size: 0.8rem;
 		font-weight: 500;
 		color: #254c6f;

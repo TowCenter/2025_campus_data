@@ -106,7 +106,7 @@
 		font-size: 0.95rem;
 		border: 1px solid #ccc;
 		border-radius: 0;
-		font-family: inherit;
+		: inherit;
 		color: #1a1a1a;
 	}
 
@@ -156,7 +156,7 @@
 		color: #254c6f;
 		text-decoration: underline;
 		cursor: pointer;
-		font-family: inherit;
+		: inherit;
 		transition: color 0.2s ease;
 	}
 

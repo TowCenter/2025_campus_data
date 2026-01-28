@@ -532,7 +532,7 @@
 		line-height: 1.4;
 		color: #1a1a1a;
 		margin: 0;
-		font-family: inherit;
+		font-family: Lyon Text Web;
 	}
 
 	.search-highlight {
@@ -552,7 +552,7 @@
 
 	.links-label {
 		font-size: 0.7rem;
-		font-family: inherit;
+		font-family: Lyon Text Web;
 		font-weight: 400;
 		color: #666;
 		text-transform: uppercase;
@@ -573,7 +573,7 @@
 		color: #254c6f;
 		text-decoration: none;
 		transition: color 0.2s ease;
-		font-family: inherit;
+		: inherit;
 	}
 
 	.link-item:hover {
@@ -596,7 +596,7 @@
 	.meta-label {
 		display: block;
 		font-size: 0.7rem;
-		font-family: inherit;
+		: inherit;
 		font-weight: 400;
 		color: #666;
 		text-transform: uppercase;
@@ -611,7 +611,7 @@
 
 	.tag {
 		font-size: 0.7rem;
-		font-family: inherit;
+		: inherit;
 		padding: 0.2rem 0.4rem;
 		border-radius: 3px;
 		font-weight: 400;

@@ -180,7 +180,7 @@ a {
 /* Graphik Web */
 
 @font-face {
-  font-family: 'Graphik Web';
+  : 'Graphik Web';
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-Regular-Web.woff2') format('woff2'),
        url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-Regular-Web.woff') format('woff');
   font-weight:  400;
@@ -189,14 +189,14 @@ a {
 }
 
 .Graphik-Regular-Web {
-  font-family: 'Graphik Web';
+  : 'Graphik Web';
   font-weight:  400;
   font-style:   normal;
   font-stretch: normal;
 }
 
 @font-face {
-  font-family: 'Graphik Web';
+  : 'Graphik Web';
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-BoldItalic-Web.eot');
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-BoldItalic-Web.eot?#iefix') format('embedded-opentype'),
        url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-BoldItalic-Web.woff2') format('woff2'),
@@ -207,7 +207,7 @@ a {
 }
 
 .Graphik-BoldItalic-Web {
-  font-family: 'Graphik Web';
+  : 'Graphik Web';
   font-weight:  700;
   font-style:   italic;
   font-stretch: normal;
@@ -215,7 +215,7 @@ a {
 
 
 @font-face {
-  font-family: 'Graphik Web';
+  : 'Graphik Web';
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-Bold-Web.eot');
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-Bold-Web.eot?#iefix') format('embedded-opentype'),
        url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-Bold-Web.woff2') format('woff2'),
@@ -226,7 +226,7 @@ a {
 }
 
 .Graphik-Bold-Web {
-  font-family: 'Graphik Web';
+  : 'Graphik Web';
   font-weight:  700;
   font-style:   normal;
   font-stretch: normal;
@@ -235,7 +235,7 @@ a {
 
 
 @font-face {
-	font-family: 'Graphik Web';
+	: 'Graphik Web';
 	src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-RegularItalic-Web.woff2') format('woff2'),
 		url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Graphik-RegularItalic-Web.woff') format('woff');
 	font-weight: 400;
@@ -243,7 +243,7 @@ a {
 }
 
 .Graphik-RegularItalic-Web {
-	font-family: 'Graphik Web';
+	: 'Graphik Web';
 	font-weight: 400;
 	font-style: italic;
 }
@@ -252,7 +252,7 @@ a {
 /* icon fonts */
 
 @font-face {
-    font-family: 'socicon';
+    font-family: 'Lyon Text Web';
     src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/socicon-webfont.eot');
     src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/socicon-webfont.eot?#iefix') format('embedded-opentype'),
          url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/socicon-webfont.woff') format('woff'),
@@ -264,18 +264,18 @@ a {
 }
 
 .socicon {
-    font-family: 'socicon' !important;
+    font-family: 'Lyon Text Web' !important;
     display: inline-block;
 }
 
 @font-face {
-  font-family: 'Glyphicons Halflings';
+  font-family: 'Lyon Text Web';
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/glyphicons-halflings-regular.eot');
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/glyphicons-halflings-regular.woff') format('woff'), url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
 }
 
 @font-face {
-	font-family:'Glyphicons Regular';
+	font-family:'Lyon Text Web';
 	src:url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/glyphicons-regular.eot');
 	src:url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/glyphicons-regular.eot?#iefix') format('embedded-opentype'),url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/glyphicons-regular.woff2') format('woff2'),url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/glyphicons-regular.woff') format('woff'),url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/glyphicons-regular.ttf') format('truetype'),url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/glyphicons-regular.svg#glyphiconsregular') format('svg')
 }
@@ -284,7 +284,7 @@ a {
   position: relative;
   top: 1px;
   display: inline-block;
-  font-family: 'Glyphicons Halflings','Glyphicons Regular';
+  font-family: 'Lyon Text Web';
   font-style: normal;
   font-weight: normal;
   line-height: 1;
@@ -714,7 +714,7 @@ input[type="search"]:focus {
 }
 
 .brand-title {
-	font-family: "Graphik Web", 'Helvetica', sans-serif;
+	: "Graphik Web", 'Helvetica', sans-serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 16px;
@@ -727,7 +727,7 @@ input[type="search"]:focus {
 }
 
 h1.main-title {
-	font-family: 'Lyon Display Web', 'Georgia', serif;
+	: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 500;
 	font-size: 48px;
@@ -784,7 +784,7 @@ h1.main-title {
 }
 
 .meta, .meta a {
-    font-family: "Graphik Web", 'Helvetica', sans-serif;
+    : "Graphik Web", 'Helvetica', sans-serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 14px;
@@ -897,7 +897,7 @@ h1.main-title {
 }
 
 .entry-content > p:first-of-type strong:first-of-type {
-    font-family: "Graphik Web", 'Helvetica', sans-serif;
+    : "Graphik Web", 'Helvetica', sans-serif;
     font-weight: 700;
 	font-size: 20px;
 	color: #de5a35;
@@ -939,7 +939,7 @@ h1.main-title {
 
 
 .has-drop-cap:not(:focus):first-letter {
-	font-family: "Graphik Web", 'Helvetica', sans-serif;
+	font-family: "Lyon Text Web", 'Georgia', serif;
     font-weight: 700;
     float: left;
     font-size: 5em; /* was 5.4em */
@@ -1862,7 +1862,7 @@ figcaption.image-hero-caption-vert {
 }
 .form-title-embed {
 	display: block;
-	font-family: 'Stag Web', 'American Typewriter', 'Helvetica Neue', Helvetica, sans-serif;
+	: 'Stag Lyon Text Web', 'Georgia', serif;
 	font-weight: 200;
 	font-size: 32px;
 	line-height: 32px;
@@ -1888,7 +1888,7 @@ figcaption.image-hero-caption-vert {
 	padding: 1px 0px 0px 0px;
 	margin: 0px 10px 20px 10px;
 	background-color: #b4b2b4 !important;
-	font-family: 'Stag Web', 'American Typewriter', 'Helvetica Neue', Helvetica, sans-serif;
+	: 'Stag Web', 'American Typewriter', 'Helvetica Neue', Helvetica, sans-serif;
 	font-size: 16px;
 	font-style: normal;
 	font-weight: 500;
@@ -1979,7 +1979,7 @@ h1.tout-main-title {
 }
 
 .tout-meta, .tout-meta a {
-    font-family: "Graphik Web", 'Helvetica', sans-serif;
+    : "Graphik Web", 'Helvetica', sans-serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 10px;
@@ -2266,7 +2266,7 @@ h1.tout-main-title {
 
 /* .track-title {
     color: #000000 !important;
-	font-family: triptych_testroman !important;
+	: triptych_testroman !important;
     font-size: 18px !important;
     font-weight: bold !important;
 	line-height: 28px !important;
@@ -2370,7 +2370,7 @@ h1.tout-main-title {
 	font-weight: bold !important;
 	font-size: 14px !important;
 	color: #ffffff !important;
-	font-family: arial !important;
+	: arial !important;
 }
 
 
@@ -2387,7 +2387,7 @@ h1.tout-main-title {
 }
 
 .grey-box-1 p {
-	font-family: Helvetica, sans-serif;
+	: Helvetica, sans-serif;
 	line-height: 23px !important;
     font-weight: 400 !important;
     font-size: 18px !important;
@@ -2399,7 +2399,7 @@ h1.tout-main-title {
 }
 
 .grey-box-left-text {
-	font-family: Helvetica, sans-serif;
+	: Helvetica, sans-serif;
 	line-height: 18px !important;
     font-weight: normal !important;
     font-size: 14px !important;
@@ -2411,7 +2411,7 @@ h1.tout-main-title {
 }
 
 .grey-box-byline strong {
-	font-family: Helvetica, sans-serif;
+	: Helvetica, sans-serif;
 	font-weight: bold !important;
     font-size: 14px !important;
 	margin: 0px 0px 0px 0px !important;
@@ -2432,14 +2432,14 @@ p.grey-box-photo-credit {
 
 /* sidebar box 1 */
 .sidebar-group-mini-1 h2 {
-	font-family: Helvetica, sans-serif;
+	: Helvetica, sans-serif;
     color: rgba(42, 42, 42, 1);
     font-size: 11px;
 	font-weight: bold !important;
 }
 
 .sidebar-group-mini-1 p {
-	font-family: Helvetica, sans-serif;
+	: Helvetica, sans-serif;
 	line-height: 14px !important;
     font-weight: 400 !important;
     font-size: 11px !important;
@@ -2450,7 +2450,7 @@ p.grey-box-photo-credit {
 }
 
 .sidebar-group-mini-1 p a {
-	font-family: Helvetica, sans-serif;
+	: Helvetica, sans-serif;
 	line-height: 14px !important;
     font-weight: bold !important;
 	text-decoration: underline;
@@ -2460,7 +2460,7 @@ p.grey-box-photo-credit {
 }
 
 .sidebar-group-mini-1 p a strong {
-	font-family: Helvetica, sans-serif;
+	: Helvetica, sans-serif;
 	line-height: 14px !important;
     font-weight: bold !important;
 
@@ -2941,7 +2941,7 @@ img.tow-ccn-tout-image-1 {
 }
 
 h1.tow-ccn-tout-main-title {
-	font-family: "Graphik Web", 'Helvetica', sans-serif;
+	: "Graphik Web", 'Helvetica', sans-serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 18px;
@@ -2960,7 +2960,7 @@ h1.tow-ccn-tout-main-title {
 }
 
 .tow-ccn-tout-meta, .tow-ccn-tout-meta a {
-    font-family: "Graphik Web", 'Helvetica', sans-serif;
+    : "Graphik Web", 'Helvetica', sans-serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 10px;
@@ -2984,7 +2984,7 @@ h1.tow-ccn-tout-main-title {
 }
 
 .tow-ccn-tout-excerpt {
-	font-family: "Graphik Web", 'Helvetica', sans-serif;
+	: "Graphik Web", 'Helvetica', sans-serif;
 	font-style: normal;
 	font-weight: 400;
 	font-size: 14px;
@@ -2995,7 +2995,7 @@ h1.tow-ccn-tout-main-title {
 }
 
 .tow-ccn-tout-excerpt a {
-	font-family: "Graphik Web", 'Helvetica', sans-serif;
+	: "Graphik Web", 'Helvetica', sans-serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 14px;
@@ -3064,7 +3064,7 @@ h1.tow-ccn-tout-main-title {
     text-align: center;
     line-height: 0;
     color: #000;
-    font-family: arial, verdana, sans-serif;
+    font-family: Lyon Text Web, sans-serif;
     font-size: 12px
 }
 
@@ -3202,7 +3202,7 @@ h1.tow-ccn-tout-main-title {
 }
 
 @font-face {
-    font-family: 'Yanone Kaffeesatz';
+    : 'Yanone Kaffeesatz';
     font-style: normal;
     font-weight: 400;
     src: url("../fonts/yanone-kaffeesatz-v9-latin-regular.eot");
@@ -3324,7 +3324,7 @@ h1.tow-ccn-tout-main-title {
 }
 
 #slb_viewer_wrap .slb_theme_slb_default .slb_data_title,#slb_viewer_wrap .slb_theme_slb_default .slb_group_status {
-    font-family: 'Yanone Kaffeesatz', arial, sans-serif;
+    font-family: 'Lyon Text Web', sans-serif;
     font-size: 23px;
     margin-right: .2em;
     display: inline-block
@@ -3372,7 +3372,7 @@ html {
 }
 
 @font-face {
-  font-family: 'Stag Web';
+  font-family: 'Lyon Text Web';
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Thin-Web.eot');
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Thin-Web.eot#iefix') format('embedded-opentype'),
      url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Thin-Web.woff') format('woff'),
@@ -3384,7 +3384,7 @@ html {
 }
 
 .Stag-Thin-Web {
-  font-family: 'Stag Web';
+  : 'Stag Web';
   font-weight:  100;
   font-style:   normal;
   font-stretch: normal;
@@ -3392,7 +3392,7 @@ html {
 
 
 @font-face {
-  font-family: 'Stag Web';
+  : 'Stag Web';
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Light-Web.eot');
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Light-Web.eot#iefix') format('embedded-opentype'),
      url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Light-Web.woff') format('woff'),
@@ -3404,14 +3404,14 @@ html {
 }
 
 .Stag-Light-Web {
-  font-family: 'Stag Web';
+  : 'Stag Web';
   font-weight:  300;
   font-style:   normal;
   font-stretch: normal;
 }
 
 @font-face {
-  font-family: 'Stag Web';
+  : 'Stag Web';
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Book-Web.eot');
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Book-Web.eot#iefix') format('embedded-opentype'),
      url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Book-Web.woff') format('woff'),
@@ -3423,14 +3423,14 @@ html {
 }
 
 .Stag-Book-Web {
-  font-family: 'Stag Web';
+  : 'Stag Web';
   font-weight:  400;
   font-style:   normal;
   font-stretch: normal;
 }
 
 @font-face {
-  font-family: 'Stag Web';
+  : 'Stag Web';
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Semibold-Web.eot');
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Semibold-Web.eot#iefix') format('embedded-opentype'),
      url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Semibold-Web.woff') format('woff'),
@@ -3442,7 +3442,7 @@ html {
 }
 
 .Stag-Semibold-Web {
-  font-family: 'Stag Web';
+  : 'Stag Web';
   font-weight:  600;
   font-style:   normal;
   font-stretch: normal;
@@ -3452,7 +3452,7 @@ html {
 
 .form-title-embed {
     display: block;
-    font-family: 'Stag Web', 'American Typewriter', 'Helvetica Neue', Helvetica, sans-serif;
+    : 'Stag Web', 'American Typewriter', 'Helvetica Neue', Helvetica, sans-serif;
     font-weight: 200;
     font-size: 32px;
     line-height: 32px;
@@ -3738,7 +3738,7 @@ p.ez-toc-title {
 }
 
 .entry-content > h6 {
-    font-family: "Graphik Web", 'Helvetica', sans-serif;
+    : "Graphik Web", 'Helvetica', sans-serif;
     font-weight: 700;
 	font-size: 20px;
     border-left: none;
@@ -3798,7 +3798,7 @@ h5.capsule {
     }
 
     p.ez-toc-title {
-        font-family: "Graphik Web", 'Helvetica', sans-serif;
+        : "Graphik Web", 'Helvetica', sans-serif;
         font-weight: 700;
 	    font-size: 14px;
         /* display: inline; */
@@ -3856,7 +3856,7 @@ div#post-capsule-block {
 }
 
 span.capsule-crashline {
-	font-family: 'Bevan', 'Geogria', serif;
+	: 'Bevan', 'Geogria', serif;
     font-weight: 700;
 	font-size: 46px;
 	line-height: 50px;
@@ -3868,7 +3868,7 @@ span.capsule-crashline {
 }
 
 h6.capsule-headline {
-	font-family: "Graphik Web", 'Helvetica', sans-serif;
+	font-family: ";Lyon Text Web", 'Georgia', serif;
     font-weight: 700;
 	font-size: 31px;
 	line-height: 34px;
@@ -3887,7 +3887,7 @@ h6.cap-head-black {
 }
 
 span.capsule-subhead {
-	font-family: "Graphik Web", 'Helvetica', sans-serif;
+	: "Graphik Web", 'Helvetica', sans-serif;
     font-weight: 700;
 	font-size: 16px;
 	line-height: 18px;
@@ -3914,7 +3914,7 @@ span.capsule-body p {
 }
 
 span.cap-bod-orange-sans p {
-    font-family: "Graphik Web", 'Helvetica', sans-serif;
+    : "Graphik Web", 'Helvetica', sans-serif;
     font-weight: 400;
 	color: #de5a35;
     font-size: 24px;
@@ -3922,7 +3922,7 @@ span.cap-bod-orange-sans p {
 }
 
 span.cap-bod-orange-serif p {
-    font-family: "Lyon Text Web", 'Georgia', serif;
+    : "Lyon Text Web", 'Georgia', serif;
     font-weight: normal;
 	color: #de5a35;
     font-size: 28px;
@@ -3960,7 +3960,7 @@ span.cap-bod-black-serif p a:hover {
 }
 
 span.capsule-image-credit {
-    font-family: "Graphik Web", 'Helvetica', sans-serif;
+    : "Graphik Web", 'Helvetica', sans-serif;
     font-weight: 400;
 	color: #989898;
     font-size: 18px;
@@ -3972,7 +3972,7 @@ span.capsule-image-credit {
 @media screen and (max-width:576px) {
 
     span.capsule-crashline {
-        font-family: 'Bevan', 'Geogria', serif;
+        : 'Bevan', 'Geogria', serif;
         font-weight: 700;
         font-size: 35px; /* was 36 */
         line-height: 40px;
