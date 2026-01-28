@@ -20,14 +20,16 @@ export const config = createTemplateConfig({
 	filterConfig: [
 		{
 			type: 'multi-select',
-			column: 'Organization',
-			label: 'Organization',
+			column: 'School',
+			label: 'School',
 			dataKey: 'org'  // Actual field name in your data (array of organizations)
 		},
 		{
-			type: 'date-range',
-			label: 'Date Range',
-			dataKey: 'date'  // Field name for dates
+			type: 'multi-select',
+			column: 'Month',
+			label: 'Month',
+			dataKey: 'month',  // Virtual field computed from date
+			virtual: true
 		},
 		{
 			type: 'search',
@@ -37,7 +39,6 @@ export const config = createTemplateConfig({
 
 	// LEFT NAVIGATION - Customize these links
 	navItems: [
-		{ href: '/', label: 'Home' },
 		{ href: '/announcements', label: 'Search' },
 		{ href: '/methodology', label: 'Methodology' }
 	],

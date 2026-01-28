@@ -50,6 +50,17 @@
 	let visibleCount = $state(initialVisibleCount);
 	let isLoading = $state(false);
 
+	// Check if any filters or search is active
+	const hasActiveFilters = $derived.by(() => {
+		const hasSearchQuery = searchQuery && searchQuery.trim().length > 0;
+		const hasFilterValues = Object.values(filterValues).some(val => {
+			if (Array.isArray(val)) return val.length > 0;
+			if (val && typeof val === 'object') return Object.values(val).some(v => v);
+			return !!val;
+		});
+		return hasSearchQuery || hasFilterValues;
+	});
+
 	/** @type {HTMLElement | undefined} */
 	let filterBarRef
 	let isFilterBarSticky = $state(false);
@@ -60,25 +71,58 @@
 	let filterBarLeft = $state(0);
 	const increment = 20;
 
+	// Helper function to extract month from date
+	function getMonthKey(dateString) {
+		if (!dateString) return null;
+		try {
+			const dateObj = new Date(dateString);
+			if (isNaN(dateObj.getTime())) return null;
+			const year = dateObj.getFullYear();
+			const month = dateObj.getMonth();
+			return `${year}-${String(month + 1).padStart(2, '0')}`;
+		} catch {
+			return null;
+		}
+	}
+
+	// Helper function to format month label
+	function formatMonthLabel(monthKey) {
+		const [year, month] = monthKey.split('-');
+		const date = new Date(parseInt(year), parseInt(month) - 1);
+		return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+	}
+
+	// Extract unique months from data for month filter
+	const uniqueMonths = $derived.by(() => {
+		const months = new Set();
+		data.forEach(item => {
+			const monthKey = getMonthKey(item[dateField]);
+			if (monthKey) months.add(monthKey);
+		});
+		return Array.from(months).sort().reverse();
+	});
+
 	// Default filter configuration - can be overridden via prop
 	/** @type {FilterConfigItem[]} */
 	const defaultFilterConfig = [
 		{
 			type: 'multi-select',
-			column: 'Platform',
-			label: 'Platform',
-			dataKey: 'platform'
+			column: 'Institution',
+			label: 'Institution',
+			dataKey: 'org'
+		},
+		{
+			type: 'multi-select',
+			column: 'Month',
+			label: 'Month',
+			dataKey: 'month',
+			virtual: true
 		},
 		{
 			type: 'multi-select',
 			column: 'Category',
 			label: 'Category',
 			dataKey: 'category'
-		},
-		{
-			type: 'date-range',
-			label: 'Date Range',
-			dataKey: 'date'
 		},
 		{
 			type: 'search',
@@ -89,6 +133,14 @@
 	// Use provided filterConfig or default
 	/** @type {FilterConfigItem[]} */
 	const activeFilterConfig = $derived(filterConfig || defaultFilterConfig);
+
+	// Add virtual 'month' field to data for filtering
+	const dataWithMonth = $derived.by(() => {
+		return data.map(item => ({
+			...item,
+			month: getMonthKey(item[dateField])
+		}));
+	});
 
 	function loadMore() {
 		if (isLoading) return;
@@ -173,7 +225,8 @@
 
 	const filteredData = $derived.by(() => {
 		// Use generic filter function that works with any filterConfig
-		return applyFilters(data, filterValues, activeFilterConfig, dateField);
+		// Use dataWithMonth so month filtering works
+		return applyFilters(dataWithMonth, filterValues, activeFilterConfig, dateField);
 	});
 
 	// Group data by month if timeline is enabled
@@ -309,40 +362,39 @@
 	});
 </script>
 
-<h3 class="explore-title">Explore the Data</h3>
+<div class="data-wrapper">
+	<div
+		class="filter-bar-wrapper"
+		class:sticky={isFilterBarSticky}
+		bind:this={filterBarRef}
+		style={isFilterBarSticky && filterBarWidth > 0 ? `width: ${filterBarWidth}px; left: ${filterBarLeft}px;` : ''}
+	>
+		<FilterBar
+			data={dataWithMonth}
+			filterConfig={activeFilterConfig}
+			{filterValues}
+			{searchQuery}
+			filteredRowCount={filteredData.length}
+			{categoryDefinitions}
+			onFilterChange={handleFilterChange}
+			isSticky={isFilterBarSticky}
+		/>
+	</div>
 
-<div
-	class="filter-bar-wrapper"
-	class:sticky={isFilterBarSticky}
-	bind:this={filterBarRef}
-	style={isFilterBarSticky && filterBarWidth > 0 ? `width: ${filterBarWidth}px; left: ${filterBarLeft}px;` : ''}
->
-<FilterBar
-	data={data}
-	filterConfig={activeFilterConfig}
-	{filterValues}
-	{searchQuery}
-	filteredRowCount={filteredData.length}
-		{categoryDefinitions}
-	onFilterChange={handleFilterChange}
-	isSticky={isFilterBarSticky}
-/>
-</div>
+	{#if isFilterBarSticky}
+		<div class="sticky-spacer" style="height: {filterBarHeight}px;"></div>
+	{/if}
 
-{#if isFilterBarSticky && filterBarHeight > 0}
-	<div class="sticky-spacer" style="height: {filterBarHeight}px;"></div>
-{/if}
+	<div class="search-charts-wrapper">
+		<SearchCharts
+			data={filteredData}
+			{dateField}
+			orgField="org"
+			{searchQuery}
+		/>
+	</div>
 
-<div class="search-charts-wrapper">
-	<SearchCharts
-		data={filteredData}
-		{dateField}
-		orgField="org"
-		{searchQuery}
-	/>
-</div>
-
-
+	{#if hasActiveFilters}
 <div class="data-container data-{displayMode}" class:timeline={showTimeline}>
 	{#if showTimeline}
 		<!-- Timeline view with date grouping -->
@@ -403,7 +455,7 @@
 				<thead>
 					<tr>
 						<th class="table-header">Date</th>
-						<th class="table-header">Organization</th>
+						<th class="table-header">School</th>
 						<th class="table-header">Title</th>
 						<th class="table-header">Description</th>
 					</tr>
@@ -450,14 +502,23 @@
 	{/if}
 	{#if isLoading}<p class="loading">Loading more...</p>{/if}
 </div>
+	{:else}
+		<div class="no-data-message">
+			<p>Use the filters to search announcements</p>
+		</div>
+	{/if}
+</div>
 <style>
-	/* Explore Title */
-	.explore-title {
-		font-size: 1.25rem;
-		font-weight: 600;
-		color: #1a1a1a;
-		margin: 0 0 1.5rem 0;
-		padding: 0;
+	/* Data Wrapper */
+	.data-wrapper {
+		width: 100%;
+	}
+
+	.no-data-message {
+		text-align: center;
+		padding: 2rem;
+		color: #666;
+		font-size: 1rem;
 	}
 
 	/* Filter Bar Wrapper */
@@ -469,7 +530,6 @@
 	}
 
 	.search-charts-wrapper {
-		min-width: 863px;
 		width: 100%;
 		padding: 0;
 		margin-bottom: 2rem;
@@ -479,7 +539,7 @@
 		width: 100%;
 		flex-shrink: 0;
 	}
-	
+
 	.filter-bar-wrapper.sticky {
 		position: fixed;
 		top: 0;
@@ -491,11 +551,6 @@
 	}
 
 	@media screen and (max-width: 768px) {
-		.explore-title {
-			font-size: 1.125rem;
-			margin: 0 0 1rem 0;
-		}
-
 		.filter-bar-wrapper {
 			margin: 0 0 1rem 0;
 		}
@@ -521,8 +576,6 @@
 		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 		gap: 2rem;
 		margin-top: 2rem;
-		min-width: 863px
-
 	}
 
 	.data-table {
@@ -547,7 +600,7 @@
 		background-color: #fafafa;
 	}
 
-	@media (max-width: px) {
+	@media (max-width: 768px) {
 		.data-table {
 			display: block;
 			overflow-x: auto;
@@ -661,7 +714,7 @@
 	/* Responsive */
 	@media screen and (max-width: 768px) {
 		.filter-bar-wrapper {
-			margin: 0.5rem;
+			margin: 0 0 1rem 0;
 		}
 
 		.data-container {

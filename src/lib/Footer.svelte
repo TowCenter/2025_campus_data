@@ -54,7 +54,7 @@
 	}
 
 	.footer-text h3 {
-		font-family: "Graphik Web", 'Helvetica', sans-serif;
+		font-family: 'Lyon Text Web', 'Georgia', serif;
 		font-weight: 700;
 		font-size: 14px;
 		letter-spacing: 0.1em;
@@ -64,7 +64,7 @@
 	}
 
 	.footer-text p {
-		font-family: "Graphik Web", 'Helvetica', sans-serif;
+		font-family: 'Lyon Text Web', 'Georgia', serif;
 		font-size: 13px;
 		line-height: 1.5;
 		color: #254c6f;
@@ -78,7 +78,7 @@
 	}
 
 	.footer-links a {
-		font-family: "Graphik Web", 'Helvetica', sans-serif;
+		font-family: 'Lyon Text Web', 'Georgia', serif;
 		font-weight: 700;
 		font-size: 12px;
 		letter-spacing: 0.05em;

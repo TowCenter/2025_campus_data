@@ -42,22 +42,32 @@
 		return Math.round(num).toString();
 	}
 
-	// Calculate nice axis values (evenly spaced whole numbers)
+	// Calculate nice axis values (evenly spaced round numbers like 0, 50, 100, 150)
 	function getNiceAxisValues(maxValue) {
 		if (maxValue <= 0) return [0];
 
-		// Find a nice round number for the max
-		const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue)));
-		let niceMax = Math.ceil(maxValue / magnitude) * magnitude;
+		// Define nice step sizes to choose from
+		const niceSteps = [5, 10, 20, 25, 50, 100, 200, 250, 500, 1000];
 
-		// Adjust if niceMax is too much bigger than maxValue
-		if (niceMax > maxValue * 1.5) {
-			niceMax = Math.ceil(maxValue / (magnitude / 2)) * (magnitude / 2);
+		// Find the smallest nice step that gives us reasonable intervals
+		let bestStep = 10;
+		for (const step of niceSteps) {
+			const intervals = Math.ceil(maxValue / step);
+			if (intervals >= 3 && intervals <= 6) {
+				bestStep = step;
+				break;
+			}
 		}
 
-		// Create 4 evenly spaced values
-		const step = niceMax / 4;
-		return [0, step, step * 2, step * 3, niceMax];
+		// Calculate nice max (round up to next multiple of step)
+		const niceMax = Math.ceil(maxValue / bestStep) * bestStep;
+
+		// Create evenly spaced values starting at 0
+		const values = [];
+		for (let v = 0; v <= niceMax; v += bestStep) {
+			values.push(v);
+		}
+		return values;
 	}
 
 	// Process data for charts
@@ -123,6 +133,10 @@
 		const maxMonthlyTotal = Math.max(...Object.values(monthlyTotal), 1);
 		const maxOrgCount = top5Orgs.length > 0 ? top5Orgs[0].count : 1;
 
+		// Calculate statistics
+		const totalSchools = Object.keys(orgCounts).length;
+		const totalRecords = data.length;
+
 		return {
 			monthlyByOrg,
 			monthlyTotal,
@@ -130,7 +144,9 @@
 			top5Orgs,
 			maxMonthlyTotal,
 			maxOrgCount,
-			allOrgs: Object.keys(orgCounts)
+			allOrgs: Object.keys(orgCounts),
+			totalSchools,
+			totalRecords
 		};
 	});
 
@@ -217,6 +233,18 @@
 
 {#if data.length > 0}
 	<div class="search-charts-container">
+		<!-- Stats Header -->
+		<div class="charts-stats-header">
+			<div class="stat-item">
+				<div class="stat-value">{chartData.totalSchools}</div>
+				<div class="stat-label">Schools</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-value">{chartData.totalRecords.toLocaleString()}</div>
+				<div class="stat-label">Records</div>
+			</div>
+		</div>
+
 		<!-- Mobile-only toggle button -->
 		<button
 			class="charts-toggle mobile-only"
@@ -240,32 +268,70 @@
 								class="line-chart"
 								preserveAspectRatio="xMidYMid meet"
 							>
-								<!-- Horizontal grid lines -->
+								<!-- Horizontal grid lines and Y-axis -->
 								{#each axisValues as val, i}
 									{@const y = lineChartHeight - padding - (val / niceMax) * (lineChartHeight - 2 * padding)}
+									<!-- Grid line -->
 									<line
 										x1={padding}
 										y1={y}
 										x2={lineChartWidth - padding}
 										y2={y}
-										stroke="#e8e8e8"
+										stroke="#f0f0f0"
+										stroke-width="1"
+									/>
+									<!-- Y-axis tick -->
+									<line
+										x1={padding - 5}
+										y1={y}
+										x2={padding}
+										y2={y}
+										stroke="#333"
 										stroke-width="1"
 									/>
 									<!-- Y-axis labels -->
-									<text x={padding - 8} y={y + 4} class="axis-label" text-anchor="end">
+									<text x={padding - 12} y={y + 4} class="axis-label" text-anchor="end">
 										{formatAxisNumber(val)}
 									</text>
 								{/each}
+								<!-- Y-axis line -->
+								<line
+									x1={padding}
+									y1={padding}
+									x2={padding}
+									y2={lineChartHeight - padding}
+									stroke="#333"
+									stroke-width="1"
+								/>
 
-								<!-- X-axis labels -->
+								<!-- X-axis labels and ticks -->
 								{#each chartData.monthLabels as m, i}
+									{@const x = padding + (i / (chartData.monthLabels.length - 1 || 1)) * (lineChartWidth - 2 * padding)}
+									<!-- X-axis tick -->
+									<line
+										x1={x}
+										y1={lineChartHeight - padding}
+										x2={x}
+										y2={lineChartHeight - padding + 5}
+										stroke="#333"
+										stroke-width="1"
+									/>
+									<!-- X-axis labels (show fewer to avoid crowding) -->
 									{#if i % Math.ceil(chartData.monthLabels.length / 5) === 0 || i === chartData.monthLabels.length - 1}
-										{@const x = padding + (i / (chartData.monthLabels.length - 1 || 1)) * (lineChartWidth - 2 * padding)}
 										<text x={x} y={lineChartHeight - padding + 18} class="axis-label" text-anchor="middle">
 											{m.label}
 										</text>
 									{/if}
 								{/each}
+								<!-- X-axis line -->
+								<line
+									x1={padding}
+									y1={lineChartHeight - padding}
+									x2={lineChartWidth - padding}
+									y2={lineChartHeight - padding}
+									stroke="#333"
+									stroke-width="1"
+								/>
 
 								<!-- Total line (blue) with rounded line caps -->
 								<path
@@ -307,24 +373,34 @@
 						</div>
 					</div>
 
-					<!-- Bar Chart - Top 5 Organizations -->
+					<!-- Bar Chart - Top 5 Schools -->
 					<div class="chart-section bar-chart-section">
-						<h4 class="chart-title">Top 5 Organizations</h4>
+						<h4 class="chart-title">Top 5 Schools</h4>
 						<div class="bar-chart-wrapper">
 							<svg
 								viewBox="0 0 {barChartWidth} {barChartHeight}"
 								class="bar-chart-svg"
 								preserveAspectRatio="xMidYMid meet"
 							>
-								<!-- Vertical grid lines -->
+								<!-- Vertical grid lines and X-axis -->
 								{#each barAxisValues as val, i}
 									{@const x = barPadding.left + (val / barNiceMax) * (barChartWidth - barPadding.left - barPadding.right)}
+									<!-- Grid line -->
 									<line
 										x1={x}
 										y1={barPadding.top}
 										x2={x}
 										y2={barChartHeight - barPadding.bottom}
-										stroke="#e8e8e8"
+										stroke="#f0f0f0"
+										stroke-width="1"
+									/>
+									<!-- X-axis tick -->
+									<line
+										x1={x}
+										y1={barChartHeight - barPadding.bottom}
+										x2={x}
+										y2={barChartHeight - barPadding.bottom + 5}
+										stroke="#333"
 										stroke-width="1"
 									/>
 									<!-- X-axis labels -->
@@ -332,6 +408,24 @@
 										{formatAxisNumber(val)}
 									</text>
 								{/each}
+								<!-- X-axis line -->
+								<line
+									x1={barPadding.left}
+									y1={barChartHeight - barPadding.bottom}
+									x2={barChartWidth - barPadding.right}
+									y2={barChartHeight - barPadding.bottom}
+									stroke="#333"
+									stroke-width="1"
+								/>
+								<!-- Y-axis line -->
+								<line
+									x1={barPadding.left}
+									y1={barPadding.top}
+									x2={barPadding.left}
+									y2={barChartHeight - barPadding.bottom}
+									stroke="#333"
+									stroke-width="1"
+								/>
 
 								<!-- Bars -->
 								{#each chartData.top5Orgs as { org, count }, i}
@@ -409,6 +503,35 @@
 		box-sizing: border-box;
 	}
 
+	/* Stats Header */
+	.charts-stats-header {
+		display: flex;
+		gap: 1.5rem;
+		padding: 0.75rem 1rem;
+		background: #fafafa;
+		border-bottom: 1px solid #e0e0e0;
+		box-sizing: border-box;
+	}
+
+	.stat-item {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.stat-value {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: #254c6f;
+	}
+
+	.stat-label {
+		font-size: 0.7rem;
+		color: #666;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
 	.charts-toggle {
 		width: 100%;
 		padding: 0.75rem 1rem;
@@ -435,14 +558,13 @@
 		display: block;
 	}
 
-	/* Mobile styles */
-	@media (min-width: 863px) {
+	/* Mobile styles - show toggle and hide charts by default */
+	@media (max-width: 768px) {
 		.charts-toggle.mobile-only {
 			display: flex;
 		}
 
 		.charts-panel-wrapper {
-			min-width: 863px;
 			display: none;
 		}
 
@@ -452,13 +574,13 @@
 	}
 
 	.charts-panel {
-		padding: 1.5rem;
+		padding: 1rem;
 	}
 
 	.charts-grid {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 2rem;
+		gap: 1rem;
 	}
 
 	.chart-section {

@@ -108,7 +108,7 @@
         text-decoration: none;
         border: none;
         border-radius: 0;
-        font-family: 'Graphik Web', 'Helvetica', sans-serif;
+        font-family: 'Lyon Text Web', 'Georgia', serif;
         font-size: 0.95rem;
         font-weight: 500;
         white-space: nowrap;

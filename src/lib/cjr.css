@@ -460,7 +460,7 @@ input[type="search"] {
     padding: 10px 15px;
     border: 1px solid transparent;
     border-radius: inherit;
-    font-family: 'Lyon Text';
+    font-family: 'Lyon Text Web', 'Georgia', serif;
     font-style: italic;
     font-weight: 400;
     font-size: 20px;
@@ -620,7 +620,7 @@ input[type="search"]:focus {
     -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
-    font-family: 'Graphik Web', 'Helvetica', sans-serif;
+    font-family: 'Lyon Text Web', 'Georgia', serif;
     font-style: normal;
     font-weight: 700;
     font-size: 24px;
@@ -630,7 +630,7 @@ input[type="search"]:focus {
 
 .cjr-menu-inline__link {
     display: block;
-    font-family: 'Graphik Web', 'Helvetica', sans-serif;
+    font-family: 'Lyon Text Web', 'Georgia', serif;
     font-style: normal;
     font-weight: 400;
     font-size: 16px;
@@ -674,7 +674,7 @@ input[type="search"]:focus {
 }
 
 #footer div.logo p {
-	font-family: "Lyon Text Web", serif;
+	font-family: "Lyon Text Web", "Georgia", serif;
 	font-style: italic;
 	font-size: 16px;
 	line-height: 32px;
@@ -701,7 +701,7 @@ input[type="search"]:focus {
 /* header styles */
 
 #small-category a {
-	font-family: 'Graphik Web', 'Helvetica', sans-serif;
+	font-family: 'Lyon Text Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 14px;
@@ -872,7 +872,7 @@ h1.main-title {
 	display: inline-block;
 	padding: 0 0.4rem;
 	border-radius: 3px;
-	font-family: 'Graphik Web', 'Helvetica', sans-serif;
+	font-family: 'Lyon Text Web', 'Georgia', serif;
 	font-size: 0.65rem;
 	font-weight: 500;
 	text-transform: uppercase;
@@ -1077,7 +1077,7 @@ h1.main-title {
 }
 
 .wp-caption-text {
-	font-family: 'Graphik Web', 'Helvetica', sans-serif;
+	font-family: 'Lyon Text Web', 'Georgia', serif;
     font-style: normal;
     font-weight: 400;
     font-size: 14px;
@@ -1207,7 +1207,7 @@ small.bio-overline strong a:hover {
 }
 
 .quote-cjr p, .wp-block-quote p {
-    font-family: 'Graphik Web', 'Helvetica', sans-serif;
+    font-family: 'Lyon Text Web', 'Georgia', serif;
     font-style: normal !important;
     text-align: center !important;
     font-size: 40px !important;
@@ -1576,7 +1576,7 @@ figure.wp-block-image.vertical {
 
 figcaption.blocks-gallery-caption, 
 figcaption {
-	font-family: 'Graphik Web', 'Helvetica', sans-serif;
+	font-family: 'Lyon Text Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 400;
 	font-size: 14px;
@@ -1588,7 +1588,7 @@ figcaption {
 }
 
 figcaption.image-hero-caption {
-	font-family: 'Graphik Web', 'Helvetica', sans-serif;
+	font-family: 'Lyon Text Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 400;
 	font-size: 14px;
@@ -1755,7 +1755,7 @@ div.vert-caption-mobile {
 }
 
 figcaption.image-hero-caption-vert {
-	font-family: 'Graphik Web', 'Helvetica', sans-serif;
+	font-family: 'Lyon Text Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 400;
 	font-size: 14px;
@@ -1936,7 +1936,7 @@ figcaption.image-hero-caption-vert {
 }
 
 .other-cjr-story-title h3 {
-	font-family: 'Graphik Web', 'Helvetica', sans-serif;
+	font-family: 'Lyon Text Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 16px;
@@ -2275,7 +2275,7 @@ h1.tout-main-title {
 } */
 
 .track-title {
-	font-family: 'Graphik Web', 'Helvetica', sans-serif !important;
+	font-family: 'Lyon Text Web', 'Georgia', serif !important;
     font-style: normal !important;
     font-weight: 700 !important;
     font-size: 16px !important;
@@ -2288,7 +2288,7 @@ h1.tout-main-title {
 
 
 .iron-audioplayer .srp_subtitle {
-    font-family: 'Graphik Web', 'Helvetica', sans-serif !important;
+    font-family: 'Lyon Text Web', 'Georgia', serif !important;
     font-style: normal !important;
     font-weight: 400 !important;
     font-size: 14px !important;
@@ -2532,7 +2532,7 @@ p.grey-box-photo-credit {
 }
 
 #footer div.logo p {
-	font-family: "Lyon Text Web", serif;
+	font-family: "Lyon Text Web", "Georgia", serif;
 	font-style: italic;
 	font-size: 16px;
 	line-height: 32px;
@@ -2591,7 +2591,7 @@ p.grey-box-photo-credit {
 }
 
 #footer .list h3 {
-	font-family: "Graphik Web", "Helvetica", sans-serif;
+	font-family: "Lyon Text Web", "Georgia", serif;
 	font-size: 16px;
 	line-height: 20px;
 	font-weight: 700;
@@ -2915,7 +2915,7 @@ h1.main-title {color: #254c6f;}
 }
 
 .tow-ccn-title h3 {
-	font-family: 'Graphik Web', 'Helvetica', sans-serif;
+	font-family: 'Lyon Text Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 16px;
@@ -3700,7 +3700,7 @@ p.ez-toc-title {
 }
 
 #ez-toc-container ul li {
-    font-family: 'Graphik Web', 'Helvetica', sans-serif;
+    font-family: 'Lyon Text Web', 'Georgia', serif;
     font-style: normal;
     font-weight: 400;
     font-size: 13px;
@@ -3816,7 +3816,7 @@ h5.capsule {
     }
 
     #ez-toc-container ul li {
-        font-family: 'Graphik Web', 'Helvetica', sans-serif;
+        font-family: 'Lyon Text Web', 'Georgia', serif;
         font-style: normal;
         font-weight: 400;
         font-size: 14px;
@@ -3990,7 +3990,7 @@ span.capsule-image-credit {
 
 /* archival pullquote */
 p.pullquote_full, p.pullquote-2015, p.pullquote_left {
-    font-family: 'Graphik Web', 'Helvetica', sans-serif;
+    font-family: 'Lyon Text Web', 'Georgia', serif;
     font-style: normal !important;
     text-align: center !important;
     font-size: 40px !important;

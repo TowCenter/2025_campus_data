@@ -34,8 +34,8 @@
 	// Normalize org to always be an array
 	const orgArray = $derived(Array.isArray(item?.org) ? item.org : (item?.org ? [item.org] : []).filter(Boolean));
 	
-	// Get selected organizations from filterValues
-	const selectedOrgs = $derived(filterValues['filter-Organization'] || []);
+	// Get selected schools from filterValues
+	const selectedOrgs = $derived(filterValues['filter-School'] || []);
 	
 	// Use Set for faster lookups
 	const selectedOrgsSet = $derived(new Set(selectedOrgs));
@@ -45,35 +45,47 @@
 		return selectedOrgs.length > 0 && selectedOrgsSet.has(orgTag);
 	}
 
-	// Generate a unique color for an organization name
+	// Color palette for schools
+	const schoolColors = [
+		'#98d7cd', '#7bccbe', '#5dc0b0',
+		'#bbdefb', '#9ed1fa', '#77bef8',
+		'#a89dfb', '#9789fa', '#8575fa'
+	];
+
+	// Generate a unique color for an organization name from palette
 	function getOrgColor(orgName) {
 		if (!orgName) return '#f0f0f0';
-		
+
 		// Hash the organization name to get a consistent color
 		let hash = 0;
 		for (let i = 0; i < orgName.length; i++) {
 			hash = orgName.charCodeAt(i) + ((hash << 5) - hash);
 		}
-		
-		// Generate a muted, subtle color
-		const hue = Math.abs(hash) % 360;
-		const saturation = 15 + (Math.abs(hash) % 10); // 15-25% (muted)
-		const lightness = 85 + (Math.abs(hash) % 10); // 85-95% (very light)
-		
-		return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+
+		// Select from palette
+		const colorIndex = Math.abs(hash) % schoolColors.length;
+		return schoolColors[colorIndex];
 	}
 
-	// Get text color (dark gray for light backgrounds)
+	// Get dark text color based on the background color
 	function getOrgTextColor(orgName) {
 		if (!orgName) return '#333';
-		return '#333';
+		// Get the background color and darken it for the text
+		const bgColor = getOrgColor(orgName);
+		// Convert hex to darker shade
+		const hex = bgColor.replace('#', '');
+		const r = Math.max(0, parseInt(hex.substring(0, 2), 16) - 80);
+		const g = Math.max(0, parseInt(hex.substring(2, 4), 16) - 80);
+		const b = Math.max(0, parseInt(hex.substring(4, 6), 16) - 80);
+		return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 	}
 
-	// Simple text highlighting function
+	// Highlight only the searched keyword in text
 	function highlightText(text, query) {
 		if (!query || !text) return text;
-		const escaped = String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-		const regex = new RegExp(`(${escaped})`, 'gi');
+		// Escape the query for use in regex
+		const escapedQuery = String(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		const regex = new RegExp(`(${escapedQuery})`, 'gi');
 		return String(text).replace(regex, '<mark class="search-highlight">$1</mark>');
 	}
 </script>
@@ -122,10 +134,10 @@
 	}
 
 	.table-cell {
-		padding: 1rem;
+		padding: 1.25rem 1rem;
 		vertical-align: top;
 		font-size: 0.9rem;
-		line-height: 1.5;
+		line-height: 1.6;
 	}
 
 	.table-date {
@@ -142,21 +154,25 @@
 	.org-tags {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.4rem;
+		gap: 0.35rem;
 	}
 
 	.org-tag {
 		font-size: 0.7rem;
 		font-family: inherit;
-		padding: 0.2rem 0.4rem;
+		padding: 0.2rem 0.5rem;
 		border-radius: 3px;
-		font-weight: 400;
+		font-weight: 500;
 		display: inline-block;
 		transition: all 0.2s ease;
+		word-break: break-word;
+		white-space: nowrap;
+		max-width: none;
 	}
 
 	.org-tag.selected {
-		font-weight: 500;
+		font-weight: 600;
+		box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
 	}
 
 	.table-title {
@@ -210,7 +226,7 @@
 	}
 
 	.search-highlight {
-		background-color: #fff3cd;
+		background-color: #BBDEFB;
 		padding: 0.1em 0.2em;
 		border-radius: 2px;
 		font-weight: 500;

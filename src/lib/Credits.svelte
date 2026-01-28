@@ -91,7 +91,7 @@
 	:global(.meta .credits-inner a),
 	:global(.meta .credits-item a),
 	:global(.meta .credits-acknowledgement a) {
-		font-family: "Graphik Web", 'Helvetica', sans-serif !important;
+		font-family: 'Lyon Text Web', 'Georgia', serif !important;
 		font-size: 13px !important;
 		font-weight: normal !important;
 		text-transform: none !important;
@@ -114,7 +114,7 @@
 		border: none;
 		padding: 0;
 		cursor: pointer;
-		font-family: "Lyon Text Web", 'Georgia', serif;
+		font-family: 'Lyon Text Web', 'Georgia', serif;
 		font-size: 20px;
 		line-height: 28px;
 		font-weight: normal;
@@ -156,7 +156,7 @@
 	}
 
 	.credits-item {
-		font-family: "Graphik Web", 'Helvetica', sans-serif;
+		font-family: 'Lyon Text Web', 'Georgia', serif;
 		font-size: 13px;
 		line-height: 1.8;
 		color: #333;
@@ -181,7 +181,7 @@
 		margin-top: 1rem;
 		padding-top: 1rem;
 		border-top: 1px solid #e0e0e0;
-		font-family: "Graphik Web", 'Helvetica', sans-serif;
+		font-family: 'Lyon Text Web', 'Georgia', serif;
 		font-size: 13px;
 		line-height: 1.8;
 		color: #333;

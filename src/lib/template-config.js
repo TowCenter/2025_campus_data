@@ -9,6 +9,7 @@
  * @property {string} [column] - Column name (optional for search)
  * @property {string} label - Display label for the filter
  * @property {string} [dataKey] - Actual field name in data (for multi-select and date-range)
+ * @property {boolean} [virtual] - Whether this filter uses a virtual/computed field
  */
 
 /**

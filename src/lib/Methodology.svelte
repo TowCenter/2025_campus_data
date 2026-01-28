@@ -111,13 +111,15 @@
   $: totalStates = Object.keys(stateGroups).length;
   $: totalRecords = indexTotalRecords ?? allArticles.length;
 
-  // Group schools by proximity and calculate offset positions
+  // Group schools by proximity and calculate offset positions to prevent overlap
   function getSchoolPositions(schools) {
     const positions = new Map();
-    const proximityThreshold = 10; // pixels - schools within this distance are considered overlapping
+    const dotRadius = 6; // radius of each dot including stroke
+    const proximityThreshold = dotRadius * 2.5; // pixels - schools within this distance are considered overlapping
 
     schools.forEach(school => {
       const coords = projectCoordinates(school.lat, school.lng);
+      if (coords.x === 0 && coords.y === 0) return; // Skip invalid coordinates
 
       // Find if there's already a school at roughly this location
       let cluster = null;
@@ -144,19 +146,29 @@
       if (group.length === 1) {
         result.push({ ...group[0], displayCoords: group[0].baseCoords });
       } else {
-        // Arrange schools in a circle around the centroid
-        const radius = 8; // offset distance
+        // Arrange schools in a spiral pattern to prevent overlap
+        const baseRadius = dotRadius * 2; // Start radius for spiral
         group.forEach((school, i) => {
-          const angle = (i / group.length) * 2 * Math.PI;
-          const offsetX = Math.cos(angle) * radius;
-          const offsetY = Math.sin(angle) * radius;
-          result.push({
-            ...school,
-            displayCoords: {
-              x: school.baseCoords.x + offsetX,
-              y: school.baseCoords.y + offsetY
-            }
-          });
+          if (i === 0) {
+            // First school stays at center
+            result.push({ ...school, displayCoords: school.baseCoords });
+          } else {
+            // Arrange remaining schools in expanding rings
+            const ring = Math.ceil(Math.sqrt(i)); // Which ring (1, 2, 3...)
+            const posInRing = i - (ring - 1) * (ring - 1); // Position within ring
+            const ringSize = ring * 4; // Approximate number of positions in this ring
+            const angle = (posInRing / ringSize) * 2 * Math.PI + ring * 0.5;
+            const radius = baseRadius * ring;
+            const offsetX = Math.cos(angle) * radius;
+            const offsetY = Math.sin(angle) * radius;
+            result.push({
+              ...school,
+              displayCoords: {
+                x: school.baseCoords.x + offsetX,
+                y: school.baseCoords.y + offsetY
+              }
+            });
+          }
         });
       }
     }
@@ -197,7 +209,7 @@
 
   function handleDotLeave() {
     hoveredSchool = null;
-    showTooltip = true;
+    showTooltip = false;
   }
 
   function updateTooltipPosition(event) {
@@ -525,25 +537,6 @@
 </script>
 
 <div class="methodology-wrapper">
-      <!-- Statistics as inline info -->
-      <div class="stats-inline">
-        <span class="stat-inline"><strong>{totalSchools}</strong> Universities</span>
-        <span class="stat-separator">•</span>
-        <span class="stat-inline"><strong>{totalStates}</strong> States</span>
-        <span class="stat-separator">•</span>
-        <span class="stat-inline">
-          <strong>
-            {#if indexTotalRecords !== null}
-              {indexTotalRecords.toLocaleString()}
-            {:else if loadingArticles}
-              ...
-            {:else}
-              {totalRecords.toLocaleString()}
-            {/if}
-          </strong> Total Records
-        </span>
-      </div>
-
       <!-- Methodology Content -->
       <section class="methodology-content">
         <h3>Methodology</h3>
@@ -586,7 +579,7 @@
                 <circle
                   cx={school.displayCoords.x}
                   cy={school.displayCoords.y}
-                  r="5"
+                  r="4"
                   class="school-dot"
                   class:hovered={hoveredSchool === school}
                   onmouseenter={(event) => handleDotHover(school, event)}
@@ -900,19 +893,19 @@
   .school-dot {
     fill: #254c6f;
     stroke: white;
-    stroke-width: 2;
+    stroke-width: 1.5;
     cursor: pointer;
-    opacity: 1;
-    transition: all 0.3s ease;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    opacity: 0.9;
+    transition: all 0.2s ease;
   }
 
   .school-dot:hover,
   .school-dot.hovered {
     fill: #1e3d57;
-    stroke: #254c6f;
-    stroke-width: 3;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    stroke: white;
+    stroke-width: 2;
+    opacity: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
   }
 
   /* Tooltip */

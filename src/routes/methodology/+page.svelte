@@ -23,10 +23,13 @@
 		dateLabel={config.dateLabel}
 		byline={config.byline}
 		byline_url={config.bylineUrl}
+		maintainedBy={config.maintainedBy}
+		designDevelopment={config.designDevelopment}
+		acknowledgements={config.acknowledgements}
 	>
 	</Headline>
 
-	<Body navItems={config.navItems}>
+	<Body navItems={config.navItems} showLeftNav={false}>
 		<Methodology />
 	</Body>
 </Article>

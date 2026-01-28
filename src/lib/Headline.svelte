@@ -1,5 +1,19 @@
 <script>
-	let { children = undefined, hed, subhed = '', date = '', byline = '', byline_url = '', brand = '', dateLabel = 'Last Updated On' } = $props();
+	import Credits from './Credits.svelte';
+
+	let {
+		children = undefined,
+		hed,
+		subhed = '',
+		date = '',
+		byline = '',
+		byline_url = '',
+		brand = '',
+		dateLabel = 'Last Updated On',
+		maintainedBy = [],
+		designDevelopment = [],
+		acknowledgements = ''
+	} = $props();
 
 </script>
 
@@ -36,6 +50,12 @@
                     ></span
                 >
                 {/if}
+
+				<Credits
+					{maintainedBy}
+					{designDevelopment}
+					{acknowledgements}
+				/>
             </div>
         </header>
     </div>
@@ -57,7 +77,7 @@
     }
 
     .meta .update-date {
-        font-family: "Lyon Text Web", 'Georgia', serif;
+        font-family: 'Lyon Text Web', 'Georgia', serif;
         font-size: 20px;
         line-height: 28px;
         font-weight: normal;

@@ -22,16 +22,19 @@
 <Article>
 	<Headline
 		hed={config.headline}
-		subhed="Browse all announcements with filters. Use the filters to narrow down by organization, date range, or search terms."
+		subhed="Browse all announcements with filters. Use the filters to narrow down by school, date range, or search terms."
 		brand={config.brand}
 		date={lastUpdatedDate}
 		dateLabel={config.dateLabel}
 		byline={config.byline}
 		byline_url={config.bylineUrl}
+		maintainedBy={config.maintainedBy}
+		designDevelopment={config.designDevelopment}
+		acknowledgements={config.acknowledgements}
 	>
 	</Headline>
 
-	<Body navItems={config.navItems}>
+	<Body navItems={config.navItems} showLeftNav={false}>
 		<Data
 			data={config.data}
 			filterConfig={config.filterConfig}

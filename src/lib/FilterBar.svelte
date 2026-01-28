@@ -46,11 +46,11 @@
 	 */
 	function getUniqueValues(dataKey) {
 		const unique = new Set();
-		
+
 		data.forEach(row => {
 			const val = row[dataKey];
 			if (!val) return;
-			
+
 			// Handle arrays
 			if (Array.isArray(val)) {
 				val.forEach(item => {
@@ -64,8 +64,30 @@
 				});
 			}
 		});
-		
-		return Array.from(unique).filter(Boolean).sort();
+
+		const values = Array.from(unique).filter(Boolean).sort();
+
+		// Format month values for better display
+		if (dataKey === 'month') {
+			return values.reverse(); // Show newest months first
+		}
+
+		return values;
+	}
+
+	/**
+	 * Formats display text for filter options
+	 * @param {string} value - Value to format
+	 * @param {string} dataKey - Data key context
+	 * @returns {string} Formatted display text
+	 */
+	function formatOptionDisplay(value, dataKey) {
+		if (dataKey === 'month') {
+			const [year, month] = value.split('-');
+			const date = new Date(parseInt(year), parseInt(month) - 1);
+			return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+		}
+		return value;
 	}
 
 	/**
@@ -240,11 +262,14 @@
 					{:else if filter.type === 'multi-select'}
 						{@const filterId = getFilterId(filter, index)}
 						{@const selectedValues = filterValues[filterId] || []}
-						{@const options = getUniqueValues(filter.dataKey || filter.column)}
-						<MultiSelect 
+						{@const rawOptions = getUniqueValues(filter.dataKey || filter.column)}
+						{@const dataKey = filter.dataKey || filter.column}
+						{@const displayOptions = dataKey === 'month' ? rawOptions.map(v => formatOptionDisplay(v, dataKey)) : rawOptions}
+						{@const optionMap = dataKey === 'month' ? Object.fromEntries(rawOptions.map((v, i) => [displayOptions[i], v])) : {}}
+						<MultiSelect
 							label=""
-							options={options}
-							selectedValues={selectedValues}
+							options={displayOptions}
+							selectedValues={selectedValues.map(v => dataKey === 'month' && optionMap[v] ? optionMap[v] : v)}
 							onSelectionChange={(values) => handleMultiSelectChange(filter, values)}
 							categoryDefinitions={filter.column === 'Category' ? categoryDefinitions : {}}
 						/>
@@ -256,10 +281,20 @@
 
 		<div class="filter-row-2">
 			{#if searchFilter}
-				<SearchBar
-					searchQuery={searchQuery}
-					onSearchChange={handleSearchChange}
-				/>
+				<div class="search-with-help">
+					<SearchBar
+						searchQuery={searchQuery}
+						onSearchChange={handleSearchChange}
+					/>
+					<button
+						class="search-help-btn"
+						type="button"
+						title="Search supports AND, OR, and NOT operators. Example: 'funding AND cut' or 'visa OR immigration'"
+						aria-label="Search help"
+					>
+						?
+					</button>
+				</div>
 			{/if}
 
 			<button
@@ -290,7 +325,6 @@
 		width: 100%;
 		padding: 1.5rem;
 		background-color: #fafafa;
-		min-width: 863px;
 		border: 1px solid #e0e0e0;
 		position: relative;
 		z-index: 9999;
@@ -360,6 +394,36 @@
 
 	.search-btn:hover {
 		background-color: #1a3a52;
+	}
+
+	.search-with-help {
+		display: flex;
+		align-items: flex-end;
+		gap: 0.5rem;
+		flex: 1;
+	}
+
+	.search-help-btn {
+		width: 24px;
+		height: 24px;
+		min-width: 24px;
+		border-radius: 50%;
+		background-color: #e0e0e0;
+		border: none;
+		color: #666;
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 0.25rem;
+		transition: all 0.2s ease;
+	}
+
+	.search-help-btn:hover {
+		background-color: #254c6f;
+		color: white;
 	}
 
 	.export-btn {

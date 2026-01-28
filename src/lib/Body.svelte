@@ -11,16 +11,18 @@
 	 * @typedef {Object} Props
 	 * @property {import('svelte').Snippet} children - Content to render
 	 * @property {NavItem[]} [navItems=[]] - Navigation items for left sidebar
+	 * @property {boolean} [showLeftNav=true] - Whether to show the left sidebar navigation
 	 */
 
 	/** @type {Props} */
-    let { 
+    let {
 		children,
 		navItems = [
 			{ href: 'https://towcenter.columbia.edu', label: 'Page 1' },
 			{ href: 'https://towcenter.columbia.edu', label: 'Page 2' },
 			{ href: 'https://towcenter.columbia.edu', label: 'Page 3' }
-		]
+		],
+		showLeftNav = true
 	} = $props();
 
 	// Get current path to highlight active link
@@ -34,9 +36,28 @@
 	}
 </script>
 
+<!-- Tab Navigation -->
+{#if navItems && navItems.length > 0}
+	<nav class="tab-navigation" aria-label="Main navigation tabs">
+		<ul class="tab-list">
+			{#each navItems as item}
+				<li>
+					<a
+						href={item.href}
+						class:active={isActive(item.href)}
+						class="tab-link"
+					>
+						{item.label}
+					</a>
+				</li>
+			{/each}
+		</ul>
+	</nav>
+{/if}
+
 <div class="container-lg">
     <div class="row">
-        {#if navItems && navItems.length > 0}
+        {#if navItems && navItems.length > 0 && showLeftNav}
             <div class="col-sm-2">
                 <nav class="left-nav" aria-label="Page navigation">
                     <ul>
@@ -48,10 +69,18 @@
                     </ul>
                 </nav>
             </div>
+            <div class="col-sm-10 entry-content">
+                {@render children()}
+            </div>
+        {:else if showLeftNav === false}
+            <div class="col-full entry-content">
+                {@render children()}
+            </div>
+        {:else}
+            <div class="col-sm-10 entry-content">
+                {@render children()}
+            </div>
         {/if}
-        <div class="col-sm-10 entry-content">
-            {@render children()}
-        </div>
     </div>
 </div>
 
@@ -76,6 +105,12 @@
             padding-right: 15px;
             padding-left: 15px;
         }
+        .col-full {
+            flex: 0 0 auto;
+            width: 100%;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
         .container-lg {
             width: 100%;
             padding-right: 15px;
@@ -86,7 +121,8 @@
         }
         @media (max-width: 767.98px) {
             .col-sm-2,
-            .col-sm-10 {
+            .col-sm-10,
+            .col-full {
                 flex: 0 0 100%;
                 max-width: 100%;
                 padding-left: 0 !important;
@@ -97,6 +133,51 @@
 </svelte:head>
 
 <style>
+    /* Tab Navigation */
+    .tab-navigation {
+        background: white;
+        border-bottom: 2px solid #e0e0e0;
+        margin-bottom: 2rem;
+    }
+
+    .tab-list {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 0 15px;
+    }
+
+    .tab-list li {
+        margin: 0;
+    }
+
+    .tab-link {
+        display: inline-block;
+        padding: 1rem 1.5rem;
+        color: #254c6f;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s ease;
+        margin-bottom: -2px;
+    }
+
+    .tab-link:hover {
+        color: #1a3a52;
+        border-bottom-color: #e0e0e0;
+    }
+
+    .tab-link.active {
+        color: #1a1a1a;
+        border-bottom-color: #254c6f;
+        font-weight: 600;
+    }
+
     .left-nav {
         position: static;
     }
@@ -134,6 +215,18 @@
     }
 
     @media screen and (max-width: 768px) {
+        .tab-list {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 0 1rem;
+        }
+
+        .tab-link {
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
         .left-nav {
             display: none;
         }
@@ -174,7 +267,7 @@
     }
 
     .update-date {
-        font-family: "Lyon Text Web", 'Georgia', serif;
+        font-family: 'Lyon Text Web', 'Georgia', serif;
         font-size: 20px;
         line-height: 28px;
         font-weight: normal;
