@@ -20,6 +20,7 @@
   import { onMount } from 'svelte';
   import Methodology from './Methodology.svelte';
   import Database from './Database.svelte';
+  import DatabaseSimple from './DatabaseSimple.svelte';
   import {
       Article,
       Body,
@@ -42,6 +43,7 @@
   const basePath = base.endsWith('/') ? base.slice(0, -1) : base;
   const routes = {
     database: base,
+    simple: `${basePath}/simple`,
     methodology: `${basePath}/methodology`
   };
 
@@ -62,11 +64,13 @@
 
   /**
    * Determine which page to display based on the current pathname
-   * Returns 'methodology' if the path includes that keyword, otherwise 'database'
+   * Returns 'methodology', 'simple', or 'database' based on path
    */
   function getPageFromPath(pathname) {
     const normalizedPath = normalizePath(pathname);
-    return normalizedPath.includes('methodology') ? 'methodology' : 'database';
+    if (normalizedPath.includes('methodology')) return 'methodology';
+    if (normalizedPath.includes('simple')) return 'simple';
+    return 'database';
   }
 
   // Initialize page state based on current URL
@@ -75,6 +79,7 @@
 
   // Track which components have been mounted for lazy loading optimization
   let databaseMounted = currentPage === 'database';
+  let simpleMounted = currentPage === 'simple';
   let methodologyMounted = currentPage === 'methodology';
   let mobileNavOpen = false;
 
@@ -84,6 +89,7 @@
    */
   function ensureMounted(page) {
     if (page === 'database') databaseMounted = true;
+    if (page === 'simple') simpleMounted = true;
     if (page === 'methodology') methodologyMounted = true;
   }
 
@@ -155,10 +161,11 @@
 
     // Track page view in Umami for SPA navigation
     if (window.umami) {
+      const titles = { database: 'Database', simple: 'Simple Search', methodology: 'Methodology' };
       window.umami.track(props => ({
         ...props,
         url: routes[page],
-        title: page === 'database' ? 'Database' : 'Methodology'
+        title: titles[page] || page
       }));
     }
   }
@@ -222,7 +229,7 @@
             <span></span>
           </span>
           <span class="mobile-nav-label">
-            {currentPage === 'database' ? 'Database' : 'Methodology'}
+            {currentPage === 'database' ? 'Database' : currentPage === 'simple' ? 'Simple Search' : 'Methodology'}
           </span>
         </button>
         {#if mobileNavOpen}
@@ -234,6 +241,14 @@
               type="button"
             >
               Database
+            </button>
+            <button
+              class="mobile-nav-link"
+              aria-current={currentPage === 'simple' ? 'page' : undefined}
+              onclick={() => navigateTo('simple')}
+              type="button"
+            >
+              Simple Search
             </button>
             <button
               class="mobile-nav-link"
@@ -260,6 +275,15 @@
             </li>
             <li>
               <a
+                href="#simple"
+                class:active={currentPage === 'simple'}
+                onclick={(e) => { e.preventDefault(); navigateTo('simple'); }}
+              >
+                Simple Search
+              </a>
+            </li>
+            <li>
+              <a
                 href="#methodology"
                 class:active={currentPage === 'methodology'}
                 onclick={(e) => { e.preventDefault(); navigateTo('methodology'); }}
@@ -274,6 +298,11 @@
         {#if databaseMounted}
           <div class="tab-panel" hidden={currentPage !== 'database'} aria-hidden={currentPage !== 'database'}>
             <Database />
+          </div>
+        {/if}
+        {#if simpleMounted}
+          <div class="tab-panel" hidden={currentPage !== 'simple'} aria-hidden={currentPage !== 'simple'}>
+            <DatabaseSimple />
           </div>
         {/if}
         {#if methodologyMounted}
