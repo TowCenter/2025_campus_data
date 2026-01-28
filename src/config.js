@@ -73,3 +73,7 @@ export const config = createTemplateConfig({
 	showTimeline: true,  // Set to true to show timeline UI with cards
 	initialVisibleCount: 200  // Initial number of items to show (increase to see more)
 });
+
+export const S3_URLS = {
+	metadata: 'https://2025-campus-data.s3.us-east-2.amazonaws.com/metadata.json'
+};

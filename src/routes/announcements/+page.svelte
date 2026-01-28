@@ -10,8 +10,10 @@
 	import { config } from '../../config.js';
 	import '../../lib/cjr.css';
 
-	// Get last updated date from data
-	const lastUpdatedDate = getLatestDate(config.data, config.lastUpdatedField, config.dateField);
+	export let data;
+
+	// Get last updated date from metadata
+	const lastUpdatedDate = getLatestDate(data?.metadata, config.lastUpdatedField);
 
 	// Ensure categoryDefinitions is the right type
 	/** @type {Record<string, string>} */
