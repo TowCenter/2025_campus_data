@@ -950,7 +950,7 @@ h1.main-title {
 }
 
 .entry-content > h2 {
-	font-family: "Graphik Web", 'Helvetica', sans-serif;
+	: "Graphik Web", 'Helvetica', sans-serif;
     font-weight: 700;
 	font-size: 20px;
 	color: #de5a35;
@@ -989,7 +989,7 @@ h1.main-title {
 }  
 
 .entry-content ol li {
-    font-family: "Graphik Web", 'Helvetica', sans-serif;
+    : "Graphik Web", 'Helvetica', sans-serif;
     font-style: normal;
     font-weight: 700;
 }  
