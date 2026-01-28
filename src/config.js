@@ -39,12 +39,12 @@ export const config = createTemplateConfig({
 
 	// LEFT NAVIGATION - Customize these links
 	navItems: [
-		{ href: '/announcements', label: 'Search' },
+		{ href: '/', label: 'Search' },
 		{ href: '/methodology', label: 'Methodology' }
 	],
 
 	// HEADLINE CONFIGURATION
-	headline: 'Component Testing Page',
+	headline: 'University Communications Database',
 	subheadline: '',
 	brand: '',
 	dateLabel: 'Last Updated On',
