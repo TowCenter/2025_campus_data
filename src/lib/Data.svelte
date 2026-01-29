@@ -88,7 +88,7 @@
 		}
 	}
 
-	let loadSentinel;
+	let loadSentinel = $state(null);
 
 	// Default filter configuration - can be overridden via prop
 	/** @type {FilterConfigItem[]} */
@@ -601,8 +601,9 @@
 		box-sizing: border-box;
 		padding: 0;
 		display: flex;
+		flex-direction: column;
 		justify-content: flex-start;
-		align-items: flex-start;
+		align-items: stretch;
 	}
 
 	.data-container.data-table .data-table {
@@ -611,6 +612,7 @@
 		table-layout: auto;
 		margin: 0 auto;
 		display: table;
+		align-self: center;
 	}
 
 
