@@ -1,29 +1,4 @@
-const DEFAULT_S3_BASE = 'https://2025-campus-data.s3.us-east-2.amazonaws.com';
-
-const buildDefaultUrls = (base) => ({
-	fullData: `${base}/data.json`,
-	metadata: `${base}/metadata.json`,
-	monthManifest: `${base}/month_index/manifest.json`,
-	institutionManifest: `${base}/institution_index/manifest.json`,
-	monthIndex: (year) => `${base}/month_index/${year}.json`,
-	institutionShard: (letter) => `${base}/institution_index/${letter}.json`,
-	monthIndexNoDate: `${base}/month_index/_no_date.json`,
-	article: (id) => `${base}/articles/${id}.json`,
-	searchTerm: (token) => `${base}/search_term/${token}.json`
-});
-
-const resolveUrls = (custom = {}) => {
-	const base = custom.base || DEFAULT_S3_BASE;
-	const defaults = buildDefaultUrls(base);
-	return {
-		...defaults,
-		...custom,
-		monthIndex: custom.monthIndex || defaults.monthIndex,
-		institutionShard: custom.institutionShard || defaults.institutionShard,
-		article: custom.article || defaults.article,
-		searchTerm: custom.searchTerm || defaults.searchTerm
-	};
-};
+import { URLS, parseTolerantJson } from '$lib/config/s3.js';
 
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -56,7 +31,14 @@ export const createDatabaseEngine = ({
 	fetcher = fetch,
 	minYear = 2025
 } = {}) => {
-	const urls = resolveUrls(customUrls);
+	const urls = {
+		...URLS,
+		...customUrls,
+		monthIndex: customUrls.monthIndex || URLS.monthIndex,
+		institutionShard: customUrls.institutionShard || URLS.institutionShard,
+		article: customUrls.article || URLS.article,
+		searchTerm: customUrls.searchTerm || URLS.searchTerm
+	};
 
 	let monthIndex = {};
 	let institutionIndex = {};
@@ -90,14 +72,15 @@ export const createDatabaseEngine = ({
 
 	const fetchJson = async (url, options = {}) => {
 		const { signal = null, emptyOn404 = false, returnNullOn404 = false } = options;
-		const res = await fetcher(url, signal ? { signal } : undefined);
+		const res = await fetcher(url, signal ? { signal, cache: 'no-cache' } : { cache: 'no-cache' });
 		if (res.status === 404 && (emptyOn404 || returnNullOn404)) {
 			return returnNullOn404 ? null : [];
 		}
 		if (!res.ok) {
 			throw new Error(`Failed to load ${url}: ${res.status}`);
 		}
-		return res.json();
+		const text = await res.text();
+		return parseTolerantJson(text);
 	};
 
 	const sortYearsDesc = (years) =>
