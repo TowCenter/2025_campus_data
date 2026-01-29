@@ -208,6 +208,40 @@ export const createDatabaseEngine = ({
 		}
 	};
 
+	const ensureAllMonthIndexes = async () => {
+		const baseMonths = Array.isArray(months) && months.length > 0 ? months : [];
+		const yearsToLoad = new Set(
+			(baseMonths.length > 0 ? baseMonths : [])
+				.map((monthKey) => String(monthKey || '').split('-')[0])
+				.filter((year) => /^\d{4}$/.test(year))
+		);
+
+		if (yearsToLoad.size === 0) {
+			const { years } = await getMonthIndexYears();
+			years.forEach((year) => yearsToLoad.add(year));
+		}
+
+		let updated = false;
+		for (const year of yearsToLoad) {
+			if (loadedMonthFiles.has(year)) continue;
+			const data = await loadMonthIndexFile(year);
+			loadedMonthFiles.add(year);
+			updated = mergeMonthData(data) || updated;
+		}
+
+		if (updated) {
+			finalizeMonthIndex();
+		}
+	};
+
+	const ensureMonthIndexesForStats = async () => {
+		if (selectedMonths.length > 0) {
+			await ensureMonthIndexesForSelection(selectedMonths);
+			return;
+		}
+		await ensureAllMonthIndexes();
+	};
+
 	const loadInstitutionShard = (shard) => fetchJson(urls.institutionShard(shard));
 
 	const loadInstitutionManifestOptions = async () => {
@@ -273,6 +307,34 @@ export const createDatabaseEngine = ({
 				loadedInstitutionShards.add(shard);
 			}
 		}
+	};
+
+	const ensureAllInstitutionShards = async () => {
+		const shards = await getInstitutionShards();
+		const shardsToLoad = shards.filter((shard) => !loadedInstitutionShards.has(shard));
+		if (shardsToLoad.length === 0) return;
+
+		const results = await Promise.allSettled(
+			shardsToLoad.map((shard) => loadInstitutionShard(shard).then((data) => ({ shard, data })))
+		);
+
+		for (const result of results) {
+			if (result.status !== 'fulfilled') continue;
+			const { shard, data } = result.value;
+			if (loadedInstitutionShards.has(shard)) continue;
+			if (data && typeof data === 'object') {
+				Object.assign(institutionIndex, data);
+				loadedInstitutionShards.add(shard);
+			}
+		}
+	};
+
+	const ensureInstitutionIndexesForStats = async () => {
+		if (selectedInstitutions.length > 0) {
+			await ensureInstitutionShardsForSelection(selectedInstitutions);
+			return;
+		}
+		await ensureAllInstitutionShards();
 	};
 
 	const getBaseIdsFromFilters = async () => {
@@ -558,6 +620,73 @@ export const createDatabaseEngine = ({
 
 	const getTotalCount = () => expectedTotalCount || activeIds.length;
 
+	const getActiveMonthlyCounts = async ({ includeEmpty = false } = {}) => {
+		if (!activeIds || activeIds.length === 0) return {};
+		await ensureMonthIndexesForStats();
+		const activeSet = new Set(activeIds);
+		const counts = {};
+
+		for (const monthKey of months) {
+			if (monthKey === '_no_date') continue;
+			const ids = monthIndex[monthKey];
+			if (!Array.isArray(ids) || ids.length === 0) {
+				if (includeEmpty) counts[monthKey] = 0;
+				continue;
+			}
+			let count = 0;
+			for (const id of ids) {
+				if (activeSet.has(id)) count += 1;
+			}
+			if (count > 0 || includeEmpty) counts[monthKey] = count;
+		}
+
+		return counts;
+	};
+
+	const getActiveInstitutionCounts = async ({ includeEmpty = false } = {}) => {
+		if (!activeIds || activeIds.length === 0) return {};
+		await ensureInstitutionIndexesForStats();
+		const activeSet = new Set(activeIds);
+		const counts = {};
+
+		for (const [institution, ids] of Object.entries(institutionIndex)) {
+			if (!Array.isArray(ids) || ids.length === 0) {
+				if (includeEmpty) counts[institution] = 0;
+				continue;
+			}
+			let count = 0;
+			for (const id of ids) {
+				if (activeSet.has(id)) count += 1;
+			}
+			if (count > 0 || includeEmpty) counts[institution] = count;
+		}
+
+		return counts;
+	};
+
+	const getActiveStats = async ({ topN = 5 } = {}) => {
+		const [monthlyCounts, institutionCounts] = await Promise.all([
+			getActiveMonthlyCounts(),
+			getActiveInstitutionCounts()
+		]);
+
+		const topInstitutions = Object.entries(institutionCounts)
+			.filter(([, count]) => count > 0)
+			.sort((a, b) => b[1] - a[1])
+			.slice(0, topN)
+			.map(([org, count]) => ({ org, count }));
+
+		const totalSchools = Object.values(institutionCounts).filter((count) => count > 0).length;
+
+		return {
+			monthlyCounts,
+			institutionCounts,
+			topInstitutions,
+			totalRecords: expectedTotalCount || activeIds.length,
+			totalSchools
+		};
+	};
+
 	return {
 		init,
 		setFilters,
@@ -566,6 +695,9 @@ export const createDatabaseEngine = ({
 		resetResults,
 		loadMore,
 		getFilterOptions,
-		getTotalCount
+		getTotalCount,
+		getActiveMonthlyCounts,
+		getActiveInstitutionCounts,
+		getActiveStats
 	};
 };

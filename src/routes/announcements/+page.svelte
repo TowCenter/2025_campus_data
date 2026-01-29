@@ -27,6 +27,7 @@
 	let hasMore = false;
 	let totalCount = 0;
 	let filterOptions = {};
+	let chartStats = null;
 	let refreshId = 0;
 	let loadingMore = false;
 	let normalizedCache = new Map();
@@ -90,16 +91,21 @@
 		items = [];
 		hasMore = false;
 		totalCount = 0;
+		chartStats = null;
 
 		await engine.applyFiltersAndSearch();
 		if (currentRefresh !== refreshId) return;
 
-		const result = await engine.loadMore(batchSize);
+		const [result, stats] = await Promise.all([
+			engine.loadMore(batchSize),
+			engine.getActiveStats()
+		]);
 		if (currentRefresh !== refreshId) return;
 
 		items = result.items.map(normalizeArticle);
 		hasMore = result.hasMore;
 		totalCount = result.total;
+		chartStats = stats;
 	}
 
 	async function handleLoadMore() {
@@ -153,6 +159,7 @@
 			data={items}
 			filterConfig={config.filterConfig}
 			{filterOptions}
+			chartStats={chartStats}
 			dateField={config.dateField}
 			{totalCount}
 			{hasMore}

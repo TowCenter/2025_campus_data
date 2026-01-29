@@ -8,6 +8,7 @@
 	 * @property {string} [orgField='org'] - Field name for organization
 	 * @property {string} [searchQuery=''] - Current search query
 	 * @property {boolean} [isOpen=false] - Whether the charts panel is open
+	 * @property {any} [stats=null] - Precomputed chart stats (optional)
 	 */
 
 	/** @type {Props} */
@@ -16,7 +17,8 @@
 		dateField = 'date',
 		orgField = 'org',
 		searchQuery = '',
-		isOpen = $bindable(false)
+		isOpen = $bindable(false),
+		stats = null
 	} = $props();
 
 	// Auto-open when there's a search query
@@ -24,6 +26,13 @@
 		if (searchQuery && searchQuery.length > 0) {
 			isOpen = true;
 		}
+	});
+
+	const hasChartData = $derived.by(() => {
+		if (stats && typeof stats.totalRecords === 'number') {
+			return stats.totalRecords > 0;
+		}
+		return data.length > 0;
 	});
 
 	// Track which organization is being hovered (for bar chart)
@@ -72,6 +81,45 @@
 
 	// Process data for charts
 	const chartData = $derived.by(() => {
+		if (stats && (stats.monthlyCounts || stats.institutionCounts || stats.topInstitutions)) {
+			const monthlyTotal = stats.monthlyCounts || {};
+			const monthKeys = Object.keys(monthlyTotal).sort();
+			const monthLabels = monthKeys.map((key) => {
+				const [year, month] = key.split('-');
+				const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1);
+				return {
+					key,
+					label: date.toLocaleString('default', { month: 'short', year: '2-digit' })
+				};
+			});
+
+			const top5Orgs = Array.isArray(stats.topInstitutions) && stats.topInstitutions.length > 0
+				? stats.topInstitutions
+				: Object.entries(stats.institutionCounts || {})
+						.sort((a, b) => b[1] - a[1])
+						.slice(0, 5)
+						.map(([org, count]) => ({ org, count }));
+
+			const maxMonthlyTotal = Math.max(1, ...Object.values(monthlyTotal));
+			const maxOrgCount = top5Orgs.length > 0 ? top5Orgs[0].count : 1;
+			const totalSchools = typeof stats.totalSchools === 'number'
+				? stats.totalSchools
+				: Object.values(stats.institutionCounts || {}).filter((count) => count > 0).length;
+			const totalRecords = typeof stats.totalRecords === 'number' ? stats.totalRecords : 0;
+
+			return {
+				monthlyByOrg: {},
+				monthlyTotal,
+				monthLabels,
+				top5Orgs,
+				maxMonthlyTotal,
+				maxOrgCount,
+				allOrgs: [],
+				totalSchools,
+				totalRecords
+			};
+		}
+
 		const monthlyByOrg = {};
 		const monthlyTotal = {};
 		const orgCounts = {};
@@ -130,7 +178,7 @@
 		});
 
 		// Calculate max values for scaling
-		const maxMonthlyTotal = Math.max(...Object.values(monthlyTotal), 1);
+		const maxMonthlyTotal = Math.max(1, ...Object.values(monthlyTotal));
 		const maxOrgCount = top5Orgs.length > 0 ? top5Orgs[0].count : 1;
 
 		// Calculate statistics
@@ -231,7 +279,7 @@
 	}
 </script>
 
-{#if data.length > 0}
+{#if hasChartData}
 	<div class="search-charts-container">
 		<!-- Stats Header -->
 		<div class="charts-stats-header">

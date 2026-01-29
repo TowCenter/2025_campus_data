@@ -29,6 +29,7 @@
 	 * @property {boolean} [hasMore=false] - Whether more items can be loaded
 	 * @property {() => Promise<void>} [onLoadMore=async () => {}] - Callback to load more items
 	 * @property {(args: {filterValues: Record<string, any>, searchQuery: string}) => void} [onFiltersChange=() => {}]
+	 * @property {any} [chartStats=null] - Precomputed chart stats (optional)
 	 * @property {(args: {item: any, index: number, searchQuery: string, filterValues: Record<string, any>}) => any} [children] - Slot content for custom item rendering
 	 */
 
@@ -46,6 +47,7 @@
 		hasMore = false,
 		onLoadMore = async () => {},
 		onFiltersChange = () => {},
+		chartStats = null,
 		children = undefined
 	} = $props();
 
@@ -385,6 +387,7 @@
 			{dateField}
 			orgField="org"
 			{searchQuery}
+			stats={chartStats}
 		/>
 	</div>
 
