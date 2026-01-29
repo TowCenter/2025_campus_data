@@ -1,8 +1,7 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import FilterBar from './FilterBar.svelte';
 	import SearchCharts from './SearchCharts.svelte';
-	import { applyFilters } from './generic-filter-utils.js';
 	import { groupByMonth } from './date-utils.js';
 	import './cjr.css';
 
@@ -21,12 +20,15 @@
 	 * @property {any[]} [data=[]] - Data array
 	 * @property {Record<string, string>} [categoryDefinitions={}] - Category definitions
 	 * @property {FilterConfigItem[]} [filterConfig] - Custom filter configuration (optional, uses default if not provided)
+	 * @property {Record<string, string[]>} [filterOptions={}] - Precomputed filter options keyed by dataKey
 	 * @property {string} [dateField='date'] - Field name in data that contains dates
-	 * @property {number} [initialVisibleCount=20] - Initial number of items to show
 	 * @property {any} [itemComponent] - Component to render each item (optional, uses slot if not provided)
 	 * @property {string} [displayMode='list'] - Display mode: 'list', 'table', 'grid', etc. (for styling purposes)
 	 * @property {boolean} [showTimeline=false] - Whether to show timeline UI with date grouping
 	 * @property {boolean} [showYearNavigation=false] - Whether to show year navigation sidebar
+	 * @property {boolean} [hasMore=false] - Whether more items can be loaded
+	 * @property {() => Promise<void>} [onLoadMore=async () => {}] - Callback to load more items
+	 * @property {(args: {filterValues: Record<string, any>, searchQuery: string}) => void} [onFiltersChange=() => {}]
 	 * @property {(args: {item: any, index: number, searchQuery: string, filterValues: Record<string, any>}) => any} [children] - Slot content for custom item rendering
 	 */
 
@@ -35,19 +37,21 @@
 		data = [], 
 		categoryDefinitions = {},
 		filterConfig = undefined,
+		filterOptions = {},
 		dateField = 'date',
-		initialVisibleCount = 20,
 		itemComponent = undefined,
 		displayMode = 'list',
 		showTimeline = false,
 		showYearNavigation = false,
+		hasMore = false,
+		onLoadMore = async () => {},
+		onFiltersChange = () => {},
 		children = undefined
 	} = $props();
 
 	// Filter state for FilterBar
 	let filterValues = $state({});
 	let searchQuery = $state('');
-	let visibleCount = $state(initialVisibleCount);
 	let isLoading = $state(false);
 
 	// Check if any filters or search is active
@@ -69,7 +73,6 @@
 	let filterBarHeight = $state(0);
 	let filterBarWidth = $state(0);
 	let filterBarLeft = $state(0);
-	const increment = 20;
 
 	// Helper function to extract month from date
 	function getMonthKey(dateString) {
@@ -85,22 +88,7 @@
 		}
 	}
 
-	// Helper function to format month label
-	function formatMonthLabel(monthKey) {
-		const [year, month] = monthKey.split('-');
-		const date = new Date(parseInt(year), parseInt(month) - 1);
-		return date.toLocaleString('default', { month: 'long', year: 'numeric' });
-	}
-
-	// Extract unique months from data for month filter
-	const uniqueMonths = $derived.by(() => {
-		const months = new Set();
-		data.forEach(item => {
-			const monthKey = getMonthKey(item[dateField]);
-			if (monthKey) months.add(monthKey);
-		});
-		return Array.from(months).sort().reverse();
-	});
+	let loadSentinel;
 
 	// Default filter configuration - can be overridden via prop
 	/** @type {FilterConfigItem[]} */
@@ -142,27 +130,51 @@
 		}));
 	});
 
-	function loadMore() {
-		if (isLoading) return;
-		isLoading = true;
-		setTimeout(() => {
-			visibleCount += increment;
-			isLoading = false;
-		}, 300);
-	}
-
 	/**
 	 * @param {string} filterId
 	 * @param {any} value
 	 */
 	function handleFilterChange(filterId, value) {
-		filterValues = { ...filterValues, [filterId]: value };
-		
-		// Also update searchQuery if search filter changes
+		const nextFilterValues = { ...filterValues, [filterId]: value };
+		const nextSearchQuery = filterId === 'search' ? value : searchQuery;
+
+		filterValues = nextFilterValues;
 		if (filterId === 'search') {
 			searchQuery = value;
 		}
+
+		onFiltersChange({ filterValues: nextFilterValues, searchQuery: nextSearchQuery });
 	}
+
+	async function triggerLoadMore() {
+		if (isLoading || !hasMore) return;
+		isLoading = true;
+		try {
+			await onLoadMore();
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		if (!loadSentinel || !hasMore || typeof IntersectionObserver === 'undefined') return;
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries.some((entry) => entry.isIntersecting)) {
+					triggerLoadMore();
+				}
+			},
+			{ rootMargin: '200px' }
+		);
+
+		observer.observe(loadSentinel);
+
+		return () => {
+			observer.disconnect();
+		};
+	});
 
 	function handleScroll() {
 		if (typeof window === 'undefined') return;
@@ -220,19 +232,12 @@
 			}
 		}
 	}
-
-
-
-	const filteredData = $derived.by(() => {
-		// Use generic filter function that works with any filterConfig
-		// Use dataWithMonth so month filtering works
-		return applyFilters(dataWithMonth, filterValues, activeFilterConfig, dateField);
-	});
+	const displayData = $derived.by(() => dataWithMonth);
 
 	// Group data by month if timeline is enabled
 	const groupedData = $derived.by(() => {
 		if (!showTimeline) return {};
-		return groupByMonth(filteredData, dateField);
+		return groupByMonth(displayData, dateField);
 	});
 	
 	// Get visible items - sorted by date descending or grouped by timeline
@@ -241,34 +246,22 @@
 			// For timeline, return grouped data structure
 			const grouped = groupedData;
 			const allItems = [];
-			let currentCount = 0;
 			
-			// Flatten grouped data while respecting visibleCount
 			for (const [dateKey, items] of Object.entries(grouped)) {
-				if (currentCount >= visibleCount) break;
 				for (const item of items) {
-					if (currentCount >= visibleCount) break;
 					allItems.push({ ...item, dateKey });
-					currentCount++;
 				}
 			}
 			return allItems;
 		} else {
 		// Sort by date descending
-		const sorted = [...filteredData].sort((a, b) => {
+		const sorted = [...displayData].sort((a, b) => {
 			const dateA = a[dateField] ? new Date(a[dateField]) : new Date(0);
 			const dateB = b[dateField] ? new Date(b[dateField]) : new Date(0);
 			return dateB.getTime() - dateA.getTime();
 		});
-		return sorted.slice(0, visibleCount);
+		return sorted;
 		}
-	});
-	
-	// Reset visible count when filters change
-	$effect(() => {
-		// Track filteredData changes to reset pagination
-		filteredData;
-		visibleCount = initialVisibleCount; // Reset to initial count when filters change
 	});
 
 	// Compute padding top for sticky filter bar
@@ -372,9 +365,10 @@
 		<FilterBar
 			data={dataWithMonth}
 			filterConfig={activeFilterConfig}
+			{filterOptions}
 			{filterValues}
 			{searchQuery}
-			filteredRowCount={filteredData.length}
+			filteredRowCount={displayData.length}
 			{categoryDefinitions}
 			onFilterChange={handleFilterChange}
 			isSticky={isFilterBarSticky}
@@ -387,7 +381,7 @@
 
 	<div class="search-charts-wrapper">
 		<SearchCharts
-			data={filteredData}
+			data={displayData}
 			{dateField}
 			orgField="org"
 			{searchQuery}
@@ -399,22 +393,8 @@
 	{#if showTimeline}
 		<!-- Timeline view with date grouping -->
 		{@const allGroupedEntries = Object.entries(groupedData)}
-		{@const getVisibleItemsForGroups = (() => {
-			let totalShown = 0;
-			const result = [];
-			for (const [dateKey, items] of allGroupedEntries) {
-				if (totalShown >= visibleCount) break;
-				const remaining = visibleCount - totalShown;
-				const visibleItems = items.slice(0, Math.min(remaining, items.length));
-				if (visibleItems.length > 0) {
-					result.push({ dateKey, items: visibleItems, allItems: items });
-					totalShown += visibleItems.length;
-				}
-			}
-			return result;
-		})()}
-		{#each getVisibleItemsForGroups as { dateKey, items: visibleGroupItems, allItems }}
-			{@const firstItem = allItems[0]}
+		{#each allGroupedEntries as [dateKey, items]}
+			{@const firstItem = items[0]}
 			{@const displayDate = firstItem?.date ? new Date(firstItem.date) : null}
 			{@const displayDateKey = displayDate && !isNaN(displayDate.getTime()) ? displayDate.toLocaleString('default', { month: 'long', day: 'numeric', year: 'numeric' }) : dateKey}
 			<div class="timeline-row">
@@ -427,7 +407,7 @@
 				<div class="timeline-divider"></div>
 				<div class="timeline-content">
 					{#if itemComponent}
-						{#each visibleGroupItems as item, index}
+						{#each items as item, index}
 							{@const Component = itemComponent}
 							{@const itemDate = item.date ? new Date(item.date) : null}
 							{@const itemDateKey = itemDate && !isNaN(itemDate.getTime()) ? itemDate.toLocaleString('default', { month: 'long', day: 'numeric', year: 'numeric' }) : ''}
@@ -440,7 +420,7 @@
 							/>
 						{/each}
 					{:else if children}
-						{#each visibleGroupItems as item, index}
+						{#each items as item, index}
 							{@render children({ item, index, searchQuery, filterValues })}
 					{/each}
 					{/if}
@@ -501,6 +481,9 @@
 		{/if}
 	{/if}
 	{#if isLoading}<p class="loading">Loading more...</p>{/if}
+	{#if hasMore}
+		<div class="infinite-sentinel" bind:this={loadSentinel} aria-hidden="true"></div>
+	{/if}
 </div>
 	{:else}
 		<div class="no-data-message">
@@ -709,6 +692,11 @@
 		padding: 1rem;
 		color: #6b7280;
 		font-size: 0.875rem;
+	}
+
+	.infinite-sentinel {
+		width: 100%;
+		height: 1px;
 	}
 
 	/* Responsive */

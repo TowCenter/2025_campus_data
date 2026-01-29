@@ -21,6 +21,7 @@
 	 * @property {string} [searchQuery=''] - Search query
 	 * @property {number} [filteredRowCount=0] - Number of filtered rows
 	 * @property {Record<string, string>} [categoryDefinitions={}] - Category definitions
+	 * @property {Record<string, string[]>} [filterOptions={}] - Precomputed filter options keyed by dataKey
 	 * @property {boolean} [isSticky=false] - Whether filter bar is sticky
 	 * @property {(filterId: string, value: any) => void} [onFilterChange=() => {}] - Filter change handler
 	 * @property {() => void} [onDownloadCSV=() => {}] - CSV download handler
@@ -34,6 +35,7 @@
 		searchQuery = '',
 		filteredRowCount = 0,
 		categoryDefinitions = {},
+		filterOptions = {},
 		isSticky = false,
 		onFilterChange = () => {},
 		onDownloadCSV = () => {}
@@ -45,6 +47,11 @@
 	 * @returns {string[]} Sorted array of unique values
 	 */
 	function getUniqueValues(dataKey) {
+		const providedOptions = filterOptions?.[dataKey];
+		if (Array.isArray(providedOptions)) {
+			return providedOptions;
+		}
+
 		const unique = new Set();
 
 		data.forEach(row => {
@@ -265,12 +272,19 @@
 						{@const rawOptions = getUniqueValues(filter.dataKey || filter.column)}
 						{@const dataKey = filter.dataKey || filter.column}
 						{@const displayOptions = dataKey === 'month' ? rawOptions.map(v => formatOptionDisplay(v, dataKey)) : rawOptions}
-						{@const optionMap = dataKey === 'month' ? Object.fromEntries(rawOptions.map((v, i) => [displayOptions[i], v])) : {}}
+						{@const rawToDisplay = dataKey === 'month' ? Object.fromEntries(rawOptions.map((v, i) => [v, displayOptions[i]])) : {}}
+						{@const displayToRaw = dataKey === 'month' ? Object.fromEntries(displayOptions.map((v, i) => [v, rawOptions[i]])) : {}}
+						{@const selectedDisplayValues = dataKey === 'month' ? selectedValues.map(v => rawToDisplay[v] ?? v) : selectedValues}
 						<MultiSelect
 							label=""
 							options={displayOptions}
-							selectedValues={selectedValues.map(v => dataKey === 'month' && optionMap[v] ? optionMap[v] : v)}
-							onSelectionChange={(values) => handleMultiSelectChange(filter, values)}
+							selectedValues={selectedDisplayValues}
+							onSelectionChange={(values) => {
+								const normalized = dataKey === 'month'
+									? values.map(v => displayToRaw[v] ?? v)
+									: values;
+								handleMultiSelectChange(filter, normalized);
+							}}
 							categoryDefinitions={filter.column === 'Category' ? categoryDefinitions : {}}
 						/>
 					{/if}
