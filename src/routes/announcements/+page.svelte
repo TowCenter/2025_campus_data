@@ -31,6 +31,8 @@
 	let searchState = { loading: false, progress: 0, exactMatchActive: false };
 	let exportState = { exporting: false, progress: 0 };
 	let resultsLoading = false;
+	let appliedSearchQuery = '';
+	let pendingSearchQuery = '';
 	let refreshId = 0;
 	let loadingMore = false;
 	let normalizedCache = new Map();
@@ -101,26 +103,28 @@
 
 	async function refreshResults() {
 		const currentRefresh = ++refreshId;
-		items = [];
-		hasMore = false;
-		totalCount = 0;
-		chartStats = null;
-		resultsLoading = true;
+		appliedSearchQuery = pendingSearchQuery;
 
 		await engine.applyFiltersAndSearch();
 		if (currentRefresh !== refreshId) return;
 
-		const [result, stats] = await Promise.all([
-			engine.loadMore(batchSize),
-			engine.getActiveStats()
-		]);
-		if (currentRefresh !== refreshId) return;
+		resultsLoading = true;
+		try {
+			const [result, stats] = await Promise.all([
+				engine.loadMore(batchSize),
+				engine.getActiveStats()
+			]);
+			if (currentRefresh !== refreshId) return;
 
-		items = result.items.map(normalizeArticle);
-		hasMore = result.hasMore;
-		totalCount = result.total;
-		chartStats = stats;
-		resultsLoading = false;
+			items = result.items.map(normalizeArticle);
+			hasMore = result.hasMore;
+			totalCount = result.total;
+			chartStats = stats;
+		} finally {
+			if (currentRefresh === refreshId) {
+				resultsLoading = false;
+			}
+		}
 	}
 
 	async function handleLoadMore() {
@@ -154,6 +158,7 @@
 		const institutions = orgFilterId ? (filterValues[orgFilterId] || []) : [];
 		engine.setFilters({ months, institutions });
 		engine.setSearch(searchQuery);
+		pendingSearchQuery = searchQuery;
 
 		if (debounceTimer) clearTimeout(debounceTimer);
 		debounceTimer = setTimeout(() => {
@@ -198,6 +203,7 @@
 			searchState={searchState}
 			exportState={exportState}
 			resultsLoading={resultsLoading}
+			appliedSearchQuery={appliedSearchQuery}
 			dateField={config.dateField}
 			{totalCount}
 			{hasMore}

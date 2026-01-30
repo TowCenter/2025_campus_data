@@ -3,6 +3,7 @@
 	import FilterBar from './FilterBar.svelte';
 	import SearchCharts from './SearchCharts.svelte';
 	import SearchLoading from './SearchLoading.svelte';
+	import { getSearchTokens, getQuotedPhrase } from './search-highlight.js';
 	import { groupByMonth } from './date-utils.js';
 	import './cjr.css';
 
@@ -35,6 +36,7 @@
 	 * @property {any} [searchState=null] - Search loading state
 	 * @property {any} [exportState=null] - Export state
 	 * @property {boolean} [resultsLoading=false] - Whether initial results are loading
+	 * @property {string | null} [appliedSearchQuery=null] - Last executed search query
 	 * @property {() => void} [onDownloadCSV=() => {}] - CSV download handler
 	 * @property {(args: {item: any, index: number, searchQuery: string, filterValues: Record<string, any>}) => any} [children] - Slot content for custom item rendering
 	 */
@@ -58,6 +60,7 @@
 		searchState = null,
 		exportState = null,
 		resultsLoading = false,
+		appliedSearchQuery = null,
 		onDownloadCSV = () => {},
 		children = undefined
 	} = $props();
@@ -68,9 +71,16 @@
 	let isLoading = $state(false);
 
 	// Check if any filters or search is active
+	const activeSearchQuery = $derived.by(() =>
+		appliedSearchQuery !== null && appliedSearchQuery !== undefined
+			? appliedSearchQuery
+			: searchQuery
+	);
+
 	const hasActiveFilters = $derived.by(() => {
-		const hasSearchQuery = searchQuery && searchQuery.trim().length > 0;
-		const hasFilterValues = Object.values(filterValues).some(val => {
+		const hasSearchQuery = activeSearchQuery && activeSearchQuery.trim().length > 0;
+		const hasFilterValues = Object.entries(filterValues).some(([key, val]) => {
+			if (key === 'search') return false;
 			if (Array.isArray(val)) return val.length > 0;
 			if (val && typeof val === 'object') return Object.values(val).some(v => v);
 			return !!val;
@@ -100,23 +110,6 @@
 			return null;
 		}
 	}
-
-	const getSearchTokens = (raw) => {
-		return (raw || '')
-			.trim()
-			.toLowerCase()
-			.split(/\s+/)
-			.map((t) => t.replace(/^\"+|\"+$/g, ''))
-			.filter(Boolean);
-	};
-
-	const getQuotedPhrase = (raw) => {
-		const trimmed = (raw || '').trim();
-		const match = trimmed.match(/^\"(.*)\"$/);
-		if (!match) return null;
-		const phrase = match[1].trim();
-		return phrase || null;
-	};
 
 	let loadSentinel = $state(null);
 
@@ -160,9 +153,9 @@
 		}));
 	});
 
-	const quotedPhraseDisplay = $derived.by(() => getQuotedPhrase(searchQuery));
+	const quotedPhraseDisplay = $derived.by(() => getQuotedPhrase(activeSearchQuery));
 	const exactMatchActive = $derived.by(() => Boolean(quotedPhraseDisplay));
-	const searchTokens = $derived.by(() => getSearchTokens((searchQuery || '').trim()));
+	const searchTokens = $derived.by(() => getSearchTokens((activeSearchQuery || '').trim()));
 
 	/**
 	 * @param {string} filterId
@@ -278,6 +271,7 @@
 	const exportLoading = $derived.by(() => Boolean(exportState?.exporting));
 	const exportProgress = $derived.by(() => Number(exportState?.progress || 0));
 	const combinedLoading = $derived.by(() => Boolean(searchLoading || resultsLoading));
+	const loadingProgress = $derived.by(() => (searchLoading ? searchProgress : 1));
 
 	// Group data by month if timeline is enabled
 	const groupedData = $derived.by(() => {
@@ -432,13 +426,13 @@
 			data={displayData}
 			{dateField}
 			orgField="org"
-			{searchQuery}
+			searchQuery={activeSearchQuery}
 			stats={chartStats}
 		/>
 	</div>
 
 	{#if hasActiveFilters}
-		{#if !combinedLoading && searchQuery && searchQuery.trim()}
+		{#if !combinedLoading && activeSearchQuery && activeSearchQuery.trim()}
 			<div class="search-query-cue">
 				{#if exactMatchActive && quotedPhraseDisplay}
 					<span class="cue-label">Matching exact phrase</span>
@@ -453,7 +447,7 @@
 					{/each}
 				{:else}
 					<span class="cue-label">Matching</span>
-					<span class="cue-term">"{searchQuery.trim()}"</span>
+					<span class="cue-term">"{activeSearchQuery.trim()}"</span>
 				{/if}
 				<span class="cue-count">— {resultCount} result{resultCount !== 1 ? 's' : ''}</span>
 			</div>
@@ -461,10 +455,14 @@
 		{#if combinedLoading}
 			<SearchLoading
 				loading={combinedLoading}
-				progress={searchProgress}
-				showProgress={Boolean(searchQuery && searchQuery.trim())}
+				progress={loadingProgress}
+				showProgress={Boolean(activeSearchQuery && activeSearchQuery.trim())}
 				note={searchExactMatch ? 'Exact phrase searches take longer. Thanks for your patience.' : ''}
 			/>
+		{:else if hasActiveFilters && resultCount === 0}
+			<div class="no-data-message">
+				<p>No results found.</p>
+			</div>
 		{:else}
 <div class="data-container data-{displayMode}" class:timeline={showTimeline}>
 	{#if showTimeline}
@@ -523,14 +521,14 @@
 							<Component 
 								{item}
 								{index}
-								{searchQuery}
+								searchQuery={activeSearchQuery}
 								{filterValues}
 								dateField={dateField}
 							/>
 						{/each}
 					{:else if children}
 						{#each visibleItems as item, index}
-							{@render children({ item, index, searchQuery, filterValues })}
+							{@render children({ item, index, searchQuery: activeSearchQuery, filterValues })}
 						{/each}
 					{/if}
 				</tbody>
@@ -544,14 +542,14 @@
 					<Component 
 						{item}
 						{index}
-						{searchQuery}
+						searchQuery={activeSearchQuery}
 						{filterValues}
 					/>
 				{/each}
 			{:else if children}
 				<!-- Use slot for custom rendering -->
 				{#each visibleItems as item, index}
-					{@render children({ item, index, searchQuery, filterValues })}
+					{@render children({ item, index, searchQuery: activeSearchQuery, filterValues })}
 				{/each}
 			{/if}
 		{/if}

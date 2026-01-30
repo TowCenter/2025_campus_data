@@ -1,23 +1,11 @@
-const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-const getSearchTokens = (raw) => {
-	return (raw || '')
-		.trim()
-		.toLowerCase()
-		.split(/\s+/)
-		.map((t) => t.replace(/^\"+|\"+$/g, ''))
-		.filter(Boolean);
-};
+import {
+	getSearchTokens,
+	getQuotedPhrase,
+	buildPhraseRegex,
+	buildExactTokenRegex
+} from '$lib/search-highlight.js';
 
 const buildPhraseToken = (tokens) => tokens.join('_');
-
-const getQuotedPhrase = (raw) => {
-	const trimmed = (raw || '').trim();
-	const match = trimmed.match(/^\"(.*)\"$/);
-	if (!match) return null;
-	const phrase = match[1].trim();
-	return phrase || null;
-};
 
 const getOrderedIdsFromTokenMap = (tokens, tokenMap) => {
 	const seen = new Set();
@@ -94,7 +82,12 @@ export const createSearchManager = ({ ensureTokenLoaded, ensureFullDatasetMap, g
 				: null;
 			const datasetMap = await ensureFullDatasetMap({ signal, onProgress: progressHandler });
 			if (!isActiveSearch(runId)) return null;
-			const phraseRegex = new RegExp(`(^|\\b)${escapeRegExp(quotedPhrase)}(\\b|$)`, 'i');
+			const phraseRegex = buildPhraseRegex(quotedPhrase, 'i');
+			const tokenRegex = buildExactTokenRegex(quotedPhrase, 'i');
+			const chosenRegex = phraseRegex || tokenRegex;
+			if (!chosenRegex) {
+				return { activeIds: [], expectedTotalCount: 0 };
+			}
 			const matchedIds = [];
 
 			const candidateIds = hasBaseIds ? baseIds : Array.from(datasetMap.keys());
@@ -102,9 +95,11 @@ export const createSearchManager = ({ ensureTokenLoaded, ensureFullDatasetMap, g
 				if (!isActiveSearch(runId)) return null;
 				const item = await getArticleForSearch(id, datasetMap);
 				const haystacks = [item?.title, item?.org, item?.content];
-				const hasMatch = haystacks.some(
-					(field) => typeof field === 'string' && phraseRegex.test(field)
-				);
+				const hasMatch = haystacks.some((field) => {
+					if (typeof field !== 'string') return false;
+					chosenRegex.lastIndex = 0;
+					return chosenRegex.test(field);
+				});
 				if (hasMatch) matchedIds.push(id);
 			}
 
