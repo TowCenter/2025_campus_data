@@ -421,15 +421,17 @@
 		<div class="sticky-spacer" style="height: {filterBarHeight}px;"></div>
 	{/if}
 
-	<div class="search-charts-wrapper">
-		<SearchCharts
-			data={displayData}
-			{dateField}
-			orgField="org"
-			searchQuery={activeSearchQuery}
-			stats={chartStats}
-		/>
-	</div>
+	{#if !combinedLoading}
+		<div class="search-charts-wrapper">
+			<SearchCharts
+				data={displayData}
+				{dateField}
+				orgField="org"
+				searchQuery={activeSearchQuery}
+				stats={chartStats}
+			/>
+		</div>
+	{/if}
 
 	{#if hasActiveFilters}
 		{#if !combinedLoading && activeSearchQuery && activeSearchQuery.trim()}
