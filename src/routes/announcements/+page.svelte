@@ -31,6 +31,7 @@
 	let refreshId = 0;
 	let loadingMore = false;
 	let normalizedCache = new Map();
+	let debounceTimer = null;
 
 	const normalizeDate = (value) => {
 		const dateStr = value?.$date || value;
@@ -129,12 +130,22 @@
 		const institutions = orgFilterId ? (filterValues[orgFilterId] || []) : [];
 		engine.setFilters({ months, institutions });
 		engine.setSearch(searchQuery);
-		refreshResults();
+
+		if (debounceTimer) clearTimeout(debounceTimer);
+		debounceTimer = setTimeout(() => {
+			refreshResults();
+		}, 500);
 	}
 
 	onMount(async () => {
 		await initEngine();
 		await refreshResults();
+	});
+
+	onMount(() => {
+		return () => {
+			if (debounceTimer) clearTimeout(debounceTimer);
+		};
 	});
 </script>
 

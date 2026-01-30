@@ -12,9 +12,18 @@ export const createFetcher = ({ fetcher = fetch, urls }) => {
 	let fullDatasetMap = null;
 
 	const fetchJson = async (url, options = {}) => {
-		const { signal = null, emptyOn404 = false, returnNullOn404 = false } = options;
+		const {
+			signal = null,
+			emptyOn404 = false,
+			returnNullOn404 = false,
+			emptyOn403 = false,
+			returnNullOn403 = false
+		} = options;
 		const res = await fetcher(url, signal ? { signal, cache: 'no-cache' } : { cache: 'no-cache' });
-		if (res.status === 404 && (emptyOn404 || returnNullOn404)) {
+		if ((res.status === 404 || res.status === 403) && (emptyOn404 || returnNullOn404 || emptyOn403 || returnNullOn403)) {
+			if (res.status === 403) {
+				return returnNullOn403 ? null : [];
+			}
 			return returnNullOn404 ? null : [];
 		}
 		if (!res.ok) {
@@ -30,10 +39,19 @@ export const createFetcher = ({ fetcher = fetch, urls }) => {
 
 		try {
 			const safeToken = encodeURIComponent(token);
+			const {
+				emptyOn404 = true,
+				returnNullOn404 = false,
+				emptyOn403 = emptyOn404,
+				returnNullOn403 = returnNullOn404,
+				...rest
+			} = options;
 			const ids = await fetchJson(urls.searchTerm(safeToken), {
-				...options,
-				emptyOn404: true,
-				returnNullOn404: false
+				...rest,
+				emptyOn404,
+				returnNullOn404,
+				emptyOn403,
+				returnNullOn403
 			});
 			if (!Array.isArray(ids)) return [];
 			searchTokenCache.set(token, ids);

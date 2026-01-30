@@ -96,6 +96,23 @@
 		}
 	}
 
+	const getSearchTokens = (raw) => {
+		return (raw || '')
+			.trim()
+			.toLowerCase()
+			.split(/\s+/)
+			.map((t) => t.replace(/^\"+|\"+$/g, ''))
+			.filter(Boolean);
+	};
+
+	const getQuotedPhrase = (raw) => {
+		const trimmed = (raw || '').trim();
+		const match = trimmed.match(/^\"(.*)\"$/);
+		if (!match) return null;
+		const phrase = match[1].trim();
+		return phrase || null;
+	};
+
 	let loadSentinel = $state(null);
 
 	// Default filter configuration - can be overridden via prop
@@ -137,6 +154,10 @@
 			month: getMonthKey(item[dateField])
 		}));
 	});
+
+	const quotedPhraseDisplay = $derived.by(() => getQuotedPhrase(searchQuery));
+	const exactMatchActive = $derived.by(() => Boolean(quotedPhraseDisplay));
+	const searchTokens = $derived.by(() => getSearchTokens((searchQuery || '').trim()));
 
 	/**
 	 * @param {string} filterId
@@ -400,13 +421,21 @@
 	{#if hasActiveFilters}
 		{#if searchQuery && searchQuery.trim()}
 			<div class="search-query-cue">
-				<span class="cue-label">Matching</span>
-				{#each searchQuery.trim().split(/\s+/) as word, i}
-					{#if i > 0}
-						<span class="cue-operator">OR</span>
-					{/if}
-					<span class="cue-term">"{word}"</span>
-				{/each}
+				{#if exactMatchActive && quotedPhraseDisplay}
+					<span class="cue-label">Matching exact phrase</span>
+					<span class="cue-term">"{quotedPhraseDisplay}"</span>
+				{:else if searchTokens.length > 1}
+					<span class="cue-label">Matching</span>
+					{#each searchTokens as word, i}
+						{#if i > 0}
+							<span class="cue-operator">OR</span>
+						{/if}
+						<span class="cue-term">"{word}"</span>
+					{/each}
+				{:else}
+					<span class="cue-label">Matching</span>
+					<span class="cue-term">"{searchQuery.trim()}"</span>
+				{/if}
 				<span class="cue-count">— {resultCount} result{resultCount !== 1 ? 's' : ''}</span>
 			</div>
 		{/if}

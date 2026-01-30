@@ -63,7 +63,8 @@ export const createSearchManager = ({ ensureTokenLoaded, ensureFullDatasetMap, g
 			if (phraseToken) {
 				const phraseIds = await ensureTokenLoaded(phraseToken, {
 					signal,
-					returnNullOn404: true
+					returnNullOn404: true,
+					returnNullOn403: true
 				});
 				if (!isActiveSearch(runId)) return null;
 				if (Array.isArray(phraseIds) && phraseIds.length > 0) {
