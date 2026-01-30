@@ -392,6 +392,18 @@
 	</div>
 
 	{#if hasActiveFilters}
+		{#if searchQuery && searchQuery.trim()}
+			<div class="search-query-cue">
+				<span class="cue-label">Matching</span>
+				{#each searchQuery.trim().split(/\s+/) as word, i}
+					{#if i > 0}
+						<span class="cue-operator">AND</span>
+					{/if}
+					<span class="cue-term">"{word}"</span>
+				{/each}
+				<span class="cue-count">— {filteredData.length} result{filteredData.length !== 1 ? 's' : ''}</span>
+			</div>
+		{/if}
 <div class="data-container data-{displayMode}" class:timeline={showTimeline}>
 	{#if showTimeline}
 		<!-- Timeline view with date grouping -->
@@ -439,8 +451,7 @@
 					<tr>
 						<th class="table-header">Date</th>
 						<th class="table-header">School</th>
-						<th class="table-header">Title</th>
-						<th class="table-header">Description</th>
+						<th class="table-header">Content</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -505,6 +516,41 @@
 		padding: 2rem;
 		color: #666;
 		font-size: 1rem;
+	}
+
+	.search-query-cue {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.3rem;
+		padding: 0.75rem 0;
+		font-size: 0.9rem;
+		color: #444;
+		border-bottom: 1px solid #e0e0e0;
+		margin-bottom: 0.5rem;
+	}
+
+	.cue-label {
+		color: #666;
+		font-weight: 400;
+	}
+
+	.cue-operator {
+		color: #254c6f;
+		font-weight: 600;
+		font-size: 0.8rem;
+		text-transform: uppercase;
+	}
+
+	.cue-term {
+		color: #254c6f;
+		font-weight: 500;
+	}
+
+	.cue-count {
+		color: #888;
+		font-size: 0.85rem;
+		margin-left: 0.25rem;
 	}
 
 	/* Filter Bar Wrapper */

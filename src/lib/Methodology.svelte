@@ -114,12 +114,12 @@
   // Group schools by proximity and calculate offset positions to prevent overlap
   function getSchoolPositions(schools) {
     const positions = new Map();
-    const dotRadius = 6; // radius of each dot including stroke
-    const proximityThreshold = dotRadius * 2.5; // pixels - schools within this distance are considered overlapping
+    const dotRadius = 4; // radius of each dot
+    const proximityThreshold = dotRadius * 2; // pixels - schools within this distance are considered overlapping
 
     schools.forEach(school => {
       const coords = projectCoordinates(school.lat, school.lng);
-      if (coords.x === 0 && coords.y === 0) return; // Skip invalid coordinates
+      if (coords.x === 0 && coords.y === 0) return; // Skip invalid coordinates (includes territories that don't project)
 
       // Find if there's already a school at roughly this location
       let cluster = null;
@@ -146,17 +146,15 @@
       if (group.length === 1) {
         result.push({ ...group[0], displayCoords: group[0].baseCoords });
       } else {
-        // Arrange schools in a spiral pattern to prevent overlap
-        const baseRadius = dotRadius * 2; // Start radius for spiral
+        // Arrange schools in a tight spiral to prevent overlap without drifting into ocean
+        const baseRadius = dotRadius * 1.5; // Tighter spiral
         group.forEach((school, i) => {
           if (i === 0) {
-            // First school stays at center
             result.push({ ...school, displayCoords: school.baseCoords });
           } else {
-            // Arrange remaining schools in expanding rings
-            const ring = Math.ceil(Math.sqrt(i)); // Which ring (1, 2, 3...)
-            const posInRing = i - (ring - 1) * (ring - 1); // Position within ring
-            const ringSize = ring * 4; // Approximate number of positions in this ring
+            const ring = Math.ceil(Math.sqrt(i));
+            const posInRing = i - (ring - 1) * (ring - 1);
+            const ringSize = ring * 6; // More positions per ring = tighter packing
             const angle = (posInRing / ringSize) * 2 * Math.PI + ring * 0.5;
             const radius = baseRadius * ring;
             const offsetX = Math.cos(angle) * radius;
@@ -177,6 +175,7 @@
   }
 
   $: schoolPositions = getSchoolPositions(visibleSchools);
+  $: console.log('Map debug:', { schoolDataCount: schoolData.length, institutionNamesCount: institutionNames.length, visibleSchoolsCount: visibleSchools.length, schoolPositionsCount: schoolPositions.length });
 
   // Create Albers USA projection for proper US map rendering
   const projection = d3.geoAlbersUsa()
@@ -579,12 +578,15 @@
                 <circle
                   cx={school.displayCoords.x}
                   cy={school.displayCoords.y}
-                  r="4"
+                  r="5"
+                  fill="#254c6f"
+                  stroke="white"
+                  stroke-width="1.5"
                   class="school-dot"
                   class:hovered={hoveredSchool === school}
                   onmouseenter={(event) => handleDotHover(school, event)}
                   onmouseleave={handleDotLeave}
-                  style="--delay: {i * 0.01}s"
+                  style="cursor: pointer; opacity: 0.9;"
                   role="button"
                   tabindex="0"
                   aria-label="View details for {school.name}"

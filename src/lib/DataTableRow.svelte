@@ -106,18 +106,18 @@
 			</div>
 		{/if}
 	</td>
-	<td class="table-cell table-title">
+	<td class="table-cell table-content">
 		{#if item?.title}
-			{#if item.url}
-				<a href={item.url} target="_blank" rel="noopener noreferrer" class="title-link">
+			<div class="content-title">
+				{#if item.url}
+					<a href={item.url} target="_blank" rel="noopener noreferrer" class="title-link">
+						{@html highlightText(item.title, searchQuery)}
+					</a>
+				{:else}
 					{@html highlightText(item.title, searchQuery)}
-				</a>
-			{:else}
-				{@html highlightText(item.title, searchQuery)}
-			{/if}
+				{/if}
+			</div>
 		{/if}
-	</td>
-	<td class="table-cell table-description">
 		{#if item?.description}
 			<div class="description-text">{@html highlightText(item.description, searchQuery)}</div>
 		{/if}
@@ -176,10 +176,14 @@
 		box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
 	}
 
-	.table-title {
-		font-weight: 400;
-		font-size: 0.85rem;
-		min-width: 200px;
+	.table-content {
+		min-width: 350px;
+	}
+
+	.content-title {
+		font-weight: 500;
+		font-size: 0.9rem;
+		margin-bottom: 0.35rem;
 	}
 
 	.title-link {
@@ -193,15 +197,12 @@
 		text-decoration: underline;
 	}
 
-	.table-description {
-		color: #333;
-		min-width: 300px;
-		max-width: 400px;
-	}
-
 	.description-text {
+		color: #555;
+		font-size: 0.82rem;
+		line-height: 1.5;
 		display: -webkit-box;
-		-webkit-line-clamp: 3;
+		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -247,13 +248,8 @@
 			min-width: 120px;
 		}
 
-		.table-title {
-			min-width: 150px;
-		}
-
-		.table-description {
+		.table-content {
 			min-width: 200px;
-			max-width: 250px;
 		}
 	}
 </style>

@@ -532,7 +532,7 @@
 		line-height: 1.4;
 		color: #1a1a1a;
 		margin: 0;
-		font-family: inherit;
+		font-family: 'Lyon Text Web', 'Georgia', serif;
 	}
 
 	.search-highlight {
@@ -552,7 +552,7 @@
 
 	.links-label {
 		font-size: 0.7rem;
-		font-family: inherit;
+		font-family: 'Lyon Text Web', 'Georgia', serif;
 		font-weight: 400;
 		color: #666;
 		text-transform: uppercase;
