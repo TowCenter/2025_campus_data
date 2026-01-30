@@ -14,11 +14,11 @@
 	const inputId = `search-input-${Math.random().toString(36).substr(2, 9)}`;
 
 	const exampleSearches = [
-		'funding cut',
-		'ICE',
-		'Office of Civil Rights',
-		'visa',
-		'antisemitism'
+		{ label: 'funding cut', query: '"funding cut"' },
+		{ label: 'ICE', query: '"Immigration and Customs Enforcement"' },
+		{ label: 'Office of Civil Rights', query: '"Office of Civil Rights"' },
+		{ label: 'visa', query: 'visa' },
+		{ label: 'antisemitism', query: 'antisemitism' }
 	];
 
 	function handleClear() {
@@ -26,7 +26,7 @@
 	}
 
 	function handleExampleClick(example) {
-		onSearchChange(example);
+		onSearchChange(example.query);
 	}
 </script>
 
@@ -61,7 +61,7 @@
 				onclick={() => handleExampleClick(example)}
 				type="button"
 			>
-				{example}
+				{example.label}
 			</button>
 		{/each}
 	</div>

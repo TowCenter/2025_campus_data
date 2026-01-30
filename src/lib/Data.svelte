@@ -27,9 +27,10 @@
 	 * @property {boolean} [showTimeline=false] - Whether to show timeline UI with date grouping
 	 * @property {boolean} [showYearNavigation=false] - Whether to show year navigation sidebar
 	 * @property {boolean} [hasMore=false] - Whether more items can be loaded
+	 * @property {number | null} [totalCount=null] - Total results count
 	 * @property {() => Promise<void>} [onLoadMore=async () => {}] - Callback to load more items
 	 * @property {(args: {filterValues: Record<string, any>, searchQuery: string}) => void} [onFiltersChange=() => {}]
-	 * @property {any} [chartStats=null] - Precomputed chart stats (optional)
+	 * @property {any} [chartStats=null] - Precomputed chart stats
 	 * @property {(args: {item: any, index: number, searchQuery: string, filterValues: Record<string, any>}) => any} [children] - Slot content for custom item rendering
 	 */
 
@@ -45,6 +46,7 @@
 		showTimeline = false,
 		showYearNavigation = false,
 		hasMore = false,
+		totalCount = null,
 		onLoadMore = async () => {},
 		onFiltersChange = () => {},
 		chartStats = null,
@@ -66,6 +68,10 @@
 		});
 		return hasSearchQuery || hasFilterValues;
 	});
+
+	const resultCount = $derived.by(() =>
+		typeof totalCount === 'number' ? totalCount : displayData.length
+	);
 
 	/** @type {HTMLElement | undefined} */
 	let filterBarRef
@@ -397,11 +403,11 @@
 				<span class="cue-label">Matching</span>
 				{#each searchQuery.trim().split(/\s+/) as word, i}
 					{#if i > 0}
-						<span class="cue-operator">AND</span>
+						<span class="cue-operator">OR</span>
 					{/if}
 					<span class="cue-term">"{word}"</span>
 				{/each}
-				<span class="cue-count">— {filteredData.length} result{filteredData.length !== 1 ? 's' : ''}</span>
+				<span class="cue-count">— {resultCount} result{resultCount !== 1 ? 's' : ''}</span>
 			</div>
 		{/if}
 <div class="data-container data-{displayMode}" class:timeline={showTimeline}>
