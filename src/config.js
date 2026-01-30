@@ -5,12 +5,8 @@
 // Replace the values below with your own settings
 
 import { createTemplateConfig } from './lib/template-config.js';
-import { data } from './data.js';
 
 export const config = createTemplateConfig({
-	// YOUR DATA - Imported from data.js
-	data,
-
 	// FIELD MAPPINGS - Customize these to match your data structure
 	dateField: 'date',                    // Field name in your data that contains dates
 	lastUpdatedField: 'last_updated',     // Field name for last updated timestamp
