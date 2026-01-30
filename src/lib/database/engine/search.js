@@ -1,23 +1,11 @@
-const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-const getSearchTokens = (raw) => {
-	return (raw || '')
-		.trim()
-		.toLowerCase()
-		.split(/\s+/)
-		.map((t) => t.replace(/^\"+|\"+$/g, ''))
-		.filter(Boolean);
-};
+import {
+	getSearchTokens,
+	getQuotedPhrase,
+	buildPhraseRegex,
+	buildExactTokenRegex
+} from '$lib/search-highlight.js';
 
 const buildPhraseToken = (tokens) => tokens.join('_');
-
-const getQuotedPhrase = (raw) => {
-	const trimmed = (raw || '').trim();
-	const match = trimmed.match(/^\"(.*)\"$/);
-	if (!match) return null;
-	const phrase = match[1].trim();
-	return phrase || null;
-};
 
 const getOrderedIdsFromTokenMap = (tokens, tokenMap) => {
 	const seen = new Set();
@@ -49,7 +37,11 @@ export const createSearchManager = ({ ensureTokenLoaded, ensureFullDatasetMap, g
 
 	const isActiveSearch = (runId) => runId === searchRunId;
 
-	const applyFiltersAndSearch = async (searchTerm) => {
+	const applyFiltersAndSearch = async (searchTerm, callbacks = {}) => {
+		const {
+			onSearchProgress = null,
+			onExactMatchActive = null
+		} = callbacks;
 		const { runId, signal } = startSearchRun();
 		const baseIds = await getBaseIdsFromFilters();
 		const hasBaseIds = baseIds.length > 0;
@@ -57,13 +49,21 @@ export const createSearchManager = ({ ensureTokenLoaded, ensureFullDatasetMap, g
 		const quotedPhrase = getQuotedPhrase(searchTerm);
 		const phraseTokens = quotedPhrase ? getSearchTokens(quotedPhrase) : [];
 		const useExactPhraseSearch = quotedPhrase && phraseTokens.length > 1;
+		if (onExactMatchActive) onExactMatchActive(Boolean(useExactPhraseSearch));
 
 		if (useExactPhraseSearch) {
 			const phraseToken = phraseTokens.length ? buildPhraseToken(phraseTokens) : null;
 			if (phraseToken) {
+				const progressHandler = onSearchProgress
+					? (loaded, total) => {
+							if (total > 0) onSearchProgress(Math.min(1, loaded / total));
+						}
+					: null;
 				const phraseIds = await ensureTokenLoaded(phraseToken, {
 					signal,
-					returnNullOn404: true
+					returnNullOn404: true,
+					returnNullOn403: true,
+					onProgress: progressHandler
 				});
 				if (!isActiveSearch(runId)) return null;
 				if (Array.isArray(phraseIds) && phraseIds.length > 0) {
@@ -75,9 +75,19 @@ export const createSearchManager = ({ ensureTokenLoaded, ensureFullDatasetMap, g
 				}
 			}
 
-			const datasetMap = await ensureFullDatasetMap({ signal });
+			const progressHandler = onSearchProgress
+				? (loaded, total) => {
+						if (total > 0) onSearchProgress(Math.min(1, loaded / total));
+					}
+				: null;
+			const datasetMap = await ensureFullDatasetMap({ signal, onProgress: progressHandler });
 			if (!isActiveSearch(runId)) return null;
-			const phraseRegex = new RegExp(`(^|\\b)${escapeRegExp(quotedPhrase)}(\\b|$)`, 'i');
+			const phraseRegex = buildPhraseRegex(quotedPhrase, 'i');
+			const tokenRegex = buildExactTokenRegex(quotedPhrase, 'i');
+			const chosenRegex = phraseRegex || tokenRegex;
+			if (!chosenRegex) {
+				return { activeIds: [], expectedTotalCount: 0 };
+			}
 			const matchedIds = [];
 
 			const candidateIds = hasBaseIds ? baseIds : Array.from(datasetMap.keys());
@@ -85,9 +95,11 @@ export const createSearchManager = ({ ensureTokenLoaded, ensureFullDatasetMap, g
 				if (!isActiveSearch(runId)) return null;
 				const item = await getArticleForSearch(id, datasetMap);
 				const haystacks = [item?.title, item?.org, item?.content];
-				const hasMatch = haystacks.some(
-					(field) => typeof field === 'string' && phraseRegex.test(field)
-				);
+				const hasMatch = haystacks.some((field) => {
+					if (typeof field !== 'string') return false;
+					chosenRegex.lastIndex = 0;
+					return chosenRegex.test(field);
+				});
 				if (hasMatch) matchedIds.push(id);
 			}
 
@@ -102,10 +114,30 @@ export const createSearchManager = ({ ensureTokenLoaded, ensureFullDatasetMap, g
 
 		const uniqueTokens = Array.from(new Set(tokens));
 		const tokenMap = new Map();
+		const totalTokens = uniqueTokens.length;
+		let loadedTokens = 0;
+		const updateProgress = (currentTokenProgress) => {
+			if (!onSearchProgress) return;
+			const normalized = Math.min(Math.max(currentTokenProgress || 0, 0), 1);
+			onSearchProgress(Math.min(1, (loadedTokens + normalized) / Math.max(totalTokens, 1)));
+		};
 
 		for (const token of uniqueTokens) {
 			if (!isActiveSearch(runId)) return null;
-			const ids = await ensureTokenLoaded(token, { signal });
+			let ids;
+			let tokenProgress = 0;
+			ids = await ensureTokenLoaded(token, {
+				signal,
+				onProgress: (loaded, total) => {
+					if (!isActiveSearch(runId)) return;
+					if (total > 0) {
+						tokenProgress = loaded / total;
+						updateProgress(tokenProgress);
+					}
+				}
+			});
+			loadedTokens += 1;
+			updateProgress(0);
 			if (Array.isArray(ids) && ids.length > 0) {
 				tokenMap.set(token, ids);
 			}

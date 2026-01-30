@@ -1,4 +1,7 @@
 <script>
+	import HighlightedText from './HighlightedText.svelte';
+	import { getSnippet } from './search-highlight.js';
+
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} item - Data item
@@ -81,14 +84,10 @@
 		return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 	}
 
-	// Highlight only the searched keyword in text
-	function highlightText(text, query) {
-		if (!query || !text) return text;
-		// Escape the query for use in regex
-		const escapedQuery = String(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-		const regex = new RegExp(`(${escapedQuery})`, 'gi');
-		return String(text).replace(regex, '<mark class="search-highlight">$1</mark>');
-	}
+	const descriptionText = $derived(
+		item?.description || item?.content || ''
+	);
+	const descriptionSnippet = $derived(getSnippet(descriptionText, searchQuery));
 </script>
 
 <tr class="table-row">
@@ -101,7 +100,7 @@
 						class="org-tag" 
 						class:selected={isOrgSelected(org)}
 						style="background-color: {isOrgSelected(org) ? '#fff3cd' : getOrgColor(org)}; color: {getOrgTextColor(org)};"
-					>{@html highlightText(org, searchQuery)}</span>
+					><HighlightedText text={org} searchQuery={searchQuery} /></span>
 				{/each}
 			</div>
 		{/if}
@@ -111,15 +110,17 @@
 			<div class="content-title">
 				{#if item.url}
 					<a href={item.url} target="_blank" rel="noopener noreferrer" class="title-link">
-						{@html highlightText(item.title, searchQuery)}
+						<HighlightedText text={item.title} searchQuery={searchQuery} />
 					</a>
 				{:else}
-					{@html highlightText(item.title, searchQuery)}
+					<HighlightedText text={item.title} searchQuery={searchQuery} />
 				{/if}
 			</div>
 		{/if}
-		{#if item?.description}
-			<div class="description-text">{@html highlightText(item.description, searchQuery)}</div>
+		{#if descriptionSnippet}
+			<div class="description-text">
+				<HighlightedText text={descriptionSnippet} searchQuery={searchQuery} />
+			</div>
 		{/if}
 	</td>
 </tr>
@@ -202,7 +203,7 @@
 		font-size: 0.82rem;
 		line-height: 1.5;
 		display: -webkit-box;
-		-webkit-line-clamp: 2;
+		-webkit-line-clamp: 3;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -227,7 +228,8 @@
 		text-decoration: underline;
 	}
 
-	.search-highlight {
+	.table-content mark,
+	.table-org mark {
 		background-color: #BBDEFB;
 		padding: 0.1em 0.2em;
 		border-radius: 2px;

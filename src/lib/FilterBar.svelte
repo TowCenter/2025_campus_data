@@ -1,6 +1,7 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
 	import SearchBar from './SearchBar.svelte';
+	import ExportProgress from './ExportProgress.svelte';
 	import MultiSelect from './MultiSelect.svelte';
 	import HierarchicalFilter from './HierarchicalFilter.svelte';
 	import { parseArray } from './utils.js';
@@ -25,6 +26,8 @@
 	 * @property {boolean} [isSticky=false] - Whether filter bar is sticky
 	 * @property {(filterId: string, value: any) => void} [onFilterChange=() => {}] - Filter change handler
 	 * @property {() => void} [onDownloadCSV=() => {}] - CSV download handler
+	 * @property {boolean} [exporting=false] - Whether export is running
+	 * @property {number} [exportProgress=0] - Export progress ratio (0-1)
 	 */
 
 	/** @type {Props} */
@@ -38,7 +41,9 @@
 		filterOptions = {},
 		isSticky = false,
 		onFilterChange = () => {},
-		onDownloadCSV = () => {}
+		onDownloadCSV = () => {},
+		exporting = false,
+		exportProgress = 0
 	} = $props();
 
 	/**
@@ -300,14 +305,20 @@
 						searchQuery={searchQuery}
 						onSearchChange={handleSearchChange}
 					/>
-					<button
-						class="search-help-btn"
-						type="button"
-						title="Search supports AND, OR, and NOT operators. Example: 'funding AND cut' or 'visa OR immigration'"
-						aria-label="Search help"
-					>
-						?
-					</button>
+					<div class="search-help">
+						<button
+							class="search-help-btn"
+							type="button"
+							aria-label="Search help"
+							aria-describedby="search-help-tooltip"
+						>
+							?
+						</button>
+						<div class="search-help-tooltip" role="tooltip" id="search-help-tooltip">
+							<p><strong>Single or multiple words</strong>: search with one word or several words; results rank higher when more of your words appear; multi-word searches do not require the words to appear together or in order.</p>
+							<p><strong>Exact phrase</strong>: use double quotes ("") to match exact wording, for example "campus safety"; note that it may take longer to process.</p>
+						</div>
+					</div>
 				</div>
 			{/if}
 
@@ -324,8 +335,13 @@
 				onclick={onDownloadCSV}
 				type="button"
 				aria-label="Export {filteredRowCount} items"
+				disabled={exporting}
 			>
-				Export
+				{#if exporting}
+					<ExportProgress exporting={exporting} progress={exportProgress} />
+				{:else}
+					Export
+				{/if}
 			</button>
 		</div>
 	</div>
@@ -412,9 +428,15 @@
 
 	.search-with-help {
 		display: flex;
-		align-items: flex-end;
+		align-items: center;
 		gap: 0.5rem;
 		flex: 1;
+	}
+
+	.search-help {
+		position: relative;
+		display: flex;
+		align-items: center;
 	}
 
 	.search-help-btn {
@@ -431,13 +453,47 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		margin-bottom: 0.25rem;
+		margin-bottom: 1rem;
 		transition: all 0.2s ease;
 	}
 
 	.search-help-btn:hover {
 		background-color: #254c6f;
 		color: white;
+	}
+
+	.search-help-tooltip {
+		position: absolute;
+		right: 0;
+		bottom: calc(100% + 8px);
+		width: 260px;
+		background: white;
+		border: 1px solid #e0e0e0;
+		box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+		padding: 0.75rem 0.85rem;
+		font-size: 0.8rem;
+		line-height: 1.4;
+		color: #333;
+		opacity: 0;
+		transform: translateY(6px);
+		pointer-events: none;
+		transition: opacity 0.15s ease, transform 0.15s ease;
+		z-index: 10;
+	}
+
+	.search-help-tooltip p {
+		margin: 0 0 0.5rem;
+	}
+
+	.search-help-tooltip p:last-child {
+		margin-bottom: 0;
+	}
+
+	.search-help:hover .search-help-tooltip,
+	.search-help:focus-within .search-help-tooltip {
+		opacity: 1;
+		transform: translateY(0);
+		pointer-events: auto;
 	}
 
 	.export-btn {

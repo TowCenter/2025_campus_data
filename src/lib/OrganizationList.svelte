@@ -39,10 +39,10 @@
 		<h3 class="section-title">Largest Organizations</h3>
 		<div class="organization-table">
 			{#each orgStats as { org, count }}
-				<a href="/timeline?org={encodeURIComponent(org)}" class="org-row">
+				<div class="org-row">
 					<span class="org-name">{org}</span>
 					<span class="org-count">{count.toLocaleString()}</span>
-				</a>
+				</div>
 			{/each}
 		</div>
 	</div>

@@ -28,9 +28,15 @@
 	let totalCount = 0;
 	let filterOptions = {};
 	let chartStats = null;
+	let searchState = { loading: false, progress: 0, exactMatchActive: false };
+	let exportState = { exporting: false, progress: 0 };
+	let resultsLoading = false;
+	let appliedSearchQuery = '';
+	let pendingSearchQuery = '';
 	let refreshId = 0;
 	let loadingMore = false;
 	let normalizedCache = new Map();
+	let debounceTimer = null;
 
 	const normalizeDate = (value) => {
 		const dateStr = value?.$date || value;
@@ -74,13 +80,22 @@
 
 	async function initEngine() {
 		try {
-			engine = createDatabaseEngine();
+			engine = createDatabaseEngine({
+				onSearchStateChange: (state) => {
+					searchState = state;
+				},
+				onExportStateChange: (state) => {
+					exportState = state;
+				}
+			});
 			await engine.init();
 			const options = await engine.getFilterOptions();
 			filterOptions = {
 				month: options.months || [],
 				org: options.institutions || []
 			};
+			searchState = engine.getSearchState();
+			exportState = engine.getExportState();
 		} catch (error) {
 			console.error('Failed to initialize database engine', error);
 		}
@@ -88,24 +103,28 @@
 
 	async function refreshResults() {
 		const currentRefresh = ++refreshId;
-		items = [];
-		hasMore = false;
-		totalCount = 0;
-		chartStats = null;
+		appliedSearchQuery = pendingSearchQuery;
 
 		await engine.applyFiltersAndSearch();
 		if (currentRefresh !== refreshId) return;
 
-		const [result, stats] = await Promise.all([
-			engine.loadMore(batchSize),
-			engine.getActiveStats()
-		]);
-		if (currentRefresh !== refreshId) return;
+		resultsLoading = true;
+		try {
+			const [result, stats] = await Promise.all([
+				engine.loadMore(batchSize),
+				engine.getActiveStats()
+			]);
+			if (currentRefresh !== refreshId) return;
 
-		items = result.items.map(normalizeArticle);
-		hasMore = result.hasMore;
-		totalCount = result.total;
-		chartStats = stats;
+			items = result.items.map(normalizeArticle);
+			hasMore = result.hasMore;
+			totalCount = result.total;
+			chartStats = stats;
+		} finally {
+			if (currentRefresh === refreshId) {
+				resultsLoading = false;
+			}
+		}
 	}
 
 	async function handleLoadMore() {
@@ -123,18 +142,39 @@
 		}
 	}
 
+	async function handleExport() {
+		if (!engine) return;
+		try {
+			await engine.exportResults();
+		} catch (error) {
+			console.error('Error exporting data', error);
+			alert(error?.message || 'Error exporting data');
+		}
+	}
+
 	function handleFiltersChange({ filterValues, searchQuery }) {
 		if (!engine) return;
 		const months = monthFilterId ? (filterValues[monthFilterId] || []) : [];
 		const institutions = orgFilterId ? (filterValues[orgFilterId] || []) : [];
 		engine.setFilters({ months, institutions });
 		engine.setSearch(searchQuery);
-		refreshResults();
+		pendingSearchQuery = searchQuery;
+
+		if (debounceTimer) clearTimeout(debounceTimer);
+		debounceTimer = setTimeout(() => {
+			refreshResults();
+		}, 500);
 	}
 
 	onMount(async () => {
 		await initEngine();
 		await refreshResults();
+	});
+
+	onMount(() => {
+		return () => {
+			if (debounceTimer) clearTimeout(debounceTimer);
+		};
 	});
 </script>
 
@@ -160,11 +200,16 @@
 			filterConfig={config.filterConfig}
 			{filterOptions}
 			chartStats={chartStats}
+			searchState={searchState}
+			exportState={exportState}
+			resultsLoading={resultsLoading}
+			appliedSearchQuery={appliedSearchQuery}
 			dateField={config.dateField}
 			{totalCount}
 			{hasMore}
 			onLoadMore={handleLoadMore}
 			onFiltersChange={handleFiltersChange}
+			onDownloadCSV={handleExport}
 			showTimeline={false}
 			showYearNavigation={false}
 			{categoryDefinitions}
