@@ -28,6 +28,9 @@
 	let totalCount = 0;
 	let filterOptions = {};
 	let chartStats = null;
+	let searchState = { loading: false, progress: 0, exactMatchActive: false };
+	let exportState = { exporting: false, progress: 0 };
+	let resultsLoading = false;
 	let refreshId = 0;
 	let loadingMore = false;
 	let normalizedCache = new Map();
@@ -75,13 +78,22 @@
 
 	async function initEngine() {
 		try {
-			engine = createDatabaseEngine();
+			engine = createDatabaseEngine({
+				onSearchStateChange: (state) => {
+					searchState = state;
+				},
+				onExportStateChange: (state) => {
+					exportState = state;
+				}
+			});
 			await engine.init();
 			const options = await engine.getFilterOptions();
 			filterOptions = {
 				month: options.months || [],
 				org: options.institutions || []
 			};
+			searchState = engine.getSearchState();
+			exportState = engine.getExportState();
 		} catch (error) {
 			console.error('Failed to initialize database engine', error);
 		}
@@ -93,6 +105,7 @@
 		hasMore = false;
 		totalCount = 0;
 		chartStats = null;
+		resultsLoading = true;
 
 		await engine.applyFiltersAndSearch();
 		if (currentRefresh !== refreshId) return;
@@ -107,6 +120,7 @@
 		hasMore = result.hasMore;
 		totalCount = result.total;
 		chartStats = stats;
+		resultsLoading = false;
 	}
 
 	async function handleLoadMore() {
@@ -121,6 +135,16 @@
 			totalCount = result.total;
 		} finally {
 			loadingMore = false;
+		}
+	}
+
+	async function handleExport() {
+		if (!engine) return;
+		try {
+			await engine.exportResults();
+		} catch (error) {
+			console.error('Error exporting data', error);
+			alert(error?.message || 'Error exporting data');
 		}
 	}
 
@@ -171,11 +195,15 @@
 			filterConfig={config.filterConfig}
 			{filterOptions}
 			chartStats={chartStats}
+			searchState={searchState}
+			exportState={exportState}
+			resultsLoading={resultsLoading}
 			dateField={config.dateField}
 			{totalCount}
 			{hasMore}
 			onLoadMore={handleLoadMore}
 			onFiltersChange={handleFiltersChange}
+			onDownloadCSV={handleExport}
 			showTimeline={false}
 			showYearNavigation={false}
 			{categoryDefinitions}

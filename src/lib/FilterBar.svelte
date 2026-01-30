@@ -1,6 +1,7 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
 	import SearchBar from './SearchBar.svelte';
+	import ExportProgress from './ExportProgress.svelte';
 	import MultiSelect from './MultiSelect.svelte';
 	import HierarchicalFilter from './HierarchicalFilter.svelte';
 	import { parseArray } from './utils.js';
@@ -25,6 +26,8 @@
 	 * @property {boolean} [isSticky=false] - Whether filter bar is sticky
 	 * @property {(filterId: string, value: any) => void} [onFilterChange=() => {}] - Filter change handler
 	 * @property {() => void} [onDownloadCSV=() => {}] - CSV download handler
+	 * @property {boolean} [exporting=false] - Whether export is running
+	 * @property {number} [exportProgress=0] - Export progress ratio (0-1)
 	 */
 
 	/** @type {Props} */
@@ -38,7 +41,9 @@
 		filterOptions = {},
 		isSticky = false,
 		onFilterChange = () => {},
-		onDownloadCSV = () => {}
+		onDownloadCSV = () => {},
+		exporting = false,
+		exportProgress = 0
 	} = $props();
 
 	/**
@@ -324,8 +329,13 @@
 				onclick={onDownloadCSV}
 				type="button"
 				aria-label="Export {filteredRowCount} items"
+				disabled={exporting}
 			>
-				Export
+				{#if exporting}
+					<ExportProgress exporting={exporting} progress={exportProgress} />
+				{:else}
+					Export
+				{/if}
 			</button>
 		</div>
 	</div>

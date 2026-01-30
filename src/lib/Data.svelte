@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import FilterBar from './FilterBar.svelte';
 	import SearchCharts from './SearchCharts.svelte';
+	import SearchLoading from './SearchLoading.svelte';
 	import { groupByMonth } from './date-utils.js';
 	import './cjr.css';
 
@@ -31,6 +32,10 @@
 	 * @property {() => Promise<void>} [onLoadMore=async () => {}] - Callback to load more items
 	 * @property {(args: {filterValues: Record<string, any>, searchQuery: string}) => void} [onFiltersChange=() => {}]
 	 * @property {any} [chartStats=null] - Precomputed chart stats
+	 * @property {any} [searchState=null] - Search loading state
+	 * @property {any} [exportState=null] - Export state
+	 * @property {boolean} [resultsLoading=false] - Whether initial results are loading
+	 * @property {() => void} [onDownloadCSV=() => {}] - CSV download handler
 	 * @property {(args: {item: any, index: number, searchQuery: string, filterValues: Record<string, any>}) => any} [children] - Slot content for custom item rendering
 	 */
 
@@ -50,6 +55,10 @@
 		onLoadMore = async () => {},
 		onFiltersChange = () => {},
 		chartStats = null,
+		searchState = null,
+		exportState = null,
+		resultsLoading = false,
+		onDownloadCSV = () => {},
 		children = undefined
 	} = $props();
 
@@ -68,10 +77,6 @@
 		});
 		return hasSearchQuery || hasFilterValues;
 	});
-
-	const resultCount = $derived.by(() =>
-		typeof totalCount === 'number' ? totalCount : displayData.length
-	);
 
 	/** @type {HTMLElement | undefined} */
 	let filterBarRef
@@ -263,6 +268,17 @@
 	}
 	const displayData = $derived.by(() => dataWithMonth);
 
+	const resultCount = $derived.by(() =>
+		typeof totalCount === 'number' ? totalCount : displayData.length
+	);
+
+	const searchLoading = $derived.by(() => Boolean(searchState?.loading));
+	const searchProgress = $derived.by(() => Number(searchState?.progress || 0));
+	const searchExactMatch = $derived.by(() => Boolean(searchState?.exactMatchActive));
+	const exportLoading = $derived.by(() => Boolean(exportState?.exporting));
+	const exportProgress = $derived.by(() => Number(exportState?.progress || 0));
+	const combinedLoading = $derived.by(() => Boolean(searchLoading || resultsLoading));
+
 	// Group data by month if timeline is enabled
 	const groupedData = $derived.by(() => {
 		if (!showTimeline) return {};
@@ -397,9 +413,12 @@
 			{filterOptions}
 			{filterValues}
 			{searchQuery}
-			filteredRowCount={displayData.length}
+			filteredRowCount={resultCount}
 			{categoryDefinitions}
 			onFilterChange={handleFilterChange}
+			onDownloadCSV={onDownloadCSV}
+			exporting={exportLoading}
+			exportProgress={exportProgress}
 			isSticky={isFilterBarSticky}
 		/>
 	</div>
@@ -419,7 +438,7 @@
 	</div>
 
 	{#if hasActiveFilters}
-		{#if searchQuery && searchQuery.trim()}
+		{#if !combinedLoading && searchQuery && searchQuery.trim()}
 			<div class="search-query-cue">
 				{#if exactMatchActive && quotedPhraseDisplay}
 					<span class="cue-label">Matching exact phrase</span>
@@ -439,6 +458,14 @@
 				<span class="cue-count">— {resultCount} result{resultCount !== 1 ? 's' : ''}</span>
 			</div>
 		{/if}
+		{#if combinedLoading}
+			<SearchLoading
+				loading={combinedLoading}
+				progress={searchProgress}
+				showProgress={Boolean(searchQuery && searchQuery.trim())}
+				note={searchExactMatch ? 'Exact phrase searches take longer. Thanks for your patience.' : ''}
+			/>
+		{:else}
 <div class="data-container data-{displayMode}" class:timeline={showTimeline}>
 	{#if showTimeline}
 		<!-- Timeline view with date grouping -->
@@ -534,6 +561,7 @@
 		<div class="infinite-sentinel" bind:this={loadSentinel} aria-hidden="true"></div>
 	{/if}
 </div>
+		{/if}
 	{:else}
 		<div class="no-data-message">
 			<p>Use the filters to search announcements</p>
