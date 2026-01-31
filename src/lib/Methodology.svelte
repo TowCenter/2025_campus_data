@@ -10,13 +10,6 @@
   let showTooltip = false;
   let statesGeoJSON = null;
 
-  // Calendar tooltip
-  let calendarTooltip = null;
-  let calendarTooltipX = 0;
-  let calendarTooltipY = 0;
-  let showCalendarTooltip = false;
-  let calendarContainer;
-
   // FAQ accordion
   let openFaqIndex = null;
 
@@ -34,24 +27,13 @@
 
   // AWS S3 configuration
   const LOCATION_DATA_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/location.json';
-  const S3_BUCKET_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/data.json';
-  const MONTH_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/month_index';
-  const MONTH_INDEX_MANIFEST_URL = `${MONTH_INDEX_BASE_URL}/manifest.json`; // { "2025": { "2025-12": count, ... }, ... }
   const INSTITUTION_INDEX_BASE_URL = 'https://2025-campus-data.s3.us-east-2.amazonaws.com/institution_index';
   const INSTITUTION_INDEX_MANIFEST_URL = `${INSTITUTION_INDEX_BASE_URL}/manifest.json`; // { "a": { "American University": 503, ... }, ... }
   let schoolData = [];
-  let allArticles = [];
-  let articlesByDate = {};
-  let loadingArticles = false;
-  let indexTotalRecords = null;
   let institutionIndex = {};
   let institutionNames = [];
   let institutionIndexLoaded = false;
   let institutionIndexLoadFailed = false;
-  let monthManifest = null;
-  let monthManifestLoaded = false;
-  let monthManifestLoadFailed = false;
-  let monthlyBarData = [];
   let locationDataLoaded = false;
   let locationDataLoadFailed = false;
 
@@ -109,7 +91,6 @@
     return acc;
   }, {});
   $: totalStates = Object.keys(stateGroups).length;
-  $: totalRecords = indexTotalRecords ?? allArticles.length;
 
   // Group schools by proximity and calculate offset positions to prevent overlap
   function getSchoolPositions(schools) {
@@ -235,42 +216,6 @@
     }
   }
 
-  // Calendar tooltip handlers
-  function handleCalendarDayHover(dayInfo, event) {
-    calendarTooltip = dayInfo;
-    showCalendarTooltip = true;
-    updateCalendarTooltipPosition(event);
-  }
-
-  function handleCalendarDayLeave() {
-    calendarTooltip = null;
-    showCalendarTooltip = false;
-  }
-
-  function updateCalendarTooltipPosition(event) {
-    if (calendarContainer) {
-      const rect = calendarContainer.getBoundingClientRect();
-      calendarTooltipX = event.clientX - rect.left;
-      calendarTooltipY = event.clientY - rect.top;
-
-      if (calendarTooltipX > rect.width - 200) {
-        calendarTooltipX = calendarTooltipX - 200;
-      }
-
-      if (calendarTooltipY < 60) {
-        calendarTooltipY = calendarTooltipY + 20;
-      } else {
-        calendarTooltipY = calendarTooltipY - 60;
-      }
-    }
-  }
-
-  function handleCalendarMouseMove(event) {
-    if (showCalendarTooltip) {
-      updateCalendarTooltipPosition(event);
-    }
-  }
-
   // Create a path generator using the Albers USA projection
   const pathGenerator = d3.geoPath().projection(projection);
 
@@ -279,128 +224,6 @@
     if (!feature || !feature.geometry) return '';
     return pathGenerator(feature) || '';
   }
-
-  // Process articles data for charts
-  function processArticleData(articles) {
-    const dateMap = {};
-
-    articles.forEach(item => {
-      let dateStr = null;
-
-      // Use the 'date' field for article publish date (NOT last_updated_at which is scraping date)
-      if (typeof item.date === 'string' && item.date) {
-        // Direct string format: "2025-03-31T00:00:00" or "2025-03-31"
-        dateStr = item.date.split('T')[0];
-      } else if (item.date?.$date) {
-        // MongoDB date format: { $date: "2025-03-31T00:00:00.000Z" }
-        dateStr = item.date.$date.split('T')[0];
-      } else if (item.date instanceof Date) {
-        // JavaScript Date object
-        dateStr = item.date.toISOString().split('T')[0];
-      }
-
-      if (dateStr) {
-        dateMap[dateStr] = (dateMap[dateStr] || 0) + 1;
-      }
-    });
-
-    return dateMap;
-  }
-
-  // Build monthly chart data from manifest
-  function buildMonthlyBarData(manifest) {
-    if (!manifest || typeof manifest !== 'object') return [];
-
-    const entries = [];
-    const MIN_MONTH = '2025-01';
-
-    Object.entries(manifest).forEach(([yearKey, yearData]) => {
-      if (!/^\d{4}$/.test(yearKey)) return;
-      if (!yearData || typeof yearData !== 'object') return;
-      Object.entries(yearData).forEach(([monthKey, count]) => {
-        if (!/^\d{4}-\d{2}$/.test(monthKey)) return;
-        if (monthKey < MIN_MONTH) return;
-        const num = Number(count);
-        if (!Number.isFinite(num)) return;
-        // Use day 01 to keep date math simple downstream
-        entries.push([`${monthKey}-01`, { count: num, month: monthKey }]);
-      });
-    });
-
-    return entries.sort((a, b) => a[0].localeCompare(b[0]));
-  }
-
-  // Organize dates by month for calendar view with week grids
-  function organizeByMonth(dateMap) {
-    const months = {};
-
-    Object.keys(dateMap).sort().forEach(dateStr => {
-      const date = new Date(dateStr);
-
-      // Only include dates from January 1, 2025 onwards
-      if (date.getFullYear() < 2025) return;
-
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-
-      if (!months[monthKey]) {
-        months[monthKey] = {
-          label: date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
-          year: date.getFullYear(),
-          month: date.getMonth(),
-          days: {}
-        };
-      }
-
-      months[monthKey].days[date.getDate()] = {
-        dateStr,
-        date: date,
-        count: dateMap[dateStr]
-      };
-    });
-
-    return months;
-  }
-
-  // Generate calendar grid for a month (with empty cells for proper alignment)
-  function getMonthGrid(year, month, daysData) {
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startOffset = firstDay.getDay(); // 0 = Sunday, 6 = Saturday
-    const daysInMonth = lastDay.getDate();
-
-    const grid = [];
-    let week = [];
-
-    // Add empty cells for days before month starts
-    for (let i = 0; i < startOffset; i++) {
-      week.push(null);
-    }
-
-    // Add all days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      week.push({
-        day,
-        data: daysData[day] || null
-      });
-
-      if (week.length === 7) {
-        grid.push(week);
-        week = [];
-      }
-    }
-
-    // Add empty cells to complete last week
-    while (week.length > 0 && week.length < 7) {
-      week.push(null);
-    }
-    if (week.length > 0) {
-      grid.push(week);
-    }
-
-    return grid;
-  }
-
-  $: monthlyData = organizeByMonth(articlesByDate);
 
   // Track time spent on Methodology page
   let pageStartTime;
@@ -429,38 +252,6 @@
     }
   }
 
-  async function loadMonthIndex() {
-    try {
-      const res = await fetch(MONTH_INDEX_MANIFEST_URL);
-      if (!res.ok) throw new Error('Failed to load month index manifest');
-      const manifest = await res.json();
-
-      let total = 0;
-      Object.values(manifest || {}).forEach((yearData) => {
-        if (yearData && typeof yearData === 'object') {
-          Object.values(yearData).forEach((count) => {
-            const num = Number(count);
-            if (Number.isFinite(num)) {
-              total += num;
-            }
-          });
-        }
-      });
-
-      indexTotalRecords = total;
-      monthManifest = manifest;
-      monthlyBarData = buildMonthlyBarData(manifest);
-      monthManifestLoadFailed = false;
-      return manifest;
-    } catch (err) {
-      console.warn('Could not load month index manifest:', err);
-      monthManifestLoadFailed = true;
-      return null;
-    } finally {
-      monthManifestLoaded = true;
-    }
-  }
-
   async function loadInstitutionIndex() {
     try {
       const res = await fetch(INSTITUTION_INDEX_MANIFEST_URL);
@@ -486,13 +277,13 @@
     }
   }
 
-  // Load S3 data for record count and US states map
+  // Load S3 data for map and institution filtering
   onMount(async () => {
     pageStartTime = Date.now();
 
     try {
-      // Kick off lightweight index loads first for fast counts
-      const indexPromise = Promise.all([loadMonthIndex(), loadInstitutionIndex()]);
+      // Kick off lightweight index load first for fast counts
+      const indexPromise = loadInstitutionIndex();
       const locationsPromise = loadSchoolLocations();
 
       // Load US states TopoJSON data
@@ -502,24 +293,10 @@
         statesGeoJSON = topojson.feature(topology, topology.objects.states);
       }
 
-      // Wait for indexes and school locations to finish
+      // Wait for index and school locations to finish
       await Promise.all([indexPromise, locationsPromise]);
-
-      // Load article data for charts (heavier)
-      loadingArticles = true;
-      const articlesResponse = await fetch(S3_BUCKET_URL);
-      if (articlesResponse.ok) {
-        allArticles = await articlesResponse.json();
-        articlesByDate = processArticleData(allArticles);
-        // If indexTotalRecords failed, fall back to full count
-        if (indexTotalRecords === null) {
-          indexTotalRecords = allArticles.length;
-        }
-      }
-      loadingArticles = false;
     } catch (err) {
       console.warn('Could not load data:', err);
-      loadingArticles = false;
     }
 
     // Track time on page when user leaves
@@ -611,6 +388,9 @@
             <div class="warning-title">Missing location data</div>
             <div class="warning-text">
               {missingLocations.length} institution(s) are in the dataset but missing coordinates.
+            </div>
+            <div class="warning-list">
+              Missing: {missingLocations.join(', ')}
             </div>
           </div>
         {/if}
@@ -1000,193 +780,6 @@
     color: #7a4f06;
   }
 
-  /* Charts Section */
-  .charts-section {
-    margin: 1.5rem 0;
-    padding: 0;
-    background: transparent;
-  }
-
-  .charts-section h3 {
-    font-size: 2rem;
-    color: #254c6f;
-    margin-bottom: 2rem;
-    font-weight: 700;
-    text-align: center;
-  }
-
-  .charts-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
-
-  .chart-container {
-    background: transparent;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .chart-container h4 {
-    font-size: 1.1rem;
-    color: #254c6f;
-    margin-bottom: 0.5rem;
-    font-weight: 700;
-  }
-
-  .chart-dek {
-    font-size: 0.95rem;
-    color: #666;
-    margin-bottom: 1.5rem;
-    font-weight: 400;
-    line-height: 1.5;
-  }
-
-  /* Bar Chart */
-  .bar-chart-wrapper {
-    position: relative;
-    width: 100%;
-    padding: 0;
-    background: transparent;
-  }
-
-  .bar-chart-container {
-    display: flex;
-    gap: 0.5rem;
-    align-items: stretch;
-  }
-
-  .y-axis-labels {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding-top: 5px;
-    padding-bottom: 15px;
-    min-width: 40px;
-  }
-
-  .y-axis-label {
-    font-size: 11px;
-    fill: #FFFFFF;
-  }
-
-  .bar-chart-svg-container {
-    flex: 1;
-    position: relative;
-  }
-
-  .bar-chart-svg {
-    width: 100%;
-    height: auto;
-    overflow: visible;
-  }
-
-  .bar {
-    transition: opacity 0.2s ease;
-  }
-
-  .bar:hover {
-    opacity: 1 !important;
-  }
-
-  .bar-chart-labels {
-    position: relative;
-    width: 100%;
-    height: 30px;
-    margin-top: 0.5rem;
-  }
-
-  .bar-label {
-    font-size: 11px;
-    fill: #FFFFFF;
-  }
-
-  /* Calendar Heatmap */
-  .calendar-grid-container {
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.75rem;
-    padding: 0.75rem 0;
-    background: transparent;
-  }
-
-  .month-calendar {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .month-label {
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: #254c6f;
-    text-align: center;
-  }
-
-  .month-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1.5px;
-  }
-
-  .calendar-day {
-    aspect-ratio: 1;
-    border-radius: 2px;
-    border: 1px solid rgba(214, 97, 58, 0.2);
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .calendar-day.empty {
-    background: transparent;
-    border: none;
-    cursor: default;
-  }
-
-  .calendar-day.no-data {
-    background: #f5f5f5;
-    border-color: #e0e0e0;
-  }
-
-  .calendar-day:not(.empty):not(.no-data):hover {
-    transform: scale(1.2);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    border-color: #254c6f;
-    z-index: 10;
-    border-width: 2px;
-  }
-
-  .heatmap-legend {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    font-size: 0.75rem;
-    color: #888;
-  }
-
-  .legend-scale {
-    display: flex;
-    gap: 3px;
-  }
-
-  .legend-scale div {
-    width: 16px;
-    height: 16px;
-    border-radius: 2px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-  }
-
-  .loading-text {
-    text-align: center;
-    color: #666;
-    font-style: italic;
-    padding: 2rem;
-  }
-
   /* Methodology Content */
   .methodology-content {
     margin-top: 2rem;
@@ -1317,40 +910,6 @@
       gap: 1rem;
     }
 
-    .charts-section h3 {
-      font-size: 1.3rem;
-    }
-
-    .charts-grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    .chart-container h4 {
-      font-size: 0.95rem;
-    }
-
-    .bar-chart-svg {
-      height: 180px;
-    }
-
-    .bar-label {
-      font-size: 0.6rem;
-    }
-
-    .calendar-grid-container {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.5rem;
-      padding: 0.5rem 0;
-    }
-
-    .month-label {
-      font-size: 0.65rem;
-    }
-
-    .month-grid {
-      gap: 1px;
-    }
   }
 
   /* FAQ Section */
