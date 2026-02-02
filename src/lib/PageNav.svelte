@@ -1,4 +1,6 @@
 <script>
+  import { base } from '$app/paths';
+
   /**
    * @typedef {Object} Props
    * @property {string} [activePage=''] - The current active page
@@ -8,9 +10,9 @@
   let { activePage = '' } = $props();
 
   const navItems = [
-    { href: '/', label: 'Home' },
-    { href: '/announcements', label: 'Search' },
-    { href: '/methodology', label: 'Methodology' }
+    { href: `${base}/`, label: 'Home' },
+    { href: `${base}/announcements`, label: 'Search' },
+    { href: `${base}/methodology`, label: 'Methodology' }
   ];
 </script>
 
@@ -19,8 +21,8 @@
     <a
       href={item.href}
       class:active={activePage === item.label.toLowerCase() ||
-                    (activePage === 'search' && item.href === '/announcements') ||
-                    (activePage === 'home' && item.href === '/')}
+                    (activePage === 'search' && item.href === `${base}/announcements`) ||
+                    (activePage === 'home' && item.href === `${base}/`)}
     >
       {item.label}
     </a>

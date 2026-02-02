@@ -1,3 +1,5 @@
+import { base } from '$app/paths';
+
 // ============================================================================
 // TEMPLATE CONFIGURATION
 // ============================================================================
@@ -35,8 +37,8 @@ export const config = createTemplateConfig({
 
 	// LEFT NAVIGATION - Customize these links
 	navItems: [
-		{ href: '/', label: 'Search' },
-		{ href: '/methodology', label: 'Methodology' }
+		{ href: `${base}/`, label: 'Search' },
+		{ href: `${base}/methodology`, label: 'Methodology' }
 	],
 
 	// HEADLINE CONFIGURATION
