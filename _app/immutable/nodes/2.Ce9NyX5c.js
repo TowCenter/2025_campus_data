@@ -1,1 +1,0 @@
-import{R as o,b as r}from"../chunks/CdQBvCiP.js";function n(e,t){throw new o(e,t.toString())}const a=()=>{throw n(307,`${r}/announcements`)},i=Object.freeze(Object.defineProperty({__proto__:null,load:a},Symbol.toStringTag,{value:"Module"}));export{i as universal};
