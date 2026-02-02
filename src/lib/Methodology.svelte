@@ -196,17 +196,7 @@
     if (mapContainer) {
       const rect = mapContainer.getBoundingClientRect();
       tooltipX = event.clientX - rect.left;
-      tooltipY = event.clientY - rect.top;
-
-      if (tooltipX > rect.width - 200) {
-        tooltipX = tooltipX - 200;
-      }
-
-      if (tooltipY < 60) {
-        tooltipY = tooltipY + 20;
-      } else {
-        tooltipY = tooltipY - 60;
-      }
+      tooltipY = event.clientY - rect.top - 10;
     }
   }
 
@@ -352,30 +342,44 @@
               {/if}
 
               {#each schoolPositions as school, i}
-                <circle
-                  cx={school.displayCoords.x}
-                  cy={school.displayCoords.y}
-                  r="5"
-                  fill="#254c6f"
-                  stroke="white"
-                  stroke-width="1.5"
-                  class="school-dot"
-                  class:hovered={hoveredSchool === school}
-                  onmouseenter={(event) => handleDotHover(school, event)}
-                  onmouseleave={handleDotLeave}
-                  style="cursor: pointer; opacity: 0.9;"
+                <g
+                  class="school-dot-group"
+                  onpointerenter={(event) => handleDotHover(school, event)}
+                  onpointerleave={handleDotLeave}
                   role="button"
                   tabindex="0"
                   aria-label="View details for {school.name}"
-                />
+                  style="cursor: pointer;"
+                >
+                  <!-- Invisible larger hit area -->
+                  <circle
+                    cx={school.displayCoords.x}
+                    cy={school.displayCoords.y}
+                    r="12"
+                    fill="transparent"
+                    stroke="none"
+                  />
+                  <!-- Visible dot -->
+                  <circle
+                    cx={school.displayCoords.x}
+                    cy={school.displayCoords.y}
+                    r="5"
+                    fill="#254c6f"
+                    stroke="white"
+                    stroke-width="1.5"
+                    class="school-dot"
+                    class:hovered={hoveredSchool?.name === school.name}
+                    style="opacity: 0.9;"
+                  />
+                </g>
               {/each}
             </svg>
 
             {#if showTooltip && hoveredSchool}
-              <div class="tooltip" style="left: {tooltipX}px; top: {tooltipY}px;">
-                <div class="tooltip-content">
-                  <div class="tooltip-title">{hoveredSchool.name}</div>
-                  <div class="tooltip-state">{hoveredSchool.state}</div>
+              <div class="map-tooltip" style="left: {tooltipX}px; top: {tooltipY}px;">
+                <div class="map-tooltip-content">
+                  <div class="map-tooltip-title">{hoveredSchool.name}</div>
+                  <div class="map-tooltip-state">{hoveredSchool.state}</div>
                 </div>
               </div>
             {/if}
@@ -690,38 +694,36 @@
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
   }
 
-  /* Tooltip */
-  .tooltip {
+  /* Map Tooltip */
+  .map-tooltip {
     position: absolute;
     z-index: 1000;
     pointer-events: none;
+    transform: translate(-50%, -100%);
+    margin-top: -10px;
   }
 
-  .tooltip-content {
+  .map-tooltip-content {
     background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    min-width: 200px;
-    animation: tooltipAppear 0.2s ease;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    white-space: nowrap;
+    text-align: center;
   }
 
-  @keyframes tooltipAppear {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .tooltip-title {
+  .map-tooltip-title {
     font-weight: 600;
     color: #222;
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+    line-height: 1.3;
   }
 
-  .tooltip-state {
+  .map-tooltip-state {
     color: #666;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+    line-height: 1.3;
   }
 
   /* Map Legend */
