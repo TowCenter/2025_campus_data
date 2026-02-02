@@ -109,7 +109,7 @@
 		{#if item?.title}
 			<div class="content-title">
 				{#if item.url}
-					<a href={item.url} target="_blank" rel="noopener noreferrer" class="title-link">
+					<a href={item.url} target="_blank" rel="noopener noreferrer" class="title-link" data-umami-event="result-link-click" data-umami-event-title={item.title}>
 						<HighlightedText text={item.title} searchQuery={searchQuery} />
 					</a>
 				{:else}

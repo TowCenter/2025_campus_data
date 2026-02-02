@@ -23,6 +23,8 @@
       class:active={activePage === item.label.toLowerCase() ||
                     (activePage === 'search' && item.href === `${base}/announcements`) ||
                     (activePage === 'home' && item.href === `${base}/`)}
+      data-umami-event="page-nav-click"
+      data-umami-event-page={item.label}
     >
       {item.label}
     </a>

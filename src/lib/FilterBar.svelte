@@ -192,12 +192,13 @@
 </script>
 
 <div class="filter-bar" class:sticky={isSticky} bind:this={filterBarRef}>
-	<button 
+	<button
 		class="mobile-toggle-btn"
 		onclick={() => isCollapsed = !isCollapsed}
 		type="button"
 		aria-label={isCollapsed ? 'Expand filters' : 'Collapse filters'}
 		aria-expanded={!isCollapsed}
+		data-umami-event="mobile-filter-toggle"
 	>
 		<span class="toggle-text">{isCollapsed ? 'Show Filters' : 'Hide Filters'}</span>
 		<span class="toggle-icon">{isCollapsed ? '▼' : '▲'}</span>
@@ -311,6 +312,7 @@
 							type="button"
 							aria-label="Search help"
 							aria-describedby="search-help-tooltip"
+							data-umami-event="search-help-click"
 						>
 							?
 						</button>
@@ -326,6 +328,7 @@
 				class="search-btn"
 				type="button"
 				aria-label="Search {filteredRowCount} items"
+				data-umami-event="search-button-click"
 			>
 				Search
 			</button>
@@ -336,6 +339,7 @@
 				type="button"
 				aria-label="Export {filteredRowCount} items"
 				disabled={exporting}
+				data-umami-event="export-csv-click"
 			>
 				{#if exporting}
 					<ExportProgress exporting={exporting} progress={exportProgress} />

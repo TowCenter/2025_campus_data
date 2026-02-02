@@ -12,8 +12,8 @@
 				<h3>ABOUT THE TOW CENTER</h3>
 				<p>The Tow Center for Digital Journalism at Columbia's Graduate School of Journalism, a partner of CJR, is a research center exploring the ways in which technology is changing journalism, its practice and its consumption — as we seek new ways to judge the reliability, standards, and credibility of information online.</p>
 				<div class="footer-links">
-					<a href="https://www.cjr.org/tow-center">View other Tow articles »</a>
-					<a href="https://towcenter.columbia.edu/">Visit Tow Center website »</a>
+					<a href="https://www.cjr.org/tow-center" data-umami-event="footer-tow-articles-click">View other Tow articles »</a>
+					<a href="https://towcenter.columbia.edu/" data-umami-event="footer-tow-website-click">Visit Tow Center website »</a>
 				</div>
 			</div>
 		</div>

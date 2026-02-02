@@ -34,7 +34,7 @@
 <div class="container-fluid top-nav-box">
     <div class="container-lg top-nav-1">
         <header class="cjr-header">
-            <a class="cjr-header__logo-link" href={logoLink} rel="home">
+            <a class="cjr-header__logo-link" href={logoLink} rel="home" data-umami-event="header-logo-click">
                 <img
                     src={logoDesktopUrl}
                     alt={logoAlt}
@@ -58,14 +58,14 @@
                     <span class="hamburger-line"></span>
                 </button>
             {/if}
-            <a href="https://towcenter.columbia.edu/content/stay-updated-about-tow-centers-work-how-technology-changing-journalism-subscribe-our-weekly" class="subscribe-button">Stay Updated</a>
+            <a href="https://towcenter.columbia.edu/content/stay-updated-about-tow-centers-work-how-technology-changing-journalism-subscribe-our-weekly" class="subscribe-button" data-umami-event="header-stay-updated-click">Stay Updated</a>
         </header>
         {#if navItems && navItems.length > 0}
             <nav class="mobile-nav" class:open={mobileMenuOpen} aria-label="Mobile navigation" aria-hidden={!mobileMenuOpen}>
                 <ul>
                     {#each navItems as item}
                         <li>
-                            <a href={item.href} onclick={() => { mobileMenuOpen = false; }}>{item.label}</a>
+                            <a href={item.href} onclick={() => { mobileMenuOpen = false; }} data-umami-event="header-nav-click" data-umami-event-label={item.label}>{item.label}</a>
                         </li>
                     {/each}
                 </ul>

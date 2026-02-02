@@ -312,7 +312,7 @@
         </p>
 
         <p>
-          Institutions are identified by tracking public announcements from the Department of Education and verifying them against multiple independent sources. We also cross-check institutions using <a href="https://hechingerreport.org/which-schools-and-colleges-are-being-investigated-by-the-trump-administration/" target="_blank" rel="noopener noreferrer">The Hechinger Report's investigation tracker</a> as an additional verification step to help keep the list of universities current.
+          Institutions are identified by tracking public announcements from the Department of Education and verifying them against multiple independent sources. We also cross-check institutions using <a href="https://hechingerreport.org/which-schools-and-colleges-are-being-investigated-by-the-trump-administration/" target="_blank" rel="noopener noreferrer" data-umami-event="external-link-hechinger">The Hechinger Report's investigation tracker</a> as an additional verification step to help keep the list of universities current.
         </p>
 
         <!-- Interactive Map embedded in text -->
@@ -458,7 +458,7 @@
         <h3>Frequently Asked Questions</h3>
 
         <div class="faq-item">
-          <button class="faq-question" onclick={() => toggleFaq(0)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(0)}>
             <span>What information is available for each school?</span>
             <span class="faq-icon">{openFaqIndex === 0 ? '−' : '+'}</span>
           </button>
@@ -470,7 +470,7 @@
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" onclick={() => toggleFaq(1)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(1)}>
             <span>What types of schools are included?</span>
             <span class="faq-icon">{openFaqIndex === 1 ? '−' : '+'}</span>
           </button>
@@ -482,7 +482,7 @@
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" onclick={() => toggleFaq(2)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(2)}>
             <span>Do you have data from before January 2025?</span>
             <span class="faq-icon">{openFaqIndex === 2 ? '−' : '+'}</span>
           </button>
@@ -494,7 +494,7 @@
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" onclick={() => toggleFaq(3)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(3)}>
             <span>How often is the data updated?</span>
             <span class="faq-icon">{openFaqIndex === 3 ? '−' : '+'}</span>
           </button>
@@ -506,7 +506,7 @@
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" onclick={() => toggleFaq(4)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(4)}>
             <span>Do you have an API?</span>
             <span class="faq-icon">{openFaqIndex === 4 ? '−' : '+'}</span>
           </button>
@@ -518,7 +518,7 @@
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" onclick={() => toggleFaq(5)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(5)}>
             <span>Are social media posts included?</span>
             <span class="faq-icon">{openFaqIndex === 5 ? '−' : '+'}</span>
           </button>
@@ -530,7 +530,7 @@
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" onclick={() => toggleFaq(6)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(6)}>
             <span>I noticed an issue with the data. What should I do?</span>
             <span class="faq-icon">{openFaqIndex === 6 ? '−' : '+'}</span>
           </button>

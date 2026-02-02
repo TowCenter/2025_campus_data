@@ -170,12 +170,24 @@
 			searchQuery = value;
 		}
 
+		// Track filter/search usage in Umami
+		if (typeof window !== 'undefined' && window.umami) {
+			if (filterId === 'search' && value && value.trim()) {
+				window.umami.track('search-query', { query: value.trim() });
+			} else if (filterId !== 'search') {
+				window.umami.track('filter-change', { filter: filterId });
+			}
+		}
+
 		onFiltersChange({ filterValues: nextFilterValues, searchQuery: nextSearchQuery });
 	}
 
 	async function triggerLoadMore() {
 		if (isLoading || !hasMore) return;
 		isLoading = true;
+		if (typeof window !== 'undefined' && window.umami) {
+			window.umami.track('load-more-results');
+		}
 		try {
 			await onLoadMore();
 		} finally {
