@@ -201,7 +201,7 @@
 		data-umami-event="mobile-filter-toggle"
 	>
 		<span class="toggle-text">{isCollapsed ? 'Show Filters' : 'Hide Filters'}</span>
-		<span class="toggle-icon">{isCollapsed ? '▼' : '▲'}</span>
+		<span class="toggle-icon" aria-hidden="true">{isCollapsed ? '▼' : '▲'}</span>
 	</button>
 	
 	<div class="filter-content" class:collapsed={isCollapsed}>
@@ -232,7 +232,7 @@
 								{:else}
 									<span class="header-text">Select Date Range</span>
 								{/if}
-								<span class="dropdown-arrow">{isOpen ? '▲' : '▼'}</span>
+								<span class="dropdown-arrow" aria-hidden="true">{isOpen ? '▲' : '▼'}</span>
 							</button>
 							{#if isOpen}
 								<div class="dropdown-menu date-menu">

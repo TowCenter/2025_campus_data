@@ -321,10 +321,10 @@
             class="map-container"
             bind:this={mapContainer}
             onmousemove={handleMouseMove}
-            role="img"
-            aria-label="Interactive map of universities"
           >
-            <svg viewBox="0 0 960 600" class="map-svg">
+            <svg viewBox="0 0 960 600" class="map-svg" role="img" aria-label="Interactive map showing {schoolPositions.length} universities under federal investigation across the United States">
+              <title>Map of Universities Under Federal Investigation</title>
+              <desc>A map of the United States with dots marking the locations of {schoolPositions.length} universities currently tracked in the database. Hover or focus on a dot to see the school name and state.</desc>
               {#if statesGeoJSON}
                 <g id="us-states">
                   {#each statesGeoJSON.features as state}
@@ -346,9 +346,12 @@
                   class="school-dot-group"
                   onpointerenter={(event) => handleDotHover(school, event)}
                   onpointerleave={handleDotLeave}
+                  onfocus={(event) => handleDotHover(school, event)}
+                  onblur={handleDotLeave}
+                  onkeydown={(e) => { if (e.key === 'Escape') { handleDotLeave(); e.currentTarget.blur(); } }}
                   role="button"
                   tabindex="0"
-                  aria-label="View details for {school.name}"
+                  aria-label="{school.name}, {school.state}"
                   style="cursor: pointer;"
                 >
                   <!-- Invisible larger hit area -->
@@ -376,13 +379,14 @@
             </svg>
 
             {#if showTooltip && hoveredSchool}
-              <div class="map-tooltip" style="left: {tooltipX}px; top: {tooltipY}px;">
+              <div class="map-tooltip" style="left: {tooltipX}px; top: {tooltipY}px;" role="tooltip">
                 <div class="map-tooltip-content">
                   <div class="map-tooltip-title">{hoveredSchool.name}</div>
                   <div class="map-tooltip-state">{hoveredSchool.state}</div>
                 </div>
               </div>
             {/if}
+            <div class="sr-only" aria-live="polite">{hoveredSchool ? `${hoveredSchool.name}, ${hoveredSchool.state}` : ''}</div>
           </div>
           <div class="map-caption">Each dot represents a university</div>
         </div>
@@ -458,84 +462,84 @@
         <h3>Frequently Asked Questions</h3>
 
         <div class="faq-item">
-          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(0)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(0)} aria-expanded={openFaqIndex === 0} aria-controls="faq-answer-0">
             <span>What information is available for each school?</span>
-            <span class="faq-icon">{openFaqIndex === 0 ? '−' : '+'}</span>
+            <span class="faq-icon" aria-hidden="true">{openFaqIndex === 0 ? '−' : '+'}</span>
           </button>
           {#if openFaqIndex === 0}
-            <div class="faq-answer">
+            <div class="faq-answer" id="faq-answer-0">
               <p>For each institution, the database includes the headline, publication date, full text, and a link to each public announcement or statement.</p>
             </div>
           {/if}
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(1)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(1)} aria-expanded={openFaqIndex === 1} aria-controls="faq-answer-1">
             <span>What types of schools are included?</span>
-            <span class="faq-icon">{openFaqIndex === 1 ? '−' : '+'}</span>
+            <span class="faq-icon" aria-hidden="true">{openFaqIndex === 1 ? '−' : '+'}</span>
           </button>
           {#if openFaqIndex === 1}
-            <div class="faq-answer">
+            <div class="faq-answer" id="faq-answer-1">
               <p>The database includes postsecondary education institutions with degree-granting programs beyond the high school level. This includes community colleges, technical and trade schools, vocational schools, universities, and graduate programs.</p>
             </div>
           {/if}
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(2)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(2)} aria-expanded={openFaqIndex === 2} aria-controls="faq-answer-2">
             <span>Do you have data from before January 2025?</span>
-            <span class="faq-icon">{openFaqIndex === 2 ? '−' : '+'}</span>
+            <span class="faq-icon" aria-hidden="true">{openFaqIndex === 2 ? '−' : '+'}</span>
           </button>
           {#if openFaqIndex === 2}
-            <div class="faq-answer">
+            <div class="faq-answer" id="faq-answer-2">
               <p>The project does not include data before January 1, 2025, yet. We plan on publishing this in the near future.</p>
             </div>
           {/if}
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(3)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(3)} aria-expanded={openFaqIndex === 3} aria-controls="faq-answer-3">
             <span>How often is the data updated?</span>
-            <span class="faq-icon">{openFaqIndex === 3 ? '−' : '+'}</span>
+            <span class="faq-icon" aria-hidden="true">{openFaqIndex === 3 ? '−' : '+'}</span>
           </button>
           {#if openFaqIndex === 3}
-            <div class="faq-answer">
+            <div class="faq-answer" id="faq-answer-3">
               <p>We aim to update the database every Tuesday. In some cases, updates may occur more frequently to ensure timely coverage of significant developments. Please refer to the "last updated" date at the top of the page for the most recent update.</p>
             </div>
           {/if}
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(4)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(4)} aria-expanded={openFaqIndex === 4} aria-controls="faq-answer-4">
             <span>Do you have an API?</span>
-            <span class="faq-icon">{openFaqIndex === 4 ? '−' : '+'}</span>
+            <span class="faq-icon" aria-hidden="true">{openFaqIndex === 4 ? '−' : '+'}</span>
           </button>
           {#if openFaqIndex === 4}
-            <div class="faq-answer">
+            <div class="faq-answer" id="faq-answer-4">
               <p>Not at this time.</p>
             </div>
           {/if}
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(5)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(5)} aria-expanded={openFaqIndex === 5} aria-controls="faq-answer-5">
             <span>Are social media posts included?</span>
-            <span class="faq-icon">{openFaqIndex === 5 ? '−' : '+'}</span>
+            <span class="faq-icon" aria-hidden="true">{openFaqIndex === 5 ? '−' : '+'}</span>
           </button>
           {#if openFaqIndex === 5}
-            <div class="faq-answer">
+            <div class="faq-answer" id="faq-answer-5">
               <p>No. Only public announcements and statements posted on official institutional websites are collected. Social media, individual faculty pages, or internal communications are excluded.</p>
             </div>
           {/if}
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(6)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(6)} aria-expanded={openFaqIndex === 6} aria-controls="faq-answer-6">
             <span>I noticed an issue with the data. What should I do?</span>
-            <span class="faq-icon">{openFaqIndex === 6 ? '−' : '+'}</span>
+            <span class="faq-icon" aria-hidden="true">{openFaqIndex === 6 ? '−' : '+'}</span>
           </button>
           {#if openFaqIndex === 6}
-            <div class="faq-answer">
+            <div class="faq-answer" id="faq-answer-6">
               <p>We welcome feedback and corrections. If you notice a potential error or omission, please contact us at <a href="mailto:tktk@columbia.edu">tktk@columbia.edu</a> with details about the issue.</p>
             </div>
           {/if}
@@ -544,6 +548,18 @@
 </div>
 
 <style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .methodology-wrapper {
     width: 100%;
   }

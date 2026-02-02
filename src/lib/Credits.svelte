@@ -23,11 +23,11 @@
 </script>
 
 <div class="credits-toggle-section">
-	<button class="credits-toggle-btn" onclick={() => isOpen = !isOpen}>
-		<em>Credit and Acknowledgements</em> <span class="credits-toggle-icon">{isOpen ? '−' : '+'}</span>
+	<button class="credits-toggle-btn" onclick={() => isOpen = !isOpen} aria-expanded={isOpen} aria-controls="credits-panel">
+		<em>Credit and Acknowledgements</em> <span class="credits-toggle-icon" aria-hidden="true">{isOpen ? '−' : '+'}</span>
 	</button>
 	{#if isOpen}
-		<div class="credits-box">
+		<div class="credits-box" id="credits-panel">
 			<div class="credits-inner">
 				{#if maintainedBy && maintainedBy.length > 0}
 					<div class="credits-item">

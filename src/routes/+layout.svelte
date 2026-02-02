@@ -2,4 +2,6 @@
 	import '../lib/cjr.css';
 </script>
 
-<slot />
+<main id="main-content">
+	<slot />
+</main>
