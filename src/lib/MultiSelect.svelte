@@ -264,7 +264,7 @@
 	.checkbox-label input[type="checkbox"] {
 		margin-right: 0.5rem;
 		cursor: pointer;
-		accent-color: #DE5A35;
+		accent-color: #254c6f;
 	}
 
 	.checkbox-label span {

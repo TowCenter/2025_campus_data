@@ -860,7 +860,7 @@
 			padding-bottom: 1rem;
 			margin-bottom: 1rem;
 			margin-right: 0;
-			border-bottom: 2px solid #DE5A35;
+			border-bottom: 2px solid #254c6f;
 		}
 
 		.date-tag {

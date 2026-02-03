@@ -457,7 +457,7 @@
 		height: 16px;
 		margin-right: 0.5rem;
 		cursor: pointer;
-		accent-color: #DE5A35;
+		accent-color: #254c6f;
 		flex-shrink: 0;
 	}
 

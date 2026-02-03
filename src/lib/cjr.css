@@ -787,12 +787,12 @@ h1.main-title {
 
 .entry-content > p a {
 	color: #222;
-	text-decoration: none; 
-	border-bottom: 1px dotted #de5a35;
+	text-decoration: none;
+	border-bottom: 1px dotted #254c6f;
 }
 
 .entry-content > p a:hover {
-	color: #de5a35;
+	color: #254c6f;
 }
 
 .entry-content > p .interaction-tag-inline {
@@ -856,12 +856,12 @@ h1.main-title {
    
 .entry-content li a {
     color: #222;
-	text-decoration: none; 
-	border-bottom: 1px dotted #de5a35;
+	text-decoration: none;
+	border-bottom: 1px dotted #254c6f;
 }
 
 .entry-content li a:hover {
-	color: #de5a35;
+	color: #254c6f;
 }
 
 
@@ -889,15 +889,15 @@ h1.main-title {
 }
 
 .entry-content > h2 a {
-    color: #de5a35;
-	text-decoration: none; 
-	border-bottom: 2px dotted #de5a35;
+    color: #254c6f;
+	text-decoration: none;
+	border-bottom: 2px dotted #254c6f;
 }
 
 .entry-content > h2 a:hover {
-    color: #222222;
-	text-decoration: none; 
-	border-bottom: 2px dotted #222222;
+    color: #1a3a52;
+	text-decoration: none;
+	border-bottom: 2px dotted #1a3a52;
 }
 
 .entry-content > h2.dark {
@@ -1098,12 +1098,12 @@ small.bio-overline strong {
 
 small.bio-overline strong a {
 	color: #6E6E6E;
-	text-decoration: none; 
-	border-bottom: 1px dotted #de5a35;
+	text-decoration: none;
+	border-bottom: 1px dotted #254c6f;
 }
 
 small.bio-overline strong a:hover {
-	color: #de5a35;
+	color: #254c6f;
 }
 
 /* small.bio-overline strong a {
@@ -3873,12 +3873,12 @@ span.cap-bod-black-serif p {
 span.cap-bod-black-serif p a {
     color: #222;
     text-decoration: none;
-    border-bottom: 1px dotted #de5a35;
+    border-bottom: 1px dotted #254c6f;
 }
 
 
 span.cap-bod-black-serif p a:hover {
-	color: #de5a35;
+	color: #254c6f;
 }
 
 #post-capsule-block > img {
