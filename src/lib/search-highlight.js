@@ -40,15 +40,15 @@ export const parseSearchQuery = (raw) => {
 		// Extract next word
 		const match = remaining.match(/^(\S+)/);
 		if (match) {
-			const word = match[1].toLowerCase();
-			// Check if it's an operator
-			if (word === 'and') {
+			const originalWord = match[1];
+			// Check if it's an operator - ONLY when uppercase
+			if (originalWord === 'AND') {
 				tokens.push({ type: 'operator', value: 'AND' });
-			} else if (word === 'or') {
+			} else if (originalWord === 'OR') {
 				tokens.push({ type: 'operator', value: 'OR' });
 			} else {
-				// Regular word - strip any stray quotes
-				const cleanWord = word.replace(/^"+|"+$/g, '');
+				// Regular word - strip any stray quotes and lowercase
+				const cleanWord = originalWord.toLowerCase().replace(/^"+|"+$/g, '');
 				if (cleanWord) {
 					tokens.push({ type: 'word', value: cleanWord });
 				}
@@ -119,6 +119,15 @@ export const parseSearchQuery = (raw) => {
 	return { type: 'or', terms: orGroups };
 };
 
+// Common stop words to exclude from highlighting
+const STOP_WORDS = new Set([
+	'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+	'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
+	'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
+	'could', 'should', 'may', 'might', 'must', 'shall', 'can', 'need',
+	'it', 'its', 'this', 'that', 'these', 'those', 'not', 'no'
+]);
+
 /**
  * Get all search terms (words and phrase words) for highlighting
  * @param {string} raw - Raw search query
@@ -131,9 +140,12 @@ export const getAllSearchTerms = (raw) => {
 	const collectTerms = (node) => {
 		if (!node) return;
 		if (node.type === 'word') {
-			terms.push(node.value);
+			// For individual words (not in quotes), filter out stop words
+			if (!STOP_WORDS.has(node.value.toLowerCase())) {
+				terms.push(node.value);
+			}
 		} else if (node.type === 'phrase') {
-			// Add individual words from phrase for highlighting
+			// For quoted phrases, include ALL words (user explicitly searched for them)
 			const words = node.value.split(/\s+/).filter(Boolean);
 			terms.push(...words);
 		} else if (node.type === 'or' || node.type === 'and') {
