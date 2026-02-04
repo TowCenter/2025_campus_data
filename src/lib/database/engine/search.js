@@ -9,31 +9,44 @@ import {
 const buildPhraseToken = (tokens) => tokens.join('_');
 
 /**
- * Get IDs matching a single phrase using phrase index or regex fallback
+ * Get IDs matching a single phrase using phrase index or word index
  */
 const getPhraseMatchIds = async (phrase, baseIds, baseIdsSet, ensureTokenLoaded, ensureFullDatasetMap, getArticleForSearch, signal, isActiveSearch, runId, onProgress) => {
 	const phraseTokens = getSearchTokens(phrase);
 	if (phraseTokens.length === 0) return [];
 
-	// Try phrase index first (e.g., "funding_cut")
-	if (phraseTokens.length > 1) {
-		const phraseToken = buildPhraseToken(phraseTokens);
-		const phraseIds = await ensureTokenLoaded(phraseToken, {
+	// Single word "phrase" - just use the word index
+	if (phraseTokens.length === 1) {
+		const wordIds = await ensureTokenLoaded(phraseTokens[0], {
 			signal,
-			returnNullOn404: true,
-			returnNullOn403: true,
 			onProgress
 		});
-
-		if (Array.isArray(phraseIds) && phraseIds.length > 0) {
+		if (Array.isArray(wordIds) && wordIds.length > 0) {
 			if (baseIdsSet) {
-				return phraseIds.filter(id => baseIdsSet.has(id));
+				return wordIds.filter(id => baseIdsSet.has(id));
 			}
-			return phraseIds;
+			return wordIds;
 		}
+		return [];
 	}
 
-	// Fallback to regex search through full dataset
+	// Multi-word phrase - try phrase index first (e.g., "funding_cut")
+	const phraseToken = buildPhraseToken(phraseTokens);
+	const phraseIds = await ensureTokenLoaded(phraseToken, {
+		signal,
+		returnNullOn404: true,
+		returnNullOn403: true,
+		onProgress
+	});
+
+	if (Array.isArray(phraseIds) && phraseIds.length > 0) {
+		if (baseIdsSet) {
+			return phraseIds.filter(id => baseIdsSet.has(id));
+		}
+		return phraseIds;
+	}
+
+	// Fallback to regex search through full dataset for multi-word phrases
 	const datasetMap = await ensureFullDatasetMap({ signal, onProgress });
 	if (!isActiveSearch(runId)) return [];
 

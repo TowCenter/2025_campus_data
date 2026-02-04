@@ -198,35 +198,20 @@ export const buildPhraseRegex = (term, flags = 'gi') => {
 
 export const highlight = (text, term) => {
 	if (!text) return '';
-	const quotedPhrase = getQuotedPhrase(term);
-	if (quotedPhrase) {
-		const phraseRegex = buildPhraseRegex(quotedPhrase, 'gi');
-		const tokenRegex = buildExactTokenRegex(quotedPhrase, 'gi');
-		const chosenRegex = phraseRegex || tokenRegex;
-		if (!chosenRegex) return escapeHtml(text);
 
-		const parts = String(text).split(chosenRegex);
-		return parts
-			.map((part, i) =>
-				i % 2 === 1 ? `<mark>${escapeHtml(part)}</mark>` : escapeHtml(part)
-			)
-			.join('');
-	}
+	// Use the new parser to get all search terms
+	const allTerms = getAllSearchTerms(term);
+	if (allTerms.length === 0) return escapeHtml(text);
 
-	const phraseRegex = buildPhraseRegex(term, 'gi');
-	const tokenRegex = buildExactTokenRegex(term, 'gi');
-	if (!tokenRegex) return escapeHtml(text);
+	// Build regex patterns for all terms
+	const patterns = allTerms.map((token) => {
+		const escaped = escapeRegExp(token);
+		return /^[a-z0-9]+$/i.test(token) ? `\\b${escaped}\\b` : escaped;
+	});
 
-	let chosenRegex = tokenRegex;
-	if (phraseRegex) {
-		phraseRegex.lastIndex = 0;
-		if (phraseRegex.test(String(text))) {
-			chosenRegex = phraseRegex;
-		}
-		phraseRegex.lastIndex = 0;
-	}
+	const regex = new RegExp(`(${patterns.join('|')})`, 'gi');
 
-	const parts = String(text).split(chosenRegex);
+	const parts = String(text).split(regex);
 
 	return parts
 		.map((part, i) =>
