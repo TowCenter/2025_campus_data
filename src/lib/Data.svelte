@@ -292,12 +292,13 @@
 	});
 	
 	// Get visible items - sorted by date descending or grouped by timeline
+	// When searching, preserve backend order (relevance-ranked by number of matching terms)
 	const visibleItems = $derived.by(() => {
 		if (showTimeline) {
 			// For timeline, return grouped data structure
 			const grouped = groupedData;
 			const allItems = [];
-			
+
 			for (const [dateKey, items] of Object.entries(grouped)) {
 				for (const item of items) {
 					allItems.push({ ...item, dateKey });
@@ -305,13 +306,19 @@
 			}
 			return allItems;
 		} else {
-		// Sort by date descending
-		const sorted = [...displayData].sort((a, b) => {
-			const dateA = a[dateField] ? new Date(a[dateField]) : new Date(0);
-			const dateB = b[dateField] ? new Date(b[dateField]) : new Date(0);
-			return dateB.getTime() - dateA.getTime();
-		});
-		return sorted;
+			// When searching, preserve backend order (relevance-ranked)
+			// Results from search engine are already sorted by match count (highest first)
+			if (activeSearchQuery && activeSearchQuery.trim()) {
+				return displayData;
+			}
+
+			// Sort by date descending when not searching
+			const sorted = [...displayData].sort((a, b) => {
+				const dateA = a[dateField] ? new Date(a[dateField]) : new Date(0);
+				const dateB = b[dateField] ? new Date(b[dateField]) : new Date(0);
+				return dateB.getTime() - dateA.getTime();
+			});
+			return sorted;
 		}
 	});
 
