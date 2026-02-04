@@ -1,5 +1,150 @@
 export const escapeRegExp = (string) => String(string || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+/**
+ * Parse a search query with boolean operators and quoted phrases
+ * Examples:
+ *   "funding cut" → { type: 'phrase', value: 'funding cut' }
+ *   funding → { type: 'word', value: 'funding' }
+ *   "funding cut" OR schools → { type: 'or', terms: [...] }
+ *   "funding cut" AND schools → { type: 'and', terms: [...] }
+ *   funding budget (no operator) → { type: 'or', terms: [...] } (default OR)
+ *
+ * @param {string} raw - Raw search query
+ * @returns {{ type: string, terms?: Array, value?: string }}
+ */
+export const parseSearchQuery = (raw) => {
+	const input = (raw || '').trim();
+	if (!input) return { type: 'empty' };
+
+	// Tokenize: extract quoted phrases and words, preserving AND/OR operators
+	const tokens = [];
+	let remaining = input;
+
+	while (remaining.length > 0) {
+		remaining = remaining.trimStart();
+		if (!remaining) break;
+
+		// Check for quoted phrase
+		if (remaining.startsWith('"')) {
+			const endQuote = remaining.indexOf('"', 1);
+			if (endQuote > 1) {
+				const phrase = remaining.slice(1, endQuote).trim();
+				if (phrase) {
+					tokens.push({ type: 'phrase', value: phrase.toLowerCase() });
+				}
+				remaining = remaining.slice(endQuote + 1);
+				continue;
+			}
+		}
+
+		// Extract next word
+		const match = remaining.match(/^(\S+)/);
+		if (match) {
+			const word = match[1].toLowerCase();
+			// Check if it's an operator
+			if (word === 'and') {
+				tokens.push({ type: 'operator', value: 'AND' });
+			} else if (word === 'or') {
+				tokens.push({ type: 'operator', value: 'OR' });
+			} else {
+				// Regular word - strip any stray quotes
+				const cleanWord = word.replace(/^"+|"+$/g, '');
+				if (cleanWord) {
+					tokens.push({ type: 'word', value: cleanWord });
+				}
+			}
+			remaining = remaining.slice(match[1].length);
+		}
+	}
+
+	// Filter out operators at start/end
+	while (tokens.length > 0 && tokens[0].type === 'operator') tokens.shift();
+	while (tokens.length > 0 && tokens[tokens.length - 1].type === 'operator') tokens.pop();
+
+	if (tokens.length === 0) return { type: 'empty' };
+
+	// Single term (no operators)
+	if (tokens.length === 1) {
+		return tokens[0];
+	}
+
+	// Check if there are any explicit operators
+	const hasExplicitOperator = tokens.some(t => t.type === 'operator');
+
+	if (!hasExplicitOperator) {
+		// Default: treat multiple terms as OR (match any, rank by count)
+		const terms = tokens.filter(t => t.type !== 'operator');
+		return { type: 'or', terms };
+	}
+
+	// Parse with operators - handle AND having higher precedence than OR
+	// Split by OR first, then within each OR group, split by AND
+	const orGroups = [];
+	let currentAndGroup = [];
+
+	for (let i = 0; i < tokens.length; i++) {
+		const token = tokens[i];
+
+		if (token.type === 'operator' && token.value === 'OR') {
+			// End current AND group, add to OR groups
+			if (currentAndGroup.length > 0) {
+				if (currentAndGroup.length === 1) {
+					orGroups.push(currentAndGroup[0]);
+				} else {
+					orGroups.push({ type: 'and', terms: currentAndGroup });
+				}
+				currentAndGroup = [];
+			}
+		} else if (token.type === 'operator' && token.value === 'AND') {
+			// Continue AND group (just skip the operator)
+			continue;
+		} else {
+			// Term (phrase or word)
+			currentAndGroup.push(token);
+		}
+	}
+
+	// Don't forget the last AND group
+	if (currentAndGroup.length > 0) {
+		if (currentAndGroup.length === 1) {
+			orGroups.push(currentAndGroup[0]);
+		} else {
+			orGroups.push({ type: 'and', terms: currentAndGroup });
+		}
+	}
+
+	if (orGroups.length === 0) return { type: 'empty' };
+	if (orGroups.length === 1) return orGroups[0];
+
+	return { type: 'or', terms: orGroups };
+};
+
+/**
+ * Get all search terms (words and phrase words) for highlighting
+ * @param {string} raw - Raw search query
+ * @returns {string[]}
+ */
+export const getAllSearchTerms = (raw) => {
+	const parsed = parseSearchQuery(raw);
+	const terms = [];
+
+	const collectTerms = (node) => {
+		if (!node) return;
+		if (node.type === 'word') {
+			terms.push(node.value);
+		} else if (node.type === 'phrase') {
+			// Add individual words from phrase for highlighting
+			const words = node.value.split(/\s+/).filter(Boolean);
+			terms.push(...words);
+		} else if (node.type === 'or' || node.type === 'and') {
+			node.terms?.forEach(collectTerms);
+		}
+	};
+
+	collectTerms(parsed);
+	return terms;
+};
+
 export const escapeHtml = (str) => {
 	if (!str) return '';
 	return String(str)
