@@ -72,9 +72,9 @@ export const parseSearchQuery = (raw) => {
 	const hasExplicitOperator = tokens.some(t => t.type === 'operator');
 
 	if (!hasExplicitOperator) {
-		// Default: treat multiple terms as OR (match any, rank by count)
+		// Default: treat multiple terms as AND (require all words)
 		const terms = tokens.filter(t => t.type !== 'operator');
-		return { type: 'or', terms };
+		return { type: 'and', terms };
 	}
 
 	// Parse with operators - handle AND having higher precedence than OR

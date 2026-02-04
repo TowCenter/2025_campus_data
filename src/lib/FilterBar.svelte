@@ -317,10 +317,9 @@
 							?
 						</button>
 						<div class="search-help-tooltip" role="tooltip" id="search-help-tooltip">
-							<p><strong>Single or multiple words</strong>: search with one word or several words; results rank higher when more of your words appear.</p>
+							<p><strong>Multiple words</strong>: all words must appear in results (e.g., "funding budget" finds items with both words).</p>
 							<p><strong>Exact phrase</strong>: use double quotes ("") to match exact wording, for example "campus safety".</p>
-							<p><strong>AND operator</strong>: use AND (uppercase) between terms to require both, for example: funding AND budget.</p>
-							<p><strong>OR operator</strong>: use OR (uppercase) between terms to match either, for example: student OR students.</p>
+							<p><strong>OR operator</strong>: use OR (uppercase) to match either term, for example: student OR students.</p>
 						</div>
 					</div>
 				</div>
