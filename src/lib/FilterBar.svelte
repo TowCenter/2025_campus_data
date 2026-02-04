@@ -317,9 +317,9 @@
 							?
 						</button>
 						<div class="search-help-tooltip" role="tooltip" id="search-help-tooltip">
-							<p><strong>Multiple words</strong>: all words must appear in results (e.g., "funding budget" finds items with both words).</p>
-							<p><strong>Exact phrase</strong>: use double quotes ("") to match exact wording, for example "campus safety".</p>
-							<p><strong>OR operator</strong>: use OR (uppercase) to match either term, for example: student OR students.</p>
+							<p><strong>Multiple words</strong>: all words must appear (e.g., "funding budget" finds items with both).</p>
+							<p><strong>Exact phrase</strong>: use quotes for exact wording, e.g., "campus safety".</p>
+							<p><strong>OR</strong>: use OR (uppercase) to match either term, e.g., student OR students.</p>
 						</div>
 					</div>
 				</div>

@@ -7,7 +7,7 @@ export const escapeRegExp = (string) => String(string || '').replace(/[.*+?^${}(
  *   funding → { type: 'word', value: 'funding' }
  *   "funding cut" OR schools → { type: 'or', terms: [...] }
  *   "funding cut" AND schools → { type: 'and', terms: [...] }
- *   funding budget (no operator) → { type: 'or', terms: [...] } (default OR)
+ *   funding budget (no operator) → { type: 'and', terms: [...] } (default AND)
  *
  * @param {string} raw - Raw search query
  * @returns {{ type: string, terms?: Array, value?: string }}

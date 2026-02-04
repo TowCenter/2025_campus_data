@@ -459,10 +459,10 @@
 					<span class="cue-label">Matching exact phrase</span>
 					<span class="cue-term">"{quotedPhraseDisplay}"</span>
 				{:else if searchTokens.length > 1}
-					<span class="cue-label">Matching</span>
+					<span class="cue-label">Matching all:</span>
 					{#each searchTokens as word, i}
 						{#if i > 0}
-							<span class="cue-operator">OR</span>
+							<span class="cue-operator">AND</span>
 						{/if}
 						<span class="cue-term">"{word}"</span>
 					{/each}
