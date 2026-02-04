@@ -575,7 +575,7 @@
 			{/if}
 		{/if}
 	{/if}
-	{#if isLoading}<p class="loading">Loading more...</p>{/if}
+	{#if isLoading}<p class="loading" role="status" aria-live="polite">Loading more...</p>{/if}
 	{#if hasMore}
 		<div class="infinite-sentinel" bind:this={loadSentinel} aria-hidden="true"></div>
 	{/if}

@@ -23,14 +23,14 @@
 </script>
 
 {#if loading}
-	<div class="loading">
-		<div class="spinner">
+	<div class="loading" role="status" aria-live="polite">
+		<div class="spinner" aria-hidden="true">
 			<div class="spinner-ring"></div>
 			{#if showProgress}
 				<span class="spinner-label">{percent}%</span>
 			{/if}
 		</div>
-		<p>{label}</p>
+		<p>{label}{showProgress ? ` ${percent}%` : ''}</p>
 		{#if note}
 			<p class="loading-note">{note}</p>
 		{/if}

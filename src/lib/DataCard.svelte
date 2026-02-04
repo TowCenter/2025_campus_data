@@ -201,11 +201,13 @@
 <div class="card" class:collapsed={!isExpanded}>
 	<!-- Collapsed Header -->
 	{#if !isExpanded}
-		<div 
+		<div
 			class="card-header"
 			onclick={toggleExpand}
 			role="button"
 			tabindex="0"
+			aria-expanded={isExpanded}
+			aria-controls="card-content-{cardId}"
 			onkeydown={(e) => e.key === 'Enter' && toggleExpand()}
 		>
 		<div class="header-content">
@@ -228,14 +230,14 @@
 			</div>
 		</div>
 			<div class="header-right">
-				<span class="expand-icon">{isExpanded ? '−' : '+'}</span>
+				<span class="expand-icon" aria-hidden="true">{isExpanded ? '−' : '+'}</span>
 			</div>
 		</div>
 	{/if}
 	
 	<!-- Expanded Content -->
 	{#if isExpanded}
-		<div class="card-content" onclick={handleCardContentClick}>
+		<div class="card-content" id="card-content-{cardId}" onclick={handleCardContentClick}>
 			<div class="collapse-button" onclick={(e) => { e.stopPropagation(); toggleExpand(); }} role="button" tabindex="0" onkeydown={(e) => e.key === 'Enter' && toggleExpand()}>
 				<span class="expand-icon">−</span>
 			</div>

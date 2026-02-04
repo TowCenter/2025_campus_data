@@ -53,9 +53,9 @@
                     aria-label="Toggle navigation menu"
                     aria-expanded={mobileMenuOpen}
                 >
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line" aria-hidden="true"></span>
+                    <span class="hamburger-line" aria-hidden="true"></span>
+                    <span class="hamburger-line" aria-hidden="true"></span>
                 </button>
             {/if}
             <a href="https://towcenter.columbia.edu/content/stay-updated-about-tow-centers-work-how-technology-changing-journalism-subscribe-our-weekly" class="subscribe-button" data-umami-event="header-stay-updated-click">Stay Updated</a>

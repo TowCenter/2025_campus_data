@@ -300,7 +300,7 @@
 			type="button"
 			aria-expanded={isOpen}
 		>
-			<span class="toggle-text">Charts {isOpen ? '▲' : '▼'}</span>
+			<span class="toggle-text">Charts <span aria-hidden="true">{isOpen ? '▲' : '▼'}</span></span>
 		</button>
 
 		<!-- Desktop: always visible, Mobile: toggle controlled -->
@@ -315,7 +315,10 @@
 								viewBox="0 0 {lineChartWidth} {lineChartHeight}"
 								class="line-chart"
 								preserveAspectRatio="xMidYMid meet"
+								role="img"
+								aria-label="Line chart showing announcement activity over time"
 							>
+								<title>Activity Over Time</title>
 								<!-- Horizontal grid lines and Y-axis -->
 								{#each axisValues as val, i}
 									{@const y = lineChartHeight - padding - (val / niceMax) * (lineChartHeight - 2 * padding)}
@@ -412,12 +415,14 @@
 							{#if lineTooltip}
 								<div
 									class="line-tooltip"
+									role="tooltip"
 									style="left: {lineTooltipX}px; top: {lineTooltipY}px;"
 								>
 									<div class="tooltip-date">{lineTooltip.label}</div>
 									<div class="tooltip-value">{lineTooltip.value.toLocaleString()} announcements</div>
 								</div>
 							{/if}
+							<div class="sr-only" aria-live="polite">{lineTooltip ? `${lineTooltip.label}: ${lineTooltip.value} announcements` : ''}</div>
 						</div>
 					</div>
 
@@ -429,7 +434,10 @@
 								viewBox="0 0 {barChartWidth} {barChartHeight}"
 								class="bar-chart-svg"
 								preserveAspectRatio="xMidYMid meet"
+								role="img"
+								aria-label="Bar chart showing top 5 schools by announcement count"
 							>
+								<title>Top 5 Schools</title>
 								<!-- Vertical grid lines and X-axis -->
 								{#each barAxisValues as val, i}
 									{@const x = barPadding.left + (val / barNiceMax) * (barChartWidth - barPadding.left - barPadding.right)}
@@ -483,8 +491,9 @@
 										class="bar-group"
 										onmouseenter={() => (hoveredOrg = org)}
 										onmouseleave={() => (hoveredOrg = null)}
-										role="button"
+										role="img"
 										tabindex="0"
+										aria-label="{org}: {count.toLocaleString()} announcements"
 										onfocus={() => (hoveredOrg = org)}
 										onblur={() => (hoveredOrg = null)}
 									>
@@ -543,6 +552,18 @@
 {/if}
 
 <style>
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
 	.search-charts-container {
 		width: 100%;
 		margin-top: 1rem;
