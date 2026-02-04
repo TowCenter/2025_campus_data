@@ -448,6 +448,7 @@
 				orgField="org"
 				searchQuery={activeSearchQuery}
 				stats={chartStats}
+				fullMonthRange={filterOptions.month || []}
 			/>
 		</div>
 	{/if}

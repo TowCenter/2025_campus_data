@@ -9,6 +9,7 @@
 	 * @property {string} [searchQuery=''] - Current search query
 	 * @property {boolean} [isOpen=false] - Whether the charts panel is open
 	 * @property {any} [stats=null] - Precomputed chart stats (optional)
+	 * @property {string[]} [fullMonthRange=[]] - Full date range for X-axis (array of month keys like "2025-01")
 	 */
 
 	/** @type {Props} */
@@ -18,7 +19,8 @@
 		orgField = 'org',
 		searchQuery = '',
 		isOpen = $bindable(false),
-		stats = null
+		stats = null,
+		fullMonthRange = []
 	} = $props();
 
 	// Auto-open when there's a search query
@@ -198,30 +200,69 @@
 		};
 	});
 
-	// Generate SVG path for a line
-	function getLinePath(monthlyData, monthLabels, maxValue, width, height, padding) {
-		if (!monthlyData || monthLabels.length === 0) return '';
+	// Format month labels from month keys
+	const fullMonthLabels = $derived.by(() => {
+		if (!fullMonthRange || fullMonthRange.length === 0) return [];
+		return fullMonthRange.map((key) => {
+			const [year, month] = key.split('-');
+			const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1);
+			return {
+				key,
+				label: date.toLocaleString('default', { month: 'short', year: '2-digit' })
+			};
+		});
+	});
 
-		const points = monthLabels.map((m, i) => {
-			const x = padding + (i / (monthLabels.length - 1 || 1)) * (width - 2 * padding);
-			const value = monthlyData[m.key] || 0;
-			const y = height - padding - (value / maxValue) * (height - 2 * padding);
-			return `${x},${y}`;
+	// Use full range for axis if available, otherwise use filtered data's month labels
+	const axisMonthLabels = $derived.by(() => {
+		return fullMonthLabels.length > 0 ? fullMonthLabels : chartData.monthLabels;
+	});
+
+	// Generate SVG path for a line - positions based on axisMonthLabels (full range)
+	function getLinePath(monthlyData, dataMonthLabels, axisLabels, maxValue, width, height, padding) {
+		if (!monthlyData || dataMonthLabels.length === 0) return '';
+
+		// Create a map from month key to axis position
+		const axisPositionMap = new Map();
+		axisLabels.forEach((m, i) => {
+			axisPositionMap.set(m.key, i);
 		});
 
+		// Only plot points for months that have data AND exist in the axis
+		const points = dataMonthLabels
+			.filter((m) => axisPositionMap.has(m.key))
+			.map((m) => {
+				const axisIndex = axisPositionMap.get(m.key);
+				const x = padding + (axisIndex / (axisLabels.length - 1 || 1)) * (width - 2 * padding);
+				const value = monthlyData[m.key] || 0;
+				const y = height - padding - (value / maxValue) * (height - 2 * padding);
+				return `${x},${y}`;
+			});
+
+		if (points.length === 0) return '';
 		return `M ${points.join(' L ')}`;
 	}
 
-	// Generate circle points for a line
-	function getCirclePoints(monthlyData, monthLabels, maxValue, width, height, padding) {
-		if (!monthlyData || monthLabels.length === 0) return [];
+	// Generate circle points for a line - positions based on axisMonthLabels (full range)
+	function getCirclePoints(monthlyData, dataMonthLabels, axisLabels, maxValue, width, height, padding) {
+		if (!monthlyData || dataMonthLabels.length === 0) return [];
 
-		return monthLabels.map((m, i) => {
-			const x = padding + (i / (monthLabels.length - 1 || 1)) * (width - 2 * padding);
-			const value = monthlyData[m.key] || 0;
-			const y = height - padding - (value / maxValue) * (height - 2 * padding);
-			return { x, y, value, label: m.label };
+		// Create a map from month key to axis position
+		const axisPositionMap = new Map();
+		axisLabels.forEach((m, i) => {
+			axisPositionMap.set(m.key, i);
 		});
+
+		// Only plot points for months that have data AND exist in the axis
+		return dataMonthLabels
+			.filter((m) => axisPositionMap.has(m.key))
+			.map((m) => {
+				const axisIndex = axisPositionMap.get(m.key);
+				const x = padding + (axisIndex / (axisLabels.length - 1 || 1)) * (width - 2 * padding);
+				const value = monthlyData[m.key] || 0;
+				const y = height - padding - (value / maxValue) * (height - 2 * padding);
+				return { x, y, value, label: m.label };
+			});
 	}
 
 	const lineChartWidth = 500;
@@ -244,9 +285,11 @@
 	const barNiceMax = $derived(barAxisValues[barAxisValues.length - 1] || chartData.maxOrgCount);
 
 	// Pre-compute total line path and points using nice max
+	// Uses axisMonthLabels for positioning (full date range) but chartData.monthLabels for data
 	const totalPath = $derived(getLinePath(
 		chartData.monthlyTotal,
 		chartData.monthLabels,
+		axisMonthLabels,
 		niceMax,
 		lineChartWidth,
 		lineChartHeight,
@@ -256,6 +299,7 @@
 	const totalCirclePoints = $derived(getCirclePoints(
 		chartData.monthlyTotal,
 		chartData.monthLabels,
+		axisMonthLabels,
 		niceMax,
 		lineChartWidth,
 		lineChartHeight,
@@ -352,9 +396,9 @@
 									stroke-width="1"
 								/>
 
-								<!-- X-axis labels and ticks -->
-								{#each chartData.monthLabels as m, i}
-									{@const x = padding + (i / (chartData.monthLabels.length - 1 || 1)) * (lineChartWidth - 2 * padding)}
+								<!-- X-axis labels and ticks (uses full date range) -->
+								{#each axisMonthLabels as m, i}
+									{@const x = padding + (i / (axisMonthLabels.length - 1 || 1)) * (lineChartWidth - 2 * padding)}
 									<!-- X-axis tick -->
 									<line
 										x1={x}
@@ -365,7 +409,7 @@
 										stroke-width="1"
 									/>
 									<!-- X-axis labels (show fewer to avoid crowding) -->
-									{#if i % Math.ceil(chartData.monthLabels.length / 5) === 0 || i === chartData.monthLabels.length - 1}
+									{#if i % Math.ceil(axisMonthLabels.length / 5) === 0 || i === axisMonthLabels.length - 1}
 										<text x={x} y={lineChartHeight - padding + 18} class="axis-label" text-anchor="middle">
 											{m.label}
 										</text>
