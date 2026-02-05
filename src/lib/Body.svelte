@@ -1,5 +1,7 @@
 <script>
 	import { page } from '$app/stores';
+	import { goto, beforeNavigate, afterNavigate } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	/**
 	 * @typedef {Object} NavItem
@@ -30,9 +32,92 @@
 
 	// Check if a nav item is the current page
 	function isActive(href) {
+		if (!href) return false;
+		
+		// Normalize paths - remove trailing slashes
 		const itemPath = href.replace(/\/$/, '') || '/';
-		const current = currentPath.replace(/\/$/, '') || '/';
-		return itemPath === current;
+		let current = currentPath.replace(/\/$/, '') || '/';
+		
+		// Handle root path redirect to /announcements
+		if (itemPath.endsWith('/announcements') || itemPath === '/' || (itemPath === '' && current === '/announcements')) {
+			return current === '/' || current === '/announcements' || current.endsWith('/announcements');
+		}
+		
+		// For other paths, do exact match or check if current ends with the item path
+		return itemPath === current || current === itemPath || current.endsWith(itemPath);
+	}
+
+	// Store scroll position
+	let savedScrollPosition = 0;
+
+	// Save scroll position before navigation
+	beforeNavigate(({ to }) => {
+		if (to && typeof window !== 'undefined') {
+			savedScrollPosition = window.scrollY || window.pageYOffset;
+			sessionStorage.setItem('tabScrollPosition', String(savedScrollPosition));
+		}
+	});
+
+	// Restore scroll position after navigation
+	afterNavigate(({ to }) => {
+		if (to && typeof window !== 'undefined') {
+			const savedScroll = sessionStorage.getItem('tabScrollPosition');
+			if (savedScroll) {
+				const scrollPos = parseInt(savedScroll, 10);
+				// Use multiple attempts to ensure scroll is restored
+				setTimeout(() => {
+					window.scrollTo(0, scrollPos);
+					requestAnimationFrame(() => {
+						window.scrollTo(0, scrollPos);
+					});
+				}, 0);
+				sessionStorage.removeItem('tabScrollPosition');
+			}
+		}
+	});
+
+	// Handle tab click with scroll preservation
+	async function handleTabClick(event, href) {
+		event.preventDefault();
+		event.stopPropagation();
+		event.stopImmediatePropagation();
+		
+		// Don't navigate if we're already on this page
+		if (isActive(href)) {
+			return false;
+		}
+		
+		// Save current scroll position
+		if (typeof window !== 'undefined') {
+			savedScrollPosition = window.scrollY || window.pageYOffset;
+			sessionStorage.setItem('tabScrollPosition', String(savedScrollPosition));
+		}
+		
+		// Navigate using SvelteKit's goto - this should prevent full page reload
+		try {
+			await goto(href, {
+				noScroll: true,
+				replaceState: false,
+				keepFocus: false,
+				invalidateAll: false
+			});
+		} catch (error) {
+			console.warn('Navigation error:', error);
+			// Don't fallback to window.location - that causes full reload
+			// Instead, try again with a slight delay
+			setTimeout(() => {
+				goto(href, {
+					noScroll: true,
+					replaceState: false,
+					keepFocus: false,
+					invalidateAll: false
+				}).catch(err => {
+					console.error('Navigation failed after retry:', err);
+				});
+			}, 10);
+		}
+		
+		return false;
 	}
 </script>
 
@@ -44,8 +129,12 @@
 				<li>
 					<a
 						href={item.href}
+						onclick={(e) => handleTabClick(e, item.href)}
+						onkeydown={(e) => e.key === 'Enter' && handleTabClick(e, item.href)}
 						class:active={isActive(item.href)}
 						class="tab-link"
+						data-sveltekit-preload-data="hover"
+						data-sveltekit-noscroll
 					>
 						{item.label}
 					</a>
@@ -101,43 +190,68 @@
         }
         .col-sm-10 {
             flex: 0 0 auto;
-            width: 78.5%;
-            padding-right: 15px;
-            padding-left: 15px;
+            width: auto;
+            max-width: 100%;
+            padding-right: 0;
+            padding-left: 0;
         }
         .col-full {
             flex: 0 0 auto;
             width: 100%;
-            padding-right: 15px;
-            padding-left: 15px;
+            max-width: 100%;
+            padding-right: 0;
+            padding-left: 0;
         }
         .container-lg {
             width: 100%;
-            padding-right: 15px;
-            padding-left: 15px;
+            padding-right: 0;
+            padding-left: 0;
             margin-right: auto;
             margin-left: auto;
             max-width: 900px;
         }
-        @media (max-width: 767.98px) {
+        @media (max-width: 767px) {
             .col-sm-2,
             .col-sm-10,
             .col-full {
                 flex: 0 0 100%;
                 max-width: 100%;
-                padding-left: 0 !important;
-                padding-right: 0 !important;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            .container-lg {
+                padding-left: 0;
+                padding-right: 0;
+            }
+        }
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .col-sm-2,
+            .col-sm-10,
+            .col-full {
+                padding-left: 1.5rem !important;
+                padding-right: 1.5rem !important;
+            }
+            .container-lg {
+                padding-left: 0;
+                padding-right: 0;
             }
         }
     </style>
 </svelte:head>
 
 <style>
-    /* Tab Navigation */
+    /* Col-full entry-content margin */
+    .col-full.entry-content {
+        margin: 2rem;
+    }
+    
+    /* Tab Navigation - Folder Tab Style */
     .tab-navigation {
         background: white;
-        border-bottom: 2px solid #e0e0e0;
-        margin-bottom: 2rem;
+        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: 2.5rem;
+        margin-top: 1rem;
+        position: relative;
     }
 
     .tab-list {
@@ -148,7 +262,7 @@
         max-width: 900px;
         margin-left: auto;
         margin-right: auto;
-        padding: 0 15px;
+        gap: 0.5rem;
     }
 
     .tab-list li {
@@ -157,25 +271,38 @@
 
     .tab-link {
         display: inline-block;
-        padding: 1rem 1.5rem;
-        color: #254c6f;
+        padding: 0.875rem 1.75rem 1rem 1.75rem;
+        color: #666;
         text-decoration: none;
         font-weight: 500;
-        font-size: 0.95rem;
-        border-bottom: 3px solid transparent;
+        font-size: 1rem;
+        font-family: 'Graphik Web', 'Helvetica', sans-serif;
+        background: #f5f5f5;
+        border: 1px solid #e0e0e0;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
         transition: all 0.2s ease;
-        margin-bottom: -2px;
+        position: relative;
+        top: 1px;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
     }
 
     .tab-link:hover {
-        color: #1a3a52;
-        border-bottom-color: #e0e0e0;
+        color: #254c6f;
+        background: #fafafa;
+        border-color: #d0d0d0;
     }
 
     .tab-link.active {
         color: #1a1a1a;
-        border-bottom-color: #254c6f;
+        background: white;
+        border-color: #e0e0e0;
+        border-bottom-color: white;
         font-weight: 600;
+        z-index: 1;
+        box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
     }
 
     .left-nav {
@@ -214,16 +341,22 @@
         font-weight: 600;
     }
 
-    @media screen and (max-width: 768px) {
+    @media screen and (max-width: 767px) {
+        .tab-navigation {
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
         .tab-list {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             padding: 0 1rem;
+            gap: 0.35rem;
         }
 
         .tab-link {
-            padding: 0.75rem 1rem;
-            font-size: 0.85rem;
+            padding: 0.75rem 1.25rem 0.875rem 1.25rem;
+            font-size: 0.95rem;
             white-space: nowrap;
         }
 
@@ -243,9 +376,27 @@
             padding-right: 1rem !important;
         }
 
+        .col-full {
+            width: 100%;
+            flex: 0 0 100%;
+            max-width: 100%;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+
         .entry-content {
             padding-left: 0;
             padding-right: 0;
+        }
+    }
+    @media screen and (min-width: 768px) and (max-width: 1024px) {
+        .tab-list {
+            padding: 0 1.5rem;
+        }
+        .col-sm-10,
+        .col-full {
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
         }
     }
 

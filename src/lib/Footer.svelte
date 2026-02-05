@@ -54,7 +54,7 @@
 	}
 
 	.footer-text h3 {
-		font-family: 'Lyon Text Web', 'Georgia', serif;
+		font-family: "Graphik Web", 'Helvetica', sans-serif;
 		font-weight: 700;
 		font-size: 14px;
 		letter-spacing: 0.1em;
@@ -64,7 +64,7 @@
 	}
 
 	.footer-text p {
-		font-family: 'Lyon Text Web', 'Georgia', serif;
+		font-family: "Graphik Web", 'Helvetica', sans-serif;
 		font-size: 13px;
 		line-height: 1.5;
 		color: #254c6f;
@@ -78,7 +78,7 @@
 	}
 
 	.footer-links a {
-		font-family: 'Lyon Text Web', 'Georgia', serif;
+		font-family: "Graphik Web", 'Helvetica', sans-serif;
 		font-weight: 700;
 		font-size: 12px;
 		letter-spacing: 0.05em;
@@ -91,7 +91,7 @@
 		text-decoration: underline;
 	}
 
-	@media screen and (max-width: 768px) {
+	@media screen and (max-width: 767px) {
 		#footer-inner {
 			padding: 0 1rem;
 		}
@@ -119,6 +119,11 @@
 
 		.footer-links a {
 			font-size: 12px;
+		}
+	}
+	@media screen and (min-width: 768px) and (max-width: 1024px) {
+		#footer-inner {
+			padding: 0 1.5rem;
 		}
 	}
 </style>

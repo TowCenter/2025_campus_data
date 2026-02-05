@@ -10,8 +10,12 @@ const buildPhraseToken = (tokens) => tokens.join('_');
 
 /**
  * Get IDs matching a single phrase using phrase index or word index
+ * For quoted phrases like "Office of Civil Rights", this ensures the phrase
+ * is matched as a complete unit, not broken up into individual words.
  */
 const getPhraseMatchIds = async (phrase, baseIds, baseIdsSet, ensureTokenLoaded, ensureFullDatasetMap, getArticleForSearch, signal, isActiveSearch, runId, onProgress) => {
+	// Extract tokens from the phrase (e.g., "Office of Civil Rights" -> ["office", "of", "civil", "rights"])
+	// This is used for building the phrase index key, but the phrase itself is kept intact for regex matching
 	const phraseTokens = getSearchTokens(phrase);
 	if (phraseTokens.length === 0) return [];
 
@@ -30,7 +34,8 @@ const getPhraseMatchIds = async (phrase, baseIds, baseIdsSet, ensureTokenLoaded,
 		return [];
 	}
 
-	// Multi-word phrase - try phrase index first (e.g., "funding_cut")
+	// Multi-word phrase - try phrase index first (e.g., "office_of_civil_rights")
+	// The phrase is kept as a single unit for matching
 	const phraseToken = buildPhraseToken(phraseTokens);
 	const phraseIds = await ensureTokenLoaded(phraseToken, {
 		signal,
@@ -47,11 +52,15 @@ const getPhraseMatchIds = async (phrase, baseIds, baseIdsSet, ensureTokenLoaded,
 	}
 
 	// Fallback to regex search through full dataset for multi-word phrases
+	// For quoted phrases, we MUST use phrase regex to match the exact phrase
 	const datasetMap = await ensureFullDatasetMap({ signal, onProgress });
 	if (!isActiveSearch(runId)) return [];
 
+	// Always prioritize phrase regex for multi-word phrases to ensure exact phrase matching
 	const phraseRegex = buildPhraseRegex(phrase, 'i');
-	const tokenRegex = buildExactTokenRegex(phrase, 'i');
+	
+	// Only use token regex as fallback if phrase regex can't be built (single word)
+	const tokenRegex = phraseTokens.length === 1 ? buildExactTokenRegex(phrase, 'i') : null;
 	const chosenRegex = phraseRegex || tokenRegex;
 
 	if (!chosenRegex) return [];
@@ -65,7 +74,9 @@ const getPhraseMatchIds = async (phrase, baseIds, baseIdsSet, ensureTokenLoaded,
 		const haystacks = [item?.title, item?.org, item?.content];
 		const hasMatch = haystacks.some((field) => {
 			if (typeof field !== 'string') return false;
+			// Reset regex lastIndex to ensure fresh match
 			chosenRegex.lastIndex = 0;
+			// For phrase regex, this ensures words appear in order as a contiguous phrase
 			return chosenRegex.test(field);
 		});
 		if (hasMatch) matchedIds.push(id);
@@ -306,6 +317,14 @@ export const createSearchManager = ({ ensureTokenLoaded, ensureFullDatasetMap, g
 
 		// Parse the search query
 		const parsed = parseSearchQuery(searchTerm);
+		
+		// Debug logging
+		console.log('applyFiltersAndSearch:', {
+			searchTerm,
+			parsed,
+			baseIdsCount: baseIds.length,
+			hasBaseIds
+		});
 
 		// Check if this involves phrase search (for UI indicator)
 		const hasPhraseSearch = (node) => {
@@ -336,7 +355,14 @@ export const createSearchManager = ({ ensureTokenLoaded, ensureFullDatasetMap, g
 
 		const { ids, scoreMap } = result;
 
+		console.log('applyFiltersAndSearch: evaluation result', {
+			idsCount: ids.length,
+			scoreMapSize: scoreMap.size,
+			hasBaseIds
+		});
+
 		if (ids.length === 0) {
+			console.log('applyFiltersAndSearch: no results found');
 			return { activeIds: [], expectedTotalCount: 0 };
 		}
 

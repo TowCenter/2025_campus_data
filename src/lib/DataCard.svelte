@@ -1,5 +1,7 @@
 <script>
 	import { onDestroy } from 'svelte';
+	import { getSnippet } from './search-highlight.js';
+	import HighlightedText from './HighlightedText.svelte';
 	
 	/**
 	 * @typedef {Object} Props
@@ -22,41 +24,8 @@
 	// Generate unique card ID
 	const cardId = $derived(`${dateKey}-${index}-${item?.date || ''}`);
 
-	// Check if card should be expanded (auto-expand only when search is active)
-	const shouldAutoExpand = $derived(() => {
-		const hasSearch = searchQuery && searchQuery.trim().length > 0;
-		return hasSearch;
-	});
-
-	// Card expanded state - auto-expand only if search is active
-	let isExpanded = $state(shouldAutoExpand());
-
-	// Update expanded state when search changes
-	$effect(() => {
-		if (shouldAutoExpand()) {
-			isExpanded = true;
-		}
-	});
-
-	function toggleExpand() {
-		isExpanded = !isExpanded;
-	}
-
-	function handleCardContentClick(event) {
-		// Check if text is currently selected/highlighted
-		const selection = window.getSelection();
-		if (selection && selection.toString().trim().length > 0) {
-			return; // Don't collapse if text is selected
-		}
-		
-		// Don't collapse if clicking on links or the collapse button
-		const target = event.target;
-		if (target.tagName === 'A' || target.closest('a') || target.closest('.collapse-button')) {
-			return; // Let links and collapse button work normally
-		}
-		// Collapse the card when clicking anywhere else
-		toggleExpand();
-	}
+	// Cards are always expanded (not collapsible)
+	const isExpanded = $state(true);
 
 	// Format date for display
 	function formatDate(dateStr) {
@@ -88,23 +57,13 @@
 		return selectedOrgs.length > 0 && selectedOrgsSet.has(orgTag);
 	}
 
-	// Generate a unique color for an organization name
+	// Generate a muted neutral color for an organization name
 	function getOrgColor(orgName) {
-		if (!orgName) return '#f0f0f0';
+		if (!orgName) return '#f5f5f5';
 		
-		// Hash the organization name to get a consistent color
-		let hash = 0;
-		for (let i = 0; i < orgName.length; i++) {
-			hash = orgName.charCodeAt(i) + ((hash << 5) - hash);
-		}
-		
-		// Generate a muted, subtle color
-		// Use HSL with lower saturation and higher lightness for softer colors
-		const hue = Math.abs(hash) % 360;
-		const saturation = 15 + (Math.abs(hash) % 10); // 15-25% (muted)
-		const lightness = 85 + (Math.abs(hash) % 10); // 85-95% (very light)
-		
-		return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+		// Use a single muted gray color for all university tags
+		// This provides a consistent, less colorful appearance
+		return '#f5f5f5';
 	}
 
 	// Get text color (dark gray for light backgrounds)
@@ -114,131 +73,14 @@
 		return '#333';
 	}
 
-	// Cache for highlighted text to avoid re-computation - instance-level to prevent leaks
-	const highlightCache = new Map();
-	
-	// Function to extract search terms from query (handles AND/OR logic)
-	function extractSearchTerms(query) {
-		if (!query || !query.trim()) return [];
-		
-		const uc = query.toUpperCase();
-		
-		// Handle AND logic
-		if (uc.includes(' AND ')) {
-			return query.split(/\s+AND\s+/i).map(t => t.trim()).filter(Boolean);
-		}
-		
-		// Handle OR logic
-		if (uc.includes(' OR ')) {
-			return query.split(/\s+OR\s+/i).map(t => t.trim()).filter(Boolean);
-		}
-		
-		// Single term
-		return [query.trim()].filter(Boolean);
-	}
-
-	// Escape HTML in the original text
-	function escapeHtml(str) {
-		if (!str) return '';
-		return String(str)
-			.replace(/&/g, '&amp;')
-			.replace(/</g, '&lt;')
-			.replace(/>/g, '&gt;')
-			.replace(/"/g, '&quot;')
-			.replace(/'/g, '&#039;');
-	}
-
-	// Escape special regex characters
-	function escapeRegex(str) {
-		return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-	}
-
-	// Function to highlight matching text
-	function highlightText(text, query) {
-		if (!query || !text) return text;
-		
-		// Use cache key based on text and query
-		const cacheKey = `${text}|${query}`;
-		if (highlightCache.has(cacheKey)) {
-			return highlightCache.get(cacheKey);
-		}
-		
-		const terms = extractSearchTerms(query);
-		if (terms.length === 0) {
-			highlightCache.set(cacheKey, text);
-			return text;
-		}
-		
-		let highlighted = escapeHtml(text);
-		
-		// Highlight each term (case-insensitive) - use single pass with combined regex for better performance
-		const allTerms = terms.map(term => escapeRegex(term)).join('|');
-		if (allTerms) {
-			const regex = new RegExp(`(${allTerms})`, 'gi');
-			highlighted = highlighted.replace(regex, '<mark class="search-highlight">$1</mark>');
-		}
-		
-		// Limit cache size to prevent memory bloat
-		if (highlightCache.size > 1000) {
-			const firstKey = highlightCache.keys().next().value;
-			highlightCache.delete(firstKey);
-		}
-		
-		highlightCache.set(cacheKey, highlighted);
-		return highlighted;
-	}
-
 	const description = item?.description || '';
-	const highlightedDescription = $derived(searchQuery ? highlightText(description, searchQuery) : description);
-	const highlightedTitle = $derived(item?.title ? highlightText(item.title, searchQuery) : '');
-
-	onDestroy(() => {
-		// Clear cache to prevent memory leaks
-		highlightCache.clear();
-	});
+	// Use getSnippet to match table's text display (same as DataTableRow)
+	const descriptionSnippet = $derived(getSnippet(description, searchQuery));
 </script>
 
-<div class="card" class:collapsed={!isExpanded}>
-	<!-- Collapsed Header -->
-	{#if !isExpanded}
-		<div 
-			class="card-header"
-			onclick={toggleExpand}
-			role="button"
-			tabindex="0"
-			onkeydown={(e) => e.key === 'Enter' && toggleExpand()}
-		>
-		<div class="header-content">
-			<div class="header-left">
-				{#if item?.title}
-					<div class="header-item">{@html highlightedTitle}</div>
-				{/if}
-			</div>
-			<div class="header-right-content">
-				{#if orgArray.length > 0}
-					<div class="header-tags">
-						{#each orgArray as org}
-							<span 
-								class="header-tag" 
-								style="background-color: {getOrgColor(org)}; color: {getOrgTextColor(org)};"
-							>{@html highlightText(org, searchQuery)}</span>
-						{/each}
-					</div>
-				{/if}
-			</div>
-		</div>
-			<div class="header-right">
-				<span class="expand-icon">{isExpanded ? '−' : '+'}</span>
-			</div>
-		</div>
-	{/if}
-	
-	<!-- Expanded Content -->
-	{#if isExpanded}
-		<div class="card-content" onclick={handleCardContentClick}>
-			<div class="collapse-button" onclick={(e) => { e.stopPropagation(); toggleExpand(); }} role="button" tabindex="0" onkeydown={(e) => e.key === 'Enter' && toggleExpand()}>
-				<span class="expand-icon">−</span>
-			</div>
+<div class="card">
+	<!-- Card Content (always expanded) -->
+	<div class="card-content">
 			<div class="card-main">
 				{#if dateKey}
 					<div class="card-date-mobile">
@@ -250,27 +92,31 @@
 					<h3 class="card-title">
 						{#if item.url}
 							<a href={item.url} target="_blank" rel="noopener noreferrer">
-								{@html highlightedTitle}
+							<HighlightedText text={item.title} {searchQuery} />
 							</a>
 						{:else}
-							{@html highlightedTitle}
+						<HighlightedText text={item.title} {searchQuery} />
 						{/if}
 					</h3>
 				{/if}
-				<p class="card-description">{@html highlightedDescription}</p>
+			{#if descriptionSnippet}
+				<p class="card-description">
+					<HighlightedText text={descriptionSnippet} {searchQuery} />
+				</p>
+			{/if}
 			</div>
 
 			<div class="card-meta">
 				{#if orgArray.length > 0}
 					<div class="meta-section">
-						<span class="meta-label">Organization</span>
 							<div class="tag-list">
 								{#each orgArray as org}
 									<span 
 										class="tag org-tag" 
-										class:selected={isOrgSelected(org)}
-										style="background-color: {isOrgSelected(org) ? '#fff3cd' : getOrgColor(org)}; color: {isOrgSelected(org) ? '#333' : getOrgTextColor(org)};"
-									>{@html highlightText(org, searchQuery)}</span>
+										style="background-color: {getOrgColor(org)}; color: {getOrgTextColor(org)};"
+									>
+										<HighlightedText text={org} {searchQuery} />
+									</span>
 								{/each}
 							</div>
 					</div>
@@ -298,61 +144,28 @@
 				{/if}
 			</div>
 		</div>
-	{/if}
 </div>
 
 <style>
 	.card {
-		width: 95%;
-		max-width: 95%;
-		background-color: #fff;
+		width: 100%;
+		max-width: 100%;
+		background-color: #ffffff;
 		border: 1px solid #e0e0e0;
 		border-radius: 0;
 		box-shadow: none;
 		transition: background-color 0.2s ease;
 		display: flex;
 		flex-direction: column;
-		margin: 0.25rem 0;
+		margin: 0;
+		padding: 1.5rem;
 		box-sizing: border-box;
 		position: relative;
 		overflow: hidden;
 	}
 
-	.card.collapsed {
-		background-color: #f5f5f5 !important;
-	}
-
-	.card:not(.collapsed) {
-		background-color: #ffffff;
-	}
-
-	/* Remove hover effect on expanded cards */
-	.card:not(.collapsed):hover {
-		background-color: #ffffff;
-	}
-
-	/* Collapsed Header */
-	.card-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-		padding: 0.75rem 1.2rem;
+	.card:hover {
 		background-color: #fafafa;
-		color: #333;
-		font-weight: 600;
-		font-size: 0.8rem;
-		letter-spacing: 0.5px;
-		border-radius: 0;
-		cursor: pointer;
-		user-select: none;
-		transition: background-color 0.2s ease;
-		position: relative;
-	}
-
-	.card-header:hover {
-		background-color: rgba(0, 0, 0, 0.02);
 	}
 
 	.card-header > .header-date {
@@ -450,14 +263,13 @@
 		color: #666;
 	}
 
-	/* Expanded Content */
+	/* Card Content */
 	.card-content {
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
-		padding: 1.5rem;
+		padding: 0;
 		position: relative;
-		cursor: pointer;
 	}
 
 	@media (min-width: 768px) {
@@ -477,30 +289,6 @@
 		}
 	}
 
-	.collapse-button {
-		position: absolute;
-		top: 0.5rem;
-		right: 1rem;
-		cursor: pointer;
-		user-select: none;
-		z-index: 10;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 24px;
-		height: 24px;
-		border-radius: 4px;
-		transition: background-color 0.2s ease;
-	}
-
-	.collapse-button:hover {
-		background-color: #f5f5f5;
-	}
-
-	.collapse-button .expand-icon {
-		font-size: 1rem;
-		color: #666;
-	}
 
 	.card-main {
 		display: flex;
@@ -528,15 +316,20 @@
 	}
 
 	.card-description {
-		font-size: 0.9rem;
-		line-height: 1.4;
-		color: #1a1a1a;
+		font-size: 0.82rem;
+		line-height: 1.5;
+		color: #555;
 		margin: 0;
-		font-family: 'Lyon Text Web', 'Georgia', serif;
+		font-family: inherit;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
-	.search-highlight {
-		background-color: #fff3cd;
+	:global(.card mark) {
+		background-color: #BBDEFB;
 		padding: 0.1em 0.2em;
 		border-radius: 2px;
 		font-weight: 500;
@@ -552,7 +345,7 @@
 
 	.links-label {
 		font-size: 0.7rem;
-		font-family: 'Lyon Text Web', 'Georgia', serif;
+		font-family: inherit;
 		font-weight: 400;
 		color: #666;
 		text-transform: uppercase;
@@ -585,6 +378,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
+		margin-bottom: 0;
+		padding-bottom: 0;
 	}
 
 	.meta-section {
@@ -637,99 +432,14 @@
 		display: none;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		.card {
-			padding: 0;
+			padding: 1rem;
 			width: 100%;
 			max-width: 100%;
-			margin: 0.5rem 0;
+			margin: 0;
 		}
 
-		.card-header {
-			padding: 0.5rem 0.5rem 0.5rem 0 !important;
-			flex-wrap: wrap;
-			gap: 0.5rem;
-			flex-direction: column;
-		}
-
-		.header-right {
-			flex-direction: row;
-			align-items: center;
-			gap: 0.5rem;
-			width: 100%;
-			justify-content: flex-start;
-			order: -1;
-			margin-bottom: 0.5rem;
-			padding-bottom: 0.5rem;
-			border-bottom: 1px solid #e0e0e0;
-			margin-left: 0;
-			padding-left: 0;
-		}
-
-		.header-content {
-			gap: 0;
-			margin-left: 0 !important;
-			margin-bottom: 0;
-			padding-left: 0;
-			width: 100%;
-			order: 1;
-			flex-direction: column;
-		}
-
-		.header-left {
-			width: 100%;
-			padding-bottom: 0.5rem;
-			border-bottom: none;
-			margin-bottom: 0.5rem;
-			margin-left: 0;
-			padding-left: 0;
-		}
-
-		.card-header .header-left::before {
-			content: 'Title';
-			display: block;
-			font-size: 0.65rem;
-			font-weight: 500;
-			text-transform: uppercase;
-			letter-spacing: 0.5px;
-			color: #666;
-			margin-bottom: 0.25rem;
-		}
-
-		.header-left .header-item {
-			font-weight: 400;
-			font-size: 0.85rem;
-		}
-
-		.header-right-content {
-			width: 100%;
-			padding-top: 0;
-			margin-left: 0;
-			padding-left: 0;
-			min-width: 0;
-			max-width: 100%;
-			align-items: flex-start;
-		}
-
-		.card-header .header-right-content::before {
-			content: 'Organization';
-			display: block;
-			font-size: 0.65rem;
-			font-weight: 500;
-			text-transform: uppercase;
-			letter-spacing: 0.5px;
-			color: #666;
-			margin-bottom: 0.25rem;
-		}
-
-		.header-right-content .header-item {
-			font-weight: 600;
-			font-size: 0.85rem;
-		}
-
-		.header-tags {
-			justify-content: flex-start;
-		}
 
 		.card-content {
 			display: flex !important;
@@ -741,17 +451,20 @@
 			padding: 0 !important;
 			margin: 0 !important;
 			padding-bottom: 1rem !important;
+			order: 2; /* Show after organization */
 		}
 
 		.card-meta {
 			padding: 0 !important;
 			margin: 0 !important;
+			margin-bottom: 0 !important;
 			padding-left: 0 !important;
 			padding-right: 0 !important;
-			padding-top: 1rem !important;
+			padding-bottom: 0 !important;
 			border-left: none !important;
-			border-top: 1px solid #e0e0e0;
+			border-bottom: none !important;
 			width: 100%;
+			order: 1; /* Show first on mobile */
 		}
 
 		.card-title {
@@ -760,7 +473,19 @@
 
 		.card-description {
 			font-size: 0.85rem;
+			line-height: 1.5;
 		}
+
+		.card-title {
+			line-height: 1.4;
+		}
+
+		.card-links a {
+			min-height: 36px;
+			padding: 0.5rem 0.75rem;
+			touch-action: manipulation;
+		}
+
 		
 		.card-date-mobile {
 			display: flex;

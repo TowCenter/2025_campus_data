@@ -49,39 +49,20 @@
 		return selectedOrgs.length > 0 && selectedOrgsSet.has(orgTag);
 	}
 
-	// Color palette for schools
-	const schoolColors = [
-		'#98d7cd', '#7bccbe', '#5dc0b0',
-		'#bbdefb', '#9ed1fa', '#77bef8',
-		'#a89dfb', '#9789fa', '#8575fa'
-	];
-
-	// Generate a unique color for an organization name from palette
+	// Generate a muted neutral color for an organization name
 	function getOrgColor(orgName) {
-		if (!orgName) return '#f0f0f0';
-
-		// Hash the organization name to get a consistent color
-		let hash = 0;
-		for (let i = 0; i < orgName.length; i++) {
-			hash = orgName.charCodeAt(i) + ((hash << 5) - hash);
-		}
-
-		// Select from palette
-		const colorIndex = Math.abs(hash) % schoolColors.length;
-		return schoolColors[colorIndex];
+		if (!orgName) return '#f5f5f5';
+		
+		// Use a single muted gray color for all university tags
+		// This provides a consistent, less colorful appearance
+		return '#f5f5f5';
 	}
 
-	// Get dark text color based on the background color
+	// Get text color (dark gray for light backgrounds)
 	function getOrgTextColor(orgName) {
 		if (!orgName) return '#333';
-		// Get the background color and darken it for the text
-		const bgColor = getOrgColor(orgName);
-		// Convert hex to darker shade
-		const hex = bgColor.replace('#', '');
-		const r = Math.max(0, parseInt(hex.substring(0, 2), 16) - 80);
-		const g = Math.max(0, parseInt(hex.substring(2, 4), 16) - 80);
-		const b = Math.max(0, parseInt(hex.substring(4, 6), 16) - 80);
-		return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+		// Since backgrounds are light gray, always use dark text
+		return '#333';
 	}
 
 	const descriptionText = $derived(
@@ -98,8 +79,7 @@
 				{#each orgArray as org}
 					<span 
 						class="org-tag" 
-						class:selected={isOrgSelected(org)}
-						style="background-color: {isOrgSelected(org) ? '#fff3cd' : getOrgColor(org)}; color: {getOrgTextColor(org)};"
+						style="background-color: {getOrgColor(org)}; color: {getOrgTextColor(org)};"
 					><HighlightedText text={org} searchQuery={searchQuery} /></span>
 				{/each}
 			</div>

@@ -710,6 +710,39 @@ h1.main-title {
 	}
 }
 
+/* Override Bootstrap col-sm-10 width and padding */
+.col-sm-10 {
+	flex: 0 0 auto !important;
+	width: auto !important;
+	max-width: 100% !important;
+	padding-left: 0 !important;
+	padding-right: 0 !important;
+}
+
+header.col-sm-10 {
+	width: auto !important;
+	max-width: 100% !important;
+	padding-left: 0 !important;
+	padding-right: 0 !important;
+}
+
+@media screen and (max-width: 768px) {
+	.col-sm-10 {
+		flex: 0 0 auto !important;
+		width: auto !important;
+		max-width: 100% !important;
+		padding-left: 0 !important;
+		padding-right: 0 !important;
+	}
+
+	header.col-sm-10 {
+		width: auto !important;
+		max-width: 100% !important;
+		padding-left: 0 !important;
+		padding-right: 0 !important;
+	}
+}
+
 .meta, .meta a {
     font-family: 'Lyon Text Web', 'Georgia', serif;
 	font-style: normal;
@@ -740,11 +773,11 @@ h1.main-title {
 }
 
 .post-excerpt {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: "Lyon Text Web", 'Georgia', serif;
 	font-style: normal;
-	font-weight: 400;
+	font-weight: normal;
 	font-size: 20px;
-	line-height: 125%;
+	line-height: 28px;
 	color: #222222;
 	margin: 0px 0px 28px 0px;
     display: block;

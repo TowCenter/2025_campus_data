@@ -4,11 +4,38 @@
   import * as d3 from 'd3-geo';
 
   let mapContainer;
+  let mapSvg;
+  let mapGroup;
   let hoveredSchool = null;
   let tooltipX = 0;
   let tooltipY = 0;
   let showTooltip = false;
   let statesGeoJSON = null;
+  
+  // Zoom and pan state
+  let zoomLevel = 1;
+  let panX = 0;
+  let panY = 0;
+  let isDragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let dragStartPanX = 0;
+  let dragStartPanY = 0;
+  
+  // Touch state for mobile
+  let touchStartDistance = 0;
+  let touchStartZoom = 1;
+  let touchStartPanX = 0;
+  let touchStartPanY = 0;
+  let lastTouchCenterX = 0;
+  let lastTouchCenterY = 0;
+  
+  const MIN_ZOOM = 0.5;
+  const MAX_ZOOM = 4;
+  const ZOOM_STEP = 0.2;
+  
+  // Derived transform string for SVG
+  $: mapTransform = `translate(${panX}, ${panY}) scale(${zoomLevel})`;
 
   // FAQ accordion
   let openFaqIndex = null;
@@ -191,6 +218,11 @@
     hoveredSchool = null;
     showTooltip = false;
   }
+  
+  function handleDotTouchStart(event) {
+    // Prevent panning when touching a school dot
+    event.stopPropagation();
+  }
 
   function updateTooltipPosition(event) {
     if (mapContainer) {
@@ -203,6 +235,204 @@
   function handleMouseMove(event) {
     if (showTooltip) {
       updateTooltipPosition(event);
+    }
+    
+    // Handle panning
+    if (isDragging) {
+      const deltaX = event.clientX - dragStartX;
+      const deltaY = event.clientY - dragStartY;
+      panX = dragStartPanX + deltaX;
+      panY = dragStartPanY + deltaY;
+    }
+  }
+  
+  function handleMouseDown(event) {
+    if (event.button === 0) { // Left mouse button
+      isDragging = true;
+      dragStartX = event.clientX;
+      dragStartY = event.clientY;
+      dragStartPanX = panX;
+      dragStartPanY = panY;
+      if (mapContainer) {
+        mapContainer.style.cursor = 'grabbing';
+      }
+    }
+  }
+  
+  function handleMouseUp(event) {
+    if (event.button === 0) {
+      isDragging = false;
+      if (mapContainer) {
+        mapContainer.style.cursor = 'grab';
+      }
+    }
+  }
+  
+  function handleWheel(event) {
+    event.preventDefault();
+    
+    if (!mapContainer) return;
+    
+    const rect = mapContainer.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+    
+    // Calculate zoom factor
+    const zoomFactor = event.deltaY > 0 ? 1 - ZOOM_STEP : 1 + ZOOM_STEP;
+    const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel * zoomFactor));
+    
+    if (newZoom !== zoomLevel) {
+      // Zoom towards mouse position
+      const zoomChange = newZoom / zoomLevel;
+      const svgX = (mouseX - panX) / zoomLevel;
+      const svgY = (mouseY - panY) / zoomLevel;
+      
+      panX = mouseX - svgX * newZoom;
+      panY = mouseY - svgY * newZoom;
+      zoomLevel = newZoom;
+    }
+  }
+  
+  function handleZoomIn() {
+    const newZoom = Math.min(MAX_ZOOM, zoomLevel + ZOOM_STEP);
+    if (newZoom !== zoomLevel) {
+      // Zoom towards center
+      if (mapContainer) {
+        const rect = mapContainer.getBoundingClientRect();
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const zoomChange = newZoom / zoomLevel;
+        const svgX = (centerX - panX) / zoomLevel;
+        const svgY = (centerY - panY) / zoomLevel;
+        
+        panX = centerX - svgX * newZoom;
+        panY = centerY - svgY * newZoom;
+        zoomLevel = newZoom;
+      }
+    }
+  }
+  
+  function handleZoomOut() {
+    const newZoom = Math.max(MIN_ZOOM, zoomLevel - ZOOM_STEP);
+    if (newZoom !== zoomLevel) {
+      // Zoom towards center
+      if (mapContainer) {
+        const rect = mapContainer.getBoundingClientRect();
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const zoomChange = newZoom / zoomLevel;
+        const svgX = (centerX - panX) / zoomLevel;
+        const svgY = (centerY - panY) / zoomLevel;
+        
+        panX = centerX - svgX * newZoom;
+        panY = centerY - svgY * newZoom;
+        zoomLevel = newZoom;
+      }
+    }
+  }
+  
+  function handleReset() {
+    zoomLevel = 1;
+    panX = 0;
+    panY = 0;
+  }
+  
+  // Touch event handlers for mobile
+  function getTouchDistance(touches) {
+    if (touches.length < 2) return 0;
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  
+  function getTouchCenter(touches) {
+    if (touches.length === 0) return { x: 0, y: 0 };
+    if (touches.length === 1) {
+      return { x: touches[0].clientX, y: touches[0].clientY };
+    }
+    return {
+      x: (touches[0].clientX + touches[1].clientX) / 2,
+      y: (touches[0].clientY + touches[1].clientY) / 2
+    };
+  }
+  
+  function handleTouchStart(event) {
+    if (event.touches.length === 1) {
+      // Single touch - start panning
+      isDragging = true;
+      const touch = event.touches[0];
+      dragStartX = touch.clientX;
+      dragStartY = touch.clientY;
+      dragStartPanX = panX;
+      dragStartPanY = panY;
+    } else if (event.touches.length === 2) {
+      // Two touches - prepare for pinch zoom
+      isDragging = false;
+      touchStartDistance = getTouchDistance(event.touches);
+      touchStartZoom = zoomLevel;
+      touchStartPanX = panX;
+      touchStartPanY = panY;
+      const center = getTouchCenter(event.touches);
+      if (mapContainer) {
+        const rect = mapContainer.getBoundingClientRect();
+        lastTouchCenterX = center.x - rect.left;
+        lastTouchCenterY = center.y - rect.top;
+      }
+    }
+    event.preventDefault();
+  }
+  
+  function handleTouchMove(event) {
+    if (event.touches.length === 1 && isDragging) {
+      // Single touch - panning
+      const touch = event.touches[0];
+      const deltaX = touch.clientX - dragStartX;
+      const deltaY = touch.clientY - dragStartY;
+      panX = dragStartPanX + deltaX;
+      panY = dragStartPanY + deltaY;
+      event.preventDefault();
+    } else if (event.touches.length === 2) {
+      // Two touches - pinch zoom
+      isDragging = false;
+      const currentDistance = getTouchDistance(event.touches);
+      if (touchStartDistance > 0 && currentDistance > 0) {
+        const scale = currentDistance / touchStartDistance;
+        const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, touchStartZoom * scale));
+        
+        if (mapContainer) {
+          const rect = mapContainer.getBoundingClientRect();
+          const center = getTouchCenter(event.touches);
+          const centerX = center.x - rect.left;
+          const centerY = center.y - rect.top;
+          
+          // Calculate pan adjustment for pinch zoom
+          const zoomChange = newZoom / touchStartZoom;
+          const svgX = (lastTouchCenterX - touchStartPanX) / touchStartZoom;
+          const svgY = (lastTouchCenterY - touchStartPanY) / touchStartZoom;
+          
+          panX = centerX - svgX * newZoom;
+          panY = centerY - svgY * newZoom;
+          zoomLevel = newZoom;
+        }
+      }
+      event.preventDefault();
+    }
+  }
+  
+  function handleTouchEnd(event) {
+    if (event.touches.length === 0) {
+      isDragging = false;
+      touchStartDistance = 0;
+    } else if (event.touches.length === 1) {
+      // Switch from pinch to pan
+      const touch = event.touches[0];
+      dragStartX = touch.clientX;
+      dragStartY = touch.clientY;
+      dragStartPanX = panX;
+      dragStartPanY = panY;
+      isDragging = true;
     }
   }
 
@@ -305,8 +535,6 @@
 <div class="methodology-wrapper">
       <!-- Methodology Content -->
       <section class="methodology-content">
-        <h3>Methodology</h3>
-
         <p>
           This database includes public announcements from higher education institutions that the U.S. Department of Education has publicly said are under federal investigation since President Donald Trump took office. If an investigation ends, the database will continue to collect and display public communications from that institution.
         </p>
@@ -321,59 +549,99 @@
             class="map-container"
             bind:this={mapContainer}
             onmousemove={handleMouseMove}
+            onmousedown={handleMouseDown}
+            onmouseup={handleMouseUp}
+            onmouseleave={handleMouseUp}
+            onwheel={handleWheel}
+            ontouchstart={handleTouchStart}
+            ontouchmove={handleTouchMove}
+            ontouchend={handleTouchEnd}
+            ontouchcancel={handleTouchEnd}
             role="img"
             aria-label="Interactive map of universities"
+            style="cursor: {isDragging ? 'grabbing' : 'grab'}; touch-action: none;"
           >
-            <svg viewBox="0 0 960 600" class="map-svg">
-              {#if statesGeoJSON}
-                <g id="us-states">
-                  {#each statesGeoJSON.features as state}
-                    <path
-                      class="state-path"
-                      d={geoJSONToPath(state)}
-                      fill="#D9D9D9"
-                      stroke="#FFFFFF"
-                      stroke-width="1"
-                    />
-                  {/each}
-                </g>
-              {:else}
-                <text x="480" y="300" text-anchor="middle" fill="#ccc" font-size="14">Loading map...</text>
-              {/if}
+            <svg viewBox="0 0 960 600" class="map-svg" preserveAspectRatio="xMidYMid meet" bind:this={mapSvg}>
+              <g bind:this={mapGroup} transform={mapTransform}>
+                {#if statesGeoJSON}
+                  <g id="us-states">
+                    {#each statesGeoJSON.features as state}
+                      <path
+                        class="state-path"
+                        d={geoJSONToPath(state)}
+                        fill="#D9D9D9"
+                        stroke="#FFFFFF"
+                        stroke-width="1"
+                      />
+                    {/each}
+                  </g>
+                {:else}
+                  <text x="480" y="300" text-anchor="middle" fill="#ccc" font-size="14">Loading map...</text>
+                {/if}
 
-              {#each schoolPositions as school, i}
-                <g
-                  class="school-dot-group"
-                  onpointerenter={(event) => handleDotHover(school, event)}
-                  onpointerleave={handleDotLeave}
-                  role="button"
-                  tabindex="0"
-                  aria-label="View details for {school.name}"
-                  style="cursor: pointer;"
-                >
-                  <!-- Invisible larger hit area -->
-                  <circle
-                    cx={school.displayCoords.x}
-                    cy={school.displayCoords.y}
-                    r="12"
-                    fill="transparent"
-                    stroke="none"
-                  />
-                  <!-- Visible dot -->
-                  <circle
-                    cx={school.displayCoords.x}
-                    cy={school.displayCoords.y}
-                    r="5"
-                    fill="#254c6f"
-                    stroke="white"
-                    stroke-width="1.5"
-                    class="school-dot"
-                    class:hovered={hoveredSchool?.name === school.name}
-                    style="opacity: 0.9;"
-                  />
-                </g>
-              {/each}
+                {#each schoolPositions as school, i}
+                  <g
+                    class="school-dot-group"
+                    onpointerenter={(event) => handleDotHover(school, event)}
+                    onpointerleave={handleDotLeave}
+                    ontouchstart={handleDotTouchStart}
+                    role="button"
+                    tabindex="0"
+                    aria-label="View details for {school.name}"
+                    style="cursor: pointer; pointer-events: all;"
+                  >
+                    <!-- Invisible larger hit area -->
+                    <circle
+                      cx={school.displayCoords.x}
+                      cy={school.displayCoords.y}
+                      r="12"
+                      fill="transparent"
+                      stroke="none"
+                    />
+                    <!-- Visible dot -->
+                    <circle
+                      cx={school.displayCoords.x}
+                      cy={school.displayCoords.y}
+                      r="5"
+                      fill="#254c6f"
+                      stroke="white"
+                      stroke-width="1.5"
+                      class="school-dot"
+                      class:hovered={hoveredSchool?.name === school.name}
+                      style="opacity: 0.9;"
+                    />
+                  </g>
+                {/each}
+              </g>
             </svg>
+            
+            <!-- Zoom Controls -->
+            <div class="zoom-controls">
+              <button 
+                class="zoom-btn zoom-in" 
+                onclick={handleZoomIn}
+                aria-label="Zoom in"
+                type="button"
+              >
+                +
+              </button>
+              <button 
+                class="zoom-btn zoom-out" 
+                onclick={handleZoomOut}
+                aria-label="Zoom out"
+                type="button"
+              >
+                −
+              </button>
+              <button 
+                class="zoom-btn zoom-reset" 
+                onclick={handleReset}
+                aria-label="Reset zoom"
+                type="button"
+              >
+                ↻
+              </button>
+            </div>
 
             {#if showTooltip && hoveredSchool}
               <div class="map-tooltip" style="left: {tooltipX}px; top: {tooltipY}px;">
@@ -573,19 +841,41 @@
     margin: 2rem 0;
   }
 
+  @media (max-width: 767px) {
+    .map-embed {
+      margin: 1.5rem 0;
+    }
+  }
+
   .map-embed .map-container {
     position: relative;
     width: 100%;
     max-width: 100%;
-    height: 450px;
+    height: 0;
+    padding-bottom: 62.5%; /* 600/960 = 0.625 = 62.5% */
     background: #FFFFFF;
     border: 0px solid #e0e0e0;
-    overflow: visible;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  @media (max-width: 767px) {
+    .map-embed .map-container {
+      /* Improve touch interaction on mobile */
+      -webkit-overflow-scrolling: touch;
+    }
   }
 
   .map-embed .map-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
+    display: block;
   }
 
   .map-caption {
@@ -594,6 +884,90 @@
     font-style: italic;
     margin-top: 0.5rem;
     text-align: center;
+  }
+  
+  /* Zoom Controls */
+  .zoom-controls {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 100;
+  }
+  
+  .zoom-btn {
+    width: 36px;
+    height: 36px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #254c6f;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .zoom-btn:hover {
+    background: #f5f5f5;
+    border-color: #254c6f;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .zoom-btn:active {
+    background: #e0e0e0;
+    transform: scale(0.95);
+  }
+  
+  .zoom-btn.zoom-in {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+  
+  .zoom-btn.zoom-out {
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+  
+  .zoom-btn.zoom-reset {
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+  
+  @media (max-width: 767px) {
+    .zoom-controls {
+      bottom: 0.75rem;
+      left: 0.75rem;
+      gap: 0.5rem;
+    }
+    
+    .zoom-btn {
+      width: 44px;
+      height: 44px;
+      font-size: 1.3rem;
+      min-height: 44px; /* Ensure minimum touch target size */
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    }
+    
+    .zoom-btn.zoom-in {
+      font-size: 1.8rem;
+    }
+    
+    .zoom-btn.zoom-out {
+      font-size: 2rem;
+    }
+    
+    .zoom-btn.zoom-reset {
+      font-size: 1.5rem;
+    }
   }
 
   /* Statistics Header - keeping for reference */
@@ -795,6 +1169,7 @@
     margin-bottom: 1.5rem;
     margin-top: 0;
     font-weight: 700;
+    font-family: 'Georgia', serif;
   }
 
   .methodology-content h4 {
@@ -803,6 +1178,7 @@
     margin-top: 2rem;
     margin-bottom: 0.75rem;
     font-weight: 700;
+    font-family: 'Georgia', serif;
   }
 
   .methodology-content h5 {
@@ -811,22 +1187,30 @@
     margin-top: 1.5rem;
     margin-bottom: 0.5rem;
     font-weight: 600;
+    font-family: 'Georgia', serif;
   }
 
   .methodology-content p {
-    color: #444;
-    line-height: 1.7;
-    margin-bottom: 1rem;
+    font-family: 'Georgia', serif;
+    font-size: 20px;
+    line-height: 28px;
+    color: #222222;
+    margin-bottom: 1.5rem;
+    margin-top: 0;
   }
 
   .methodology-content ul {
     margin: 0.75rem 0 1.5rem 1.5rem;
     line-height: 1.7;
+    font-family: 'Georgia', serif;
   }
 
   .methodology-content li {
-    color: #444;
-    margin-bottom: 0.5rem;
+    font-family: 'Georgia', serif;
+    font-size: 20px;
+    line-height: 28px;
+    color: #222222;
+    margin-bottom: 0.75rem;
   }
 
   .methodology-content a {
@@ -854,9 +1238,20 @@
     line-height: 1.7;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 767px) {
+    .methodology-wrapper {
+      margin: 0 1rem;
+      width: calc(100% - 2rem);
+      max-width: calc(100% - 2rem);
+      box-sizing: border-box;
+    }
+
     .container {
       padding: 0 1rem;
+      margin: 0 1rem;
+      width: calc(100% - 2rem);
+      max-width: calc(100% - 2rem);
+      box-sizing: border-box;
     }
 
     .content-wrapper {
@@ -898,12 +1293,72 @@
       font-size: 1rem;
     }
 
+    .map-embed {
+      margin: 1.5rem 0;
+    }
+
     .map-section {
       padding: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .methodology-content {
+      margin-top: 1.5rem;
+    }
+
+    .methodology-content h3 {
+      font-size: 1.6rem;
+      margin-top: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    
+    .methodology-content h4 {
+      font-size: 1.25rem;
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .methodology-content h5 {
+      font-size: 1.1rem;
+    }
+    
+    .methodology-content p {
+      font-size: 18px;
+      line-height: 1.65;
+      margin-bottom: 1.25rem;
+    }
+    
+    .methodology-content li {
+      font-size: 18px;
+      line-height: 1.65;
+      margin-bottom: 0.75rem;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .methodology-wrapper {
+      margin: 0 1.5rem;
+      width: calc(100% - 3rem);
+      max-width: calc(100% - 3rem);
+      box-sizing: border-box;
+    }
+
+    .container {
+      padding: 0 1.5rem;
+      margin: 0 1.5rem;
+      width: calc(100% - 3rem);
+      max-width: calc(100% - 3rem);
+      box-sizing: border-box;
+    }
+
+    .map-embed {
+      margin: 2rem 0;
     }
 
     .map-container {
-      height: 400px;
+      height: 0;
+      padding-bottom: 62.5%; /* Maintains 960:600 aspect ratio */
+      min-height: 0;
     }
 
     .map-legend {
@@ -928,6 +1383,7 @@
     margin-bottom: 1.5rem;
     margin-top: 0;
     font-weight: 700;
+    font-family: 'Georgia', serif;
   }
 
   .faq-item {
@@ -950,6 +1406,7 @@
     border: none;
     cursor: pointer;
     text-align: left;
+    font-family: 'Georgia', serif;
     font-size: 1.1rem;
     font-weight: 600;
     color: #444;
@@ -974,9 +1431,11 @@
   }
 
   .faq-answer p {
-    margin: 0;
-    color: #444;
-    line-height: 1.7;
+    font-family: 'Georgia', serif;
+    font-size: 20px;
+    line-height: 28px;
+    color: #222222;
+    margin: 0 0 1rem 0;
   }
 
   @keyframes slideDown {

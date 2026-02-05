@@ -1,4 +1,5 @@
 <script>
+	import { onMount } from 'svelte';
 	import { parseDate } from './date-utils.js';
 
 	/**
@@ -9,6 +10,7 @@
 	 * @property {string} [searchQuery=''] - Current search query
 	 * @property {boolean} [isOpen=false] - Whether the charts panel is open
 	 * @property {any} [stats=null] - Precomputed chart stats (optional)
+	 * @property {string[]} [allMonths=[]] - All available months for static x-axis
 	 */
 
 	/** @type {Props} */
@@ -17,21 +19,60 @@
 		dateField = 'date',
 		orgField = 'org',
 		searchQuery = '',
-		isOpen = $bindable(false),
-		stats = null
+		isOpen = $bindable(true), // Default to open on mobile
+		stats = null,
+		allMonths = []
 	} = $props();
 
-	// Auto-open when there's a search query
+	// Track if user has manually toggled
+	let userToggled = $state(false);
+	
+	// Auto-open when there's a search query (but allow manual toggle)
 	$effect(() => {
-		if (searchQuery && searchQuery.length > 0) {
+		if (searchQuery && searchQuery.length > 0 && !userToggled) {
+			isOpen = true;
+		}
+	});
+	
+	// Handle toggle click
+	function handleToggle() {
+		userToggled = true;
+		isOpen = !isOpen;
+	}
+	
+	// On mount, check if we're on mobile and set default state
+	onMount(() => {
+		// Default to open on mobile (charts start open)
+		if (typeof window !== 'undefined' && window.innerWidth <= 767) {
 			isOpen = true;
 		}
 	});
 
 	const hasChartData = $derived.by(() => {
-		if (stats && typeof stats.totalRecords === 'number') {
-			return stats.totalRecords > 0;
+		// Always show charts container - it will display stats when available
+		// This ensures graphs show on load with all data stats, even when there's no search
+		
+		// If stats is provided (even if null initially), show charts
+		// The stats prop being passed means charts should be visible
+		if (stats !== undefined) {
+			// If stats has data, definitely show
+			if (stats && typeof stats.totalRecords === 'number' && stats.totalRecords > 0) {
+				return true;
+			}
+			if (stats && stats.monthlyCounts && Object.keys(stats.monthlyCounts).length > 0) {
+				return true;
+			}
+			if (stats && stats.institutionCounts && Object.keys(stats.institutionCounts).length > 0) {
+				return true;
+			}
+			if (stats && Array.isArray(stats.topInstitutions) && stats.topInstitutions.length > 0) {
+				return true;
+			}
+			// Even if stats is null or empty, show charts (they'll populate when data loads)
+			// This ensures the container is visible even when there's no search
+			return true;
 		}
+		// Fall back to data length if stats prop is not provided at all
 		return data.length > 0;
 	});
 
@@ -83,7 +124,12 @@
 	const chartData = $derived.by(() => {
 		if (stats && (stats.monthlyCounts || stats.institutionCounts || stats.topInstitutions)) {
 			const monthlyTotal = stats.monthlyCounts || {};
-			const monthKeys = Object.keys(monthlyTotal).sort();
+			
+			// Use all available months for static x-axis, or fall back to months with data
+			const monthKeys = allMonths.length > 0 
+				? [...allMonths].sort() 
+				: Object.keys(monthlyTotal).sort();
+			
 			const monthLabels = monthKeys.map((key) => {
 				const [year, month] = key.split('-');
 				const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1);
@@ -91,6 +137,12 @@
 					key,
 					label: date.toLocaleString('default', { month: 'short', year: '2-digit' })
 				};
+			});
+			
+			// Fill in 0 values for months that don't have data
+			const filledMonthlyTotal = {};
+			monthKeys.forEach(key => {
+				filledMonthlyTotal[key] = monthlyTotal[key] || 0;
 			});
 
 			const top5Orgs = Array.isArray(stats.topInstitutions) && stats.topInstitutions.length > 0
@@ -109,10 +161,10 @@
 
 			return {
 				monthlyByOrg: {},
-				monthlyTotal,
+				monthlyTotal: filledMonthlyTotal,
 				monthLabels,
 				top5Orgs,
-				maxMonthlyTotal,
+				maxMonthlyTotal: Math.max(1, ...Object.values(filledMonthlyTotal)),
 				maxOrgCount,
 				allOrgs: [],
 				totalSchools,
@@ -155,11 +207,13 @@
 			monthlyTotal[monthKey] = (monthlyTotal[monthKey] || 0) + 1;
 		});
 
-		// Get all unique months and sort them
-		const allMonths = [...new Set([
+		// Get all unique months - use provided allMonths for static x-axis, or derive from data
+		const dataMonths = [...new Set([
 			...Object.keys(monthlyTotal),
 			...Object.values(monthlyByOrg).flatMap(m => Object.keys(m))
 		])].sort();
+		
+		const chartMonths = allMonths.length > 0 ? [...allMonths].sort() : dataMonths;
 
 		// Get top 5 organizations
 		const top5Orgs = Object.entries(orgCounts)
@@ -168,7 +222,7 @@
 			.map(([org, count]) => ({ org, count }));
 
 		// Format month labels
-		const monthLabels = allMonths.map((key) => {
+		const monthLabels = chartMonths.map((key) => {
 			const [year, month] = key.split('-');
 			const date = new Date(parseInt(year), parseInt(month) - 1);
 			return {
@@ -176,9 +230,15 @@
 				label: date.toLocaleString('default', { month: 'short', year: '2-digit' })
 			};
 		});
+		
+		// Fill in 0 values for months that don't have data
+		const filledMonthlyTotal = {};
+		chartMonths.forEach(key => {
+			filledMonthlyTotal[key] = monthlyTotal[key] || 0;
+		});
 
 		// Calculate max values for scaling
-		const maxMonthlyTotal = Math.max(1, ...Object.values(monthlyTotal));
+		const maxMonthlyTotal = Math.max(1, ...Object.values(filledMonthlyTotal));
 		const maxOrgCount = top5Orgs.length > 0 ? top5Orgs[0].count : 1;
 
 		// Calculate statistics
@@ -187,7 +247,7 @@
 
 		return {
 			monthlyByOrg,
-			monthlyTotal,
+			monthlyTotal: filledMonthlyTotal,
 			monthLabels,
 			top5Orgs,
 			maxMonthlyTotal,
@@ -204,10 +264,10 @@
 
 		const points = monthLabels.map((m, i) => {
 			const x = padding + (i / (monthLabels.length - 1 || 1)) * (width - 2 * padding);
-			const value = monthlyData[m.key] || 0;
-			const y = height - padding - (value / maxValue) * (height - 2 * padding);
-			return `${x},${y}`;
-		});
+				const value = monthlyData[m.key] || 0;
+				const y = height - padding - (value / maxValue) * (height - 2 * padding);
+				return `${x},${y}`;
+			});
 
 		return `M ${points.join(' L ')}`;
 	}
@@ -218,22 +278,29 @@
 
 		return monthLabels.map((m, i) => {
 			const x = padding + (i / (monthLabels.length - 1 || 1)) * (width - 2 * padding);
-			const value = monthlyData[m.key] || 0;
-			const y = height - padding - (value / maxValue) * (height - 2 * padding);
-			return { x, y, value, label: m.label };
-		});
+				const value = monthlyData[m.key] || 0;
+				const y = height - padding - (value / maxValue) * (height - 2 * padding);
+				return { x, y, value, label: m.label };
+			});
 	}
 
 	const lineChartWidth = 500;
 	const lineChartHeight = 220;
-	const padding = 50;
+	const padding = 40;
 
 	// Bar chart dimensions
-	const barChartWidth = 450;
-	const barChartHeight = 200;
-	const barPadding = { top: 10, right: 20, bottom: 40, left: 140 };
-	const barHeight = 24;
-	const barGap = 10;
+	// Calculate left padding based on longest university name
+	const maxOrgNameLength = $derived.by(() => {
+		if (!chartData.top5Orgs || chartData.top5Orgs.length === 0) return 140;
+		return Math.max(...chartData.top5Orgs.map(d => d.org.length));
+	});
+	// Estimate: ~7px per character + some padding
+	const calculatedLeftPadding = $derived(Math.max(140, maxOrgNameLength * 7 + 20));
+	const barChartWidth = $derived(450 + (calculatedLeftPadding - 140));
+	const barChartHeight = 220; // Match line chart height
+	const barPadding = $derived({ top: 10, right: 5, bottom: 10, left: calculatedLeftPadding });
+	const barHeight = 28;
+	const barGap = 12;
 
 	// Calculate nice axis values for Y axis (line chart)
 	const axisValues = $derived(getNiceAxisValues(chartData.maxMonthlyTotal));
@@ -284,19 +351,19 @@
 		<!-- Stats Header -->
 		<div class="charts-stats-header">
 			<div class="stat-item">
-				<div class="stat-value">{chartData.totalSchools}</div>
-				<div class="stat-label">Schools</div>
-			</div>
-			<div class="stat-item">
 				<div class="stat-value">{chartData.totalRecords.toLocaleString()}</div>
 				<div class="stat-label">Records</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-value">{chartData.totalSchools}</div>
+				<div class="stat-label">Schools</div>
 			</div>
 		</div>
 
 		<!-- Mobile-only toggle button -->
 		<button
 			class="charts-toggle mobile-only"
-			onclick={() => (isOpen = !isOpen)}
+			onclick={handleToggle}
 			type="button"
 			aria-expanded={isOpen}
 		>
@@ -430,110 +497,61 @@
 								class="bar-chart-svg"
 								preserveAspectRatio="xMidYMid meet"
 							>
-								<!-- Vertical grid lines and X-axis -->
-								{#each barAxisValues as val, i}
-									{@const x = barPadding.left + (val / barNiceMax) * (barChartWidth - barPadding.left - barPadding.right)}
-									<!-- Grid line -->
-									<line
-										x1={x}
-										y1={barPadding.top}
-										x2={x}
-										y2={barChartHeight - barPadding.bottom}
-										stroke="#f0f0f0"
-										stroke-width="1"
-									/>
-									<!-- X-axis tick -->
-									<line
-										x1={x}
-										y1={barChartHeight - barPadding.bottom}
-										x2={x}
-										y2={barChartHeight - barPadding.bottom + 5}
-										stroke="#333"
-										stroke-width="1"
-									/>
-									<!-- X-axis labels -->
-									<text x={x} y={barChartHeight - barPadding.bottom + 18} class="axis-label" text-anchor="middle">
-										{formatAxisNumber(val)}
-									</text>
-								{/each}
-								<!-- X-axis line -->
-								<line
-									x1={barPadding.left}
-									y1={barChartHeight - barPadding.bottom}
-									x2={barChartWidth - barPadding.right}
-									y2={barChartHeight - barPadding.bottom}
-									stroke="#333"
-									stroke-width="1"
-								/>
-								<!-- Y-axis line -->
-								<line
-									x1={barPadding.left}
-									y1={barPadding.top}
-									x2={barPadding.left}
-									y2={barChartHeight - barPadding.bottom}
-									stroke="#333"
-									stroke-width="1"
-								/>
-
 								<!-- Bars -->
 								{#each chartData.top5Orgs as { org, count }, i}
-									{@const barWidth = (count / barNiceMax) * (barChartWidth - barPadding.left - barPadding.right)}
+									{@const maxBarWidth = barChartWidth - barPadding.left - barPadding.right}
+									{@const barWidth = Math.min((count / barNiceMax) * maxBarWidth, maxBarWidth)}
 									{@const y = barPadding.top + i * (barHeight + barGap)}
-									<g
-										class="bar-group"
-										onmouseenter={() => (hoveredOrg = org)}
-										onmouseleave={() => (hoveredOrg = null)}
-										role="button"
-										tabindex="0"
-										onfocus={() => (hoveredOrg = org)}
-										onblur={() => (hoveredOrg = null)}
-									>
+									{@const barCenterY = y + barHeight / 2}
+									<g class="bar-group">
 										<!-- Organization label (on the left) -->
 										<text
 											x={barPadding.left - 8}
-											y={y + barHeight / 2 + 4}
+											y={barCenterY}
 											class="bar-org-label-svg"
 											text-anchor="end"
+											dominant-baseline="middle"
 										>
-											{org.length > 18 ? org.substring(0, 18) + '...' : org}
+											{org}
 										</text>
-										<!-- Bar background track -->
-										<rect
-											x={barPadding.left}
-											y={y}
-											width={barChartWidth - barPadding.left - barPadding.right}
-											height={barHeight}
-											fill="#f0f0f0"
-											rx="4"
-										/>
 										<!-- Bar fill -->
 										<rect
 											x={barPadding.left}
 											y={y}
 											width={barWidth}
 											height={barHeight}
-											fill={hoveredOrg === org ? '#1a3a52' : '#254c6f'}
-											rx="4"
+											fill="#254c6f"
+											rx="0"
 											class="bar-fill-rect"
 										/>
+										<!-- Value label inside bar -->
+										{#if barWidth > 50}
+											<text
+												x={barPadding.left + barWidth - 8}
+												y={barCenterY}
+												class="bar-value-label"
+												text-anchor="end"
+												dominant-baseline="middle"
+												fill="white"
+											>
+												{count.toLocaleString()}
+											</text>
+										{:else}
+											<!-- If bar is too narrow, put label outside -->
+											<text
+												x={barPadding.left + barWidth + 8}
+												y={barCenterY}
+												class="bar-value-label-outside"
+												text-anchor="start"
+												dominant-baseline="middle"
+												fill="#666"
+											>
+												{count.toLocaleString()}
+											</text>
+										{/if}
 									</g>
 								{/each}
 							</svg>
-
-							<!-- Tooltip -->
-							{#if hoveredOrg}
-								{@const hoveredData = chartData.top5Orgs.find(d => d.org === hoveredOrg)}
-								{@const hoveredIndex = chartData.top5Orgs.findIndex(d => d.org === hoveredOrg)}
-								{#if hoveredData}
-									<div
-										class="bar-tooltip"
-										style="top: {barPadding.top + hoveredIndex * (barHeight + barGap) - 40}px; left: calc(50% + 70px);"
-									>
-										<div class="tooltip-org">{hoveredData.org}</div>
-										<div class="tooltip-count">{hoveredData.count.toLocaleString()} announcements</div>
-									</div>
-								{/if}
-							{/if}
 						</div>
 					</div>
 				</div>
@@ -554,30 +572,74 @@
 	/* Stats Header */
 	.charts-stats-header {
 		display: flex;
-		gap: 1.5rem;
-		padding: 0.75rem 1rem;
+		gap: 2rem;
+		padding: 1rem 1.5rem;
 		background: #fafafa;
 		border-bottom: 1px solid #e0e0e0;
 		box-sizing: border-box;
+		align-items: center;
+	}
+
+	@media screen and (max-width: 767px) {
+		.charts-stats-header {
+			padding: 1rem;
+			gap: 1.5rem;
+		}
 	}
 
 	.stat-item {
 		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
+		flex-direction: row;
+		align-items: baseline;
+		gap: 0.5rem;
+		position: relative;
+	}
+
+	.stat-item:not(:last-child)::after {
+		content: '';
+		position: absolute;
+		right: -1rem;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 1px;
+		height: 1.5rem;
+		background-color: #e0e0e0;
+	}
+
+	@media screen and (max-width: 767px) {
+		.stat-item:not(:last-child)::after {
+			right: -0.75rem;
+		}
 	}
 
 	.stat-value {
-		font-size: 1.25rem;
+		font-size: 1rem;
 		font-weight: 600;
 		color: #254c6f;
+		white-space: nowrap;
+		font-family: 'Graphik Web', 'Helvetica', sans-serif;
+		line-height: 1.2;
 	}
 
 	.stat-label {
-		font-size: 0.7rem;
+		font-size: 0.75rem;
 		color: #666;
 		text-transform: uppercase;
-		letter-spacing: 0.5px;
+		letter-spacing: 0.05em;
+		white-space: nowrap;
+		font-family: 'Graphik Web', 'Helvetica', sans-serif;
+		font-weight: 500;
+		line-height: 1.2;
+	}
+
+	@media screen and (max-width: 767px) {
+		.stat-value {
+			font-size: 0.9rem;
+		}
+		
+		.stat-label {
+			font-size: 0.7rem;
+		}
 	}
 
 	.charts-toggle {
@@ -606,29 +668,65 @@
 		display: block;
 	}
 
-	/* Mobile styles - show toggle and hide charts by default */
-	@media (max-width: 768px) {
+	/* Mobile styles - show toggle and show charts by default */
+	@media (max-width: 767px) {
+		.search-charts-container {
+			margin: 0;
+			padding: 0;
+			width: 100%;
+		}
+
 		.charts-toggle.mobile-only {
 			display: flex;
+			min-height: 44px;
+			padding: 0.75rem 1rem;
+			touch-action: manipulation;
 		}
 
 		.charts-panel-wrapper {
 			display: none;
 		}
-
 		.charts-panel-wrapper.mobile-open {
 			display: block;
 		}
 	}
+	@media (min-width: 768px) and (max-width: 1024px) {
+		.search-charts-container {
+			margin: 0;
+			padding: 0;
+			width: 100%;
+		}
+
+		.charts-panel-wrapper.mobile-open {
+			display: block;
+	}
 
 	.charts-panel {
 		padding: 1rem;
+		}
+		.charts-stats-header {
+			padding: 0.75rem 1rem;
+		}
+
+		.charts-grid {
+			grid-template-columns: 1fr;
+			gap: 1.5rem;
+		}
+
+		.chart-title {
+			font-size: 0.8rem;
+			margin-bottom: 0.75rem;
+		}
+	}
+
+	.charts-panel {
+		padding: 0.5rem;
 	}
 
 	.charts-grid {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 1rem;
+		gap: 0.5rem;
 	}
 
 	.chart-section {
@@ -641,13 +739,17 @@
 
 	.bar-chart-section {
 		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
 	}
 
 	.chart-title {
 		font-size: 0.875rem;
 		font-weight: 600;
 		color: #1a1a1a;
-		margin: 0 0 1rem 0;
+		margin: 0.75rem 0 0.5rem 0;
+		text-align: center;
 	}
 
 	/* Line Chart */
@@ -655,7 +757,7 @@
 		width: 100%;
 		background: #FFFFFF;
 		border-radius: 0px;
-		padding: 1rem;
+		padding: 0;
 		box-sizing: border-box;
 		position: relative;
 	}
@@ -714,28 +816,24 @@
 		width: 100%;
 		background: #FFFFFF;
 		border-radius: 4px;
-		padding: 1rem;
+		padding: 0;
 		box-sizing: border-box;
 		position: relative;
+		overflow: visible;
+		height: 220px;
+		display: flex;
+		align-items: center;
 	}
 
 	.bar-chart-svg {
 		width: 100%;
-		height: auto;
+		height: 220px;
 		display: block;
+		overflow: visible;
 	}
 
 	.bar-group {
-		cursor: pointer;
-	}
-
-	.bar-group:focus {
-		outline: none;
-	}
-
-	.bar-group:focus .bar-fill-rect {
-		stroke: #254c6f;
-		stroke-width: 2;
+		pointer-events: none;
 	}
 
 	.bar-fill-rect {
@@ -745,6 +843,18 @@
 	.bar-org-label-svg {
 		font-size: 11px;
 		fill: #1a1a1a;
+	}
+
+	.bar-value-label {
+		font-size: 11px;
+		font-weight: 600;
+		pointer-events: none;
+	}
+
+	.bar-value-label-outside {
+		font-size: 11px;
+		font-weight: 500;
+		pointer-events: none;
 	}
 
 	/* Bar tooltip */
@@ -773,22 +883,30 @@
 		color: #666;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		.charts-panel {
-			padding: 1rem;
+			padding: 0.5rem;
+		}
+		.charts-stats-header {
+			padding: 0.75rem 1rem;
 		}
 
 		.charts-grid {
 			grid-template-columns: 1fr;
-			gap: 1.5rem;
+			gap: 0.5rem;
 		}
 
 		.bar-chart-wrapper {
-			padding: 0.75rem;
+			padding: 0;
 		}
 
 		.bar-org-label-svg {
 			font-size: 10px;
+		}
+	}
+	@media (min-width: 768px) and (max-width: 1024px) {
+		.charts-panel {
+			padding: 0.5rem;
 		}
 	}
 </style>

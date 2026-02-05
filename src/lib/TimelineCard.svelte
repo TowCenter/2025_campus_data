@@ -349,41 +349,67 @@
 
 	@media (max-width: 768px) {
 		.timeline-card {
-			padding: 0.75rem;
+			padding: 1rem;
 			width: 100%;
 			max-width: 100%;
-			margin: 0.5rem 0;
+			margin: 0.75rem 0;
 		}
 
 		.card-title {
-			font-size: 1.1rem;
+			font-size: 1.125rem;
+			line-height: 1.4;
+			margin-bottom: 0.5rem;
 		}
 
 		.card-description {
+			font-size: 0.9rem;
+			line-height: 1.5;
+		}
+
+		.card-links {
+			gap: 0.5rem;
+			flex-wrap: wrap;
+		}
+
+		.card-links a {
+			padding: 0.5rem 0.75rem;
+			min-height: 36px;
 			font-size: 0.85rem;
+			touch-action: manipulation;
+		}
+
+		.card-meta {
+			gap: 0.5rem;
+			flex-wrap: wrap;
+		}
+
+		.tag {
+			padding: 0.4rem 0.7rem;
+			font-size: 0.75rem;
+			min-height: 28px;
 		}
 		
 		.card-date-mobile {
 			display: flex;
 			flex-direction: column;
-			gap: 0.2rem;
+			gap: 0.25rem;
 			margin-bottom: 0.75rem;
 			padding-bottom: 0.75rem;
 			border-bottom: 1px solid #e0e0e0;
 		}
 		
 		.card-date-mobile .date-month-day {
-			font-size: 0.875rem;
+			font-size: 0.9rem;
 			font-weight: 500;
 			color: #333;
-			line-height: 1.2;
+			line-height: 1.3;
 		}
 		
 		.card-date-mobile .date-year {
-			font-size: 0.75rem;
+			font-size: 0.8rem;
 			font-weight: 400;
 			color: #666;
-			line-height: 1.2;
+			line-height: 1.3;
 		}
 	}
 </style>

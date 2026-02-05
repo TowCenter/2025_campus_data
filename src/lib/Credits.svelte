@@ -68,9 +68,11 @@
 
 <style>
 	.credits-toggle-section {
-		display: inline-block;
+		display: block;
 		margin-top: 1.5rem;
 		margin-left: 0;
+		margin-bottom: 0;
+		width: 100%;
 	}
 
 	/* Override meta/byline styles with credit box styles */
@@ -83,6 +85,36 @@
 		color: #222222 !important;
 		line-height: 28px !important;
 		margin-bottom: 0 !important;
+		margin-left: 0 !important;
+		padding-left: 0 !important;
+		width: 100% !important;
+		display: block !important;
+		text-align: left !important;
+	}
+
+	/* Mobile-specific overrides */
+	@media screen and (max-width: 768px) {
+		:global(.meta .credits-toggle-section) {
+			margin-left: 0 !important;
+			padding-left: 0 !important;
+			text-align: left !important;
+			width: 100% !important;
+		}
+
+		:global(.meta .credits-toggle-section .credits-toggle-btn) {
+			text-align: left !important;
+			justify-content: flex-start !important;
+		}
+
+		:global(.meta .credits-box) {
+			margin-left: 0 !important;
+			padding-left: 0 !important;
+		}
+
+		:global(.meta .credits-inner) {
+			margin-left: 0 !important;
+			padding-left: 1rem !important;
+		}
 	}
 
 	/* Override meta/byline link styles */
@@ -148,11 +180,13 @@
 	}
 
 	.credits-inner {
-		max-width: 600px;
-		margin: 0 auto;
+		max-width: 100%;
+		margin: 0;
+		margin-left: 0;
 		padding: 1rem 1.5rem;
 		border: 1px solid #e0e0e0;
 		background-color: #fafafa;
+		text-align: left;
 	}
 
 	.credits-item {
@@ -208,9 +242,21 @@
 	}
 
 	@media screen and (max-width: 768px) {
+		.credits-toggle-section {
+			margin-left: 0 !important;
+			padding-left: 0 !important;
+			width: 100% !important;
+			text-align: left !important;
+		}
+
 		.credits-toggle-btn {
 			font-size: 18px;
 			line-height: 1.6;
+			width: 100%;
+			justify-content: flex-start;
+			text-align: left;
+			margin-left: 0;
+			padding-left: 0;
 		}
 
 		.credits-toggle-icon {
@@ -220,11 +266,15 @@
 
 		.credits-box {
 			margin-top: 1rem;
+			width: 100%;
+			margin-left: 0;
 		}
 
 		.credits-inner {
 			padding: 1rem;
 			max-width: 100%;
+			margin: 0;
+			margin-left: 0;
 		}
 
 		.credits-item {

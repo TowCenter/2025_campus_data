@@ -50,11 +50,11 @@
 		const id = item.id || item._id?.$oid || item._id || item.document_id || null;
 		if (id && normalizedCache.has(id)) return normalizedCache.get(id);
 
-		const orgArray = Array.isArray(item.org)
-			? item.org
-			: (typeof item.org === 'string'
-				? item.org.split(',').map((o) => o.trim()).filter(Boolean)
-				: []);
+	const orgArray = Array.isArray(item.org)
+		? item.org
+		: (typeof item.org === 'string'
+			? [item.org.trim()].filter(Boolean)
+			: []);
 
 		const normalized = {
 			...item,
@@ -105,6 +105,8 @@
 		const currentRefresh = ++refreshId;
 		appliedSearchQuery = pendingSearchQuery;
 
+		console.log('refreshResults: applying filters and search, query:', pendingSearchQuery);
+		
 		await engine.applyFiltersAndSearch();
 		if (currentRefresh !== refreshId) return;
 
@@ -115,6 +117,13 @@
 				engine.getActiveStats()
 			]);
 			if (currentRefresh !== refreshId) return;
+
+			console.log('refreshResults: results', {
+				itemsCount: result.items.length,
+				hasMore: result.hasMore,
+				totalCount: result.total,
+				statsTotalRecords: stats?.totalRecords
+			});
 
 			items = result.items.map(normalizeArticle);
 			hasMore = result.hasMore;
@@ -156,6 +165,15 @@
 		if (!engine) return;
 		const months = monthFilterId ? (filterValues[monthFilterId] || []) : [];
 		const institutions = orgFilterId ? (filterValues[orgFilterId] || []) : [];
+		
+		// Debug logging
+		console.log('handleFiltersChange:', {
+			searchQuery,
+			months,
+			institutions,
+			filterValues
+		});
+		
 		engine.setFilters({ months, institutions });
 		engine.setSearch(searchQuery);
 		pendingSearchQuery = searchQuery;
@@ -182,7 +200,8 @@
 <Article>
 	<Headline
 		hed={config.headline}
-		subhed="Browse all announcements with filters. Use the filters to narrow down by school, date range, or search terms."
+		subhed=""
+		bodyText="This research database catalogs public communications from more than <b>120 colleges and universities</b> that have been named in federal investigations by the Department of Education under the Trump administration. The database is intended to help researchers and reporters better understand how universities have been responding to federal requests. It includes universities' public announcements, statements, and news releases from January 1, 2025. The dataset is updated weekly."
 		brand={config.brand}
 		date={lastUpdatedDate}
 		dateLabel={config.dateLabel}

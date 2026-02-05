@@ -158,7 +158,8 @@
 	let dateRangeOpen = $state({});
 	
 	// Mobile collapse state
-	let isCollapsed = $state(true);
+	// Default to open on mobile, closed on desktop
+	let isCollapsed = $state(false);
 	
 	let filterBarRef;
 
@@ -180,6 +181,11 @@
 
 	onMount(() => {
 		document.addEventListener('click', handleClickOutside);
+		
+		// Default to open on mobile (filters start open)
+		if (typeof window !== 'undefined' && window.innerWidth <= 767) {
+			isCollapsed = false;
+		}
 		
 		return () => {
 			document.removeEventListener('click', handleClickOutside);
@@ -301,37 +307,24 @@
 
 		<div class="filter-row-2">
 			{#if searchFilter}
+<<<<<<< HEAD
 				<div class="search-with-help">
 					<SearchBar
 						searchQuery={searchQuery}
 						onSearchChange={handleSearchChange}
-					/>
-					<div class="search-help">
-						<button
-							class="search-help-btn"
-							type="button"
-							aria-label="Search help"
-							aria-describedby="search-help-tooltip"
-							data-umami-event="search-help-click"
-						>
-							?
-						</button>
-						<div class="search-help-tooltip" role="tooltip" id="search-help-tooltip">
-							<p><strong>Multiple words</strong>: all words must appear (e.g., "funding budget" finds items with both).</p>
-							<p><strong>Exact phrase</strong>: use quotes for exact wording, e.g., "campus safety".</p>
-							<p><strong>OR</strong>: use OR (uppercase) to match either term, e.g., student OR students.</p>
-						</div>
-					</div>
-				</div>
+				<SearchBar
+					searchQuery={searchQuery}
+					onSearchChange={handleSearchChange}
+				/>
 			{/if}
 
 			<button
 				class="search-btn"
 				type="button"
-				aria-label="Search {filteredRowCount} items"
+				aria-label="See all data for {filteredRowCount} items"
 				data-umami-event="search-button-click"
 			>
-				Search
+				See all data
 			</button>
 
 			<button
@@ -429,76 +422,6 @@
 
 	.search-btn:hover {
 		background-color: #1a3a52;
-	}
-
-	.search-with-help {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		flex: 1;
-	}
-
-	.search-help {
-		position: relative;
-		display: flex;
-		align-items: center;
-	}
-
-	.search-help-btn {
-		width: 24px;
-		height: 24px;
-		min-width: 24px;
-		border-radius: 50%;
-		background-color: #e0e0e0;
-		border: none;
-		color: #666;
-		font-size: 0.8rem;
-		font-weight: 600;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin-bottom: 1rem;
-		transition: all 0.2s ease;
-	}
-
-	.search-help-btn:hover {
-		background-color: #254c6f;
-		color: white;
-	}
-
-	.search-help-tooltip {
-		position: absolute;
-		right: 0;
-		bottom: calc(100% + 8px);
-		width: 260px;
-		background: white;
-		border: 1px solid #e0e0e0;
-		box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-		padding: 0.75rem 0.85rem;
-		font-size: 0.8rem;
-		line-height: 1.4;
-		color: #333;
-		opacity: 0;
-		transform: translateY(6px);
-		pointer-events: none;
-		transition: opacity 0.15s ease, transform 0.15s ease;
-		z-index: 10;
-	}
-
-	.search-help-tooltip p {
-		margin: 0 0 0.5rem;
-	}
-
-	.search-help-tooltip p:last-child {
-		margin-bottom: 0;
-	}
-
-	.search-help:hover .search-help-tooltip,
-	.search-help:focus-within .search-help-tooltip {
-		opacity: 1;
-		transform: translateY(0);
-		pointer-events: auto;
 	}
 
 	.export-btn {
@@ -647,11 +570,14 @@
 		gap: 1rem;
 	}
 
-	@media screen and (max-width: 768px) {
+	@media screen and (max-width: 767px) {
 		.filter-bar {
-			margin: 0.15rem;
-			padding: 0;
+			margin: 0;
+			padding: 1rem;
 			border: 1px solid #e0e0e0;
+			width: 100%;
+			max-width: 100%;
+			box-sizing: border-box;
 		}
 
 		.mobile-toggle-btn {
@@ -659,19 +585,22 @@
 			justify-content: space-between;
 			align-items: center;
 			width: 100%;
-			padding: 0.5rem 0.75rem;
+			padding: 0.75rem 1rem;
+			min-height: 44px;
 			background-color: #fafafa;
 			border: none;
 			border-bottom: 1px solid #e0e0e0;
 			cursor: pointer;
 			font-family: inherit;
-			font-size: 0.8rem;
+			font-size: 0.875rem;
 			font-weight: 500;
 			color: #254c6f;
 			transition: background-color 0.2s ease;
+			touch-action: manipulation;
 		}
 
-		.mobile-toggle-btn:hover {
+		.mobile-toggle-btn:hover,
+		.mobile-toggle-btn:active {
 			background-color: #f0f0f0;
 		}
 
@@ -699,26 +628,26 @@
 		}
 
 		.filter-content:not(.collapsed) {
-			padding: 0.75rem;
+			padding: 1rem;
 		}
 
 		.filter-row-1 {
 			grid-template-columns: 1fr;
-			gap: 0.5rem;
+			gap: 0.75rem;
 			min-height: unset;
 		}
 
 		.filter-wrapper {
-			gap: 0.35rem;
+			gap: 0.5rem;
 		}
 
 		.filter-header {
-			font-size: 0.65rem;
+			font-size: 0.7rem;
 		}
 
 		.filter-row-2 {
 			flex-direction: column;
-			gap: 0.5rem;
+			gap: 0.75rem;
 		}
 
 		.filter-row-2 > *:first-child {
@@ -728,19 +657,25 @@
 		.search-btn,
 		.export-btn {
 			width: 100%;
-			padding: 0.5rem 1rem;
-			font-size: 0.85rem;
+			padding: 0.75rem 1rem;
+			min-height: 44px;
+			font-size: 0.9rem;
 			margin-top: 0;
+			touch-action: manipulation;
 		}
 
 		.dropdown-header {
-			padding: 0.5rem 0.65rem;
-			font-size: 0.85rem;
+			padding: 0.75rem 0.85rem;
+			min-height: 44px;
+			font-size: 0.9rem;
+			touch-action: manipulation;
 		}
 
 		.clear-button {
-			padding: 0.5rem 1rem;
-			font-size: 0.85rem;
+			padding: 0.75rem 1rem;
+			min-height: 44px;
+			font-size: 0.9rem;
+			touch-action: manipulation;
 		}
 	}
 </style>

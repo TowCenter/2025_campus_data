@@ -1504,10 +1504,38 @@
   @media (max-width: 1000px) {
     .search-row, .search-row.row-2 {
       grid-template-columns: 1fr;
+      gap: 1rem;
     }
 
     .results-row {
       grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 0 1rem;
+    }
+
+    .search-row, .search-row.row-2 {
+      gap: 0.75rem;
+    }
+
+    button, .btn {
+      min-height: 44px;
+      padding: 0.75rem 1rem;
+      touch-action: manipulation;
+    }
+
+    input, select, textarea {
+      min-height: 44px;
+      font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    a {
+      min-height: 32px;
+      touch-action: manipulation;
     }
   }
 </style>

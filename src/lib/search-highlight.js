@@ -129,9 +129,10 @@ const STOP_WORDS = new Set([
 ]);
 
 /**
- * Get all search terms (words and phrase words) for highlighting
+ * Get all search terms (words and phrases) for highlighting
+ * For quoted phrases, keep them as complete phrases to avoid highlighting individual words
  * @param {string} raw - Raw search query
- * @returns {string[]}
+ * @returns {Array<{type: 'word' | 'phrase', value: string}>}
  */
 export const getAllSearchTerms = (raw) => {
 	const parsed = parseSearchQuery(raw);
@@ -140,14 +141,11 @@ export const getAllSearchTerms = (raw) => {
 	const collectTerms = (node) => {
 		if (!node) return;
 		if (node.type === 'word') {
-			// For individual words (not in quotes), filter out stop words
-			if (!STOP_WORDS.has(node.value.toLowerCase())) {
-				terms.push(node.value);
-			}
+			terms.push({ type: 'word', value: node.value });
 		} else if (node.type === 'phrase') {
-			// For quoted phrases, include ALL words (user explicitly searched for them)
-			const words = node.value.split(/\s+/).filter(Boolean);
-			terms.push(...words);
+			// Keep phrases as complete units - don't break them into individual words
+			// This prevents highlighting words like "of" when searching for "Office of Civil Rights"
+			terms.push({ type: 'phrase', value: node.value });
 		} else if (node.type === 'or' || node.type === 'and') {
 			node.terms?.forEach(collectTerms);
 		}
@@ -200,28 +198,63 @@ export const buildPhraseRegex = (term, flags = 'gi') => {
 	const tokens = getSearchTokens(term);
 	if (tokens.length < 2) return null;
 
+	// For quoted phrases, match the exact phrase with words in order
+	// Use word boundaries for each word to ensure exact matching
 	const parts = tokens.map((token) => {
 		const escaped = escapeRegExp(token);
 		return /^[a-z0-9]+$/i.test(token) ? `\\b${escaped}\\b` : escaped;
 	});
 
+	// Join with \s+ to match one or more whitespace characters between words
+	// This ensures the phrase matches as a contiguous phrase, not individual words
 	return new RegExp(`(${parts.join('\\s+')})`, flags);
 };
 
 export const highlight = (text, term) => {
 	if (!text) return '';
 
-	// Use the new parser to get all search terms
+	// Use the new parser to get all search terms (words and phrases)
 	const allTerms = getAllSearchTerms(term);
 	if (allTerms.length === 0) return escapeHtml(text);
 
-	// Build regex patterns for all terms
-	const patterns = allTerms.map((token) => {
-		const escaped = escapeRegExp(token);
-		return /^[a-z0-9]+$/i.test(token) ? `\\b${escaped}\\b` : escaped;
+	// Build regex patterns - handle phrases and words differently
+	const patterns = [];
+	
+	// First, add phrase patterns (they take precedence to avoid highlighting individual words)
+	const phrasePatterns = allTerms
+		.filter(t => t.type === 'phrase')
+		.map(t => {
+			// For phrases, build a regex that matches the phrase as a whole
+			// Extract tokens and build pattern similar to buildPhraseRegex but without the outer capturing group
+			const tokens = getSearchTokens(t.value);
+			if (tokens.length < 2) return null;
+			
+			const parts = tokens.map((token) => {
+				const escaped = escapeRegExp(token);
+				return /^[a-z0-9]+$/i.test(token) ? `\\b${escaped}\\b` : escaped;
+			});
+			
+			// Return pattern without outer capturing group (we'll add it in the final regex)
+			return parts.join('\\s+');
+		})
+		.filter(Boolean);
+	
+	// Then add word patterns (only for words that aren't part of phrases)
+	const wordTerms = allTerms.filter(t => t.type === 'word');
+	const wordPatterns = wordTerms.map((token) => {
+		const escaped = escapeRegExp(token.value);
+		return /^[a-z0-9]+$/i.test(token.value) ? `\\b${escaped}\\b` : escaped;
 	});
-
-	const regex = new RegExp(`(${patterns.join('|')})`, 'gi');
+	
+	// Combine patterns - phrases first, then words
+	// This ensures phrases are matched before individual words, preventing "of" from being highlighted
+	// when searching for "Office of Civil Rights"
+	const allPatterns = [...phrasePatterns, ...wordPatterns];
+	if (allPatterns.length === 0) return escapeHtml(text);
+	
+	// Create a regex that matches phrases first, then individual words
+	// The capturing group is needed for split() to work correctly
+	const regex = new RegExp(`(${allPatterns.join('|')})`, 'gi');
 
 	const parts = String(text).split(regex);
 

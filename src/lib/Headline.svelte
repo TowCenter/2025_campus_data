@@ -5,6 +5,7 @@
 		children = undefined,
 		hed,
 		subhed = '',
+		bodyText = '',
 		date = '',
 		byline = '',
 		byline_url = '',
@@ -31,9 +32,15 @@
             {#if subhed}
             <span class="post-excerpt"
                 ><p>
-                    {subhed}
+                    {@html subhed}
                 </p>
             </span>
+            {/if}
+
+            {#if bodyText}
+            <div class="body-text-description">
+                {@html bodyText}
+            </div>
             {/if}
 
             <div class="meta">
@@ -62,17 +69,20 @@
 
 <style>
     /* Ensure container-lg padding matches Body component on mobile */
-    @media (max-width: 767.98px) {
+    @media (max-width: 767px) {
         .container-lg.title-image-lg {
             padding-left: 0;
             padding-right: 0;
         }
+        header.col-sm-10 {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
     }
-
-    /* Increase left padding for title on mobile */
-    @media screen and (max-width: 768px) {
+    @media screen and (min-width: 768px) and (max-width: 1024px) {
         header.col-sm-10 {
             padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
         }
     }
 
@@ -98,10 +108,24 @@
         font-weight: bold;
     }
 
-    @media screen and (max-width: 768px) {
+    @media screen and (max-width: 767px) {
         .meta .update-date {
             font-size: 18px;
             line-height: 1.6;
         }
+    }
+
+    .body-text-description {
+        font-family: 'Georgia', serif;
+        font-size: 20px;
+        line-height: 28px;
+        color: #222222;
+        margin: 1.5rem 0;
+        font-style: normal;
+        font-weight: normal;
+    }
+
+    .body-text-description b {
+        font-weight: 700;
     }
 </style>

@@ -3,7 +3,8 @@
 	import FilterBar from './FilterBar.svelte';
 	import SearchCharts from './SearchCharts.svelte';
 	import SearchLoading from './SearchLoading.svelte';
-	import { getSearchTokens, getQuotedPhrase } from './search-highlight.js';
+	import DataCard from './DataCard.svelte';
+	import { getSearchTokens, getQuotedPhrase, parseSearchQuery } from './search-highlight.js';
 	import { groupByMonth } from './date-utils.js';
 	import './cjr.css';
 
@@ -69,6 +70,29 @@
 	let filterValues = $state({});
 	let searchQuery = $state('');
 	let isLoading = $state(false);
+	
+	// Track mobile screen size for responsive table/card switching
+	let isMobile = $state(false);
+	
+	// Check if we're on mobile
+	function checkMobile() {
+		if (typeof window !== 'undefined') {
+			isMobile = window.innerWidth <= 768;
+		}
+	}
+	
+	// Update mobile state on mount and resize
+	onMount(() => {
+		checkMobile();
+		if (typeof window !== 'undefined') {
+			window.addEventListener('resize', checkMobile);
+		}
+		return () => {
+			if (typeof window !== 'undefined') {
+				window.removeEventListener('resize', checkMobile);
+			}
+		};
+	});
 
 	// Check if any filters or search is active
 	const activeSearchQuery = $derived.by(() =>
@@ -156,6 +180,36 @@
 	const quotedPhraseDisplay = $derived.by(() => getQuotedPhrase(activeSearchQuery));
 	const exactMatchActive = $derived.by(() => Boolean(quotedPhraseDisplay));
 	const searchTokens = $derived.by(() => getSearchTokens((activeSearchQuery || '').trim()));
+	const parsedQuery = $derived.by(() => parseSearchQuery(activeSearchQuery || ''));
+
+	// Format parsed query for display
+	function formatQueryForDisplay(node) {
+		if (!node || node.type === 'empty') return [];
+		
+		if (node.type === 'word') {
+			return [{ type: 'word', value: node.value }];
+		}
+		
+		if (node.type === 'phrase') {
+			return [{ type: 'phrase', value: node.value }];
+		}
+		
+		if (node.type === 'and' || node.type === 'or') {
+			const parts = [];
+			node.terms?.forEach((term, i) => {
+				if (i > 0) {
+					parts.push({ type: 'operator', value: node.type.toUpperCase() });
+				}
+				const termParts = formatQueryForDisplay(term);
+				parts.push(...termParts);
+			});
+			return parts;
+		}
+		
+		return [];
+	}
+
+	const queryDisplayParts = $derived.by(() => formatQueryForDisplay(parsedQuery));
 
 	/**
 	 * @param {string} filterId
@@ -163,11 +217,19 @@
 	 */
 	function handleFilterChange(filterId, value) {
 		const nextFilterValues = { ...filterValues, [filterId]: value };
-		const nextSearchQuery = filterId === 'search' ? value : searchQuery;
+		const nextSearchQuery = filterId === 'search' ? (value || '') : searchQuery;
+
+		// Debug logging
+		console.log('Data.handleFilterChange:', {
+			filterId,
+			value,
+			nextSearchQuery,
+			nextFilterValues
+		});
 
 		filterValues = nextFilterValues;
 		if (filterId === 'search') {
-			searchQuery = value;
+			searchQuery = value || '';
 		}
 
 		// Track filter/search usage in Umami
@@ -220,16 +282,30 @@
 
 		const scrollY = window.scrollY || window.pageYOffset;
 
+		// Find the footnotes/credits section to prevent overlap
+		// Check multiple possible selectors for credits/footnotes
+		const creditsSection = document.querySelector('.credits-toggle-section, .credits-box, #footer, footer, .footer, .meta .credits-toggle-section');
+		let creditsTop = Infinity;
+		
+		if (creditsSection) {
+			const rect = creditsSection.getBoundingClientRect();
+			creditsTop = rect.top + scrollY;
+		}
+
 		// Check if filter bar should be sticky when its top reaches the top of the viewport
 		if (filterBarInitialTop > 0) {
 			const wasSticky = isFilterBarSticky;
 			// Once sticky, keep it sticky - don't unstick unless scrolled back to very top
 			const threshold = 5; // Small threshold to prevent flickering
 
-			// If already sticky, keep it sticky unless we've scrolled back above the threshold
+			// Calculate if filter bar would overlap with footnotes
+			const filterBarBottom = scrollY + (filterBarHeight || 0);
+			const wouldOverlapFootnotes = creditsTop < Infinity && filterBarBottom >= creditsTop;
+
+			// If already sticky, keep it sticky unless we've scrolled back above the threshold or would overlap footnotes
 			if (wasSticky) {
-				// Only unstick if we've scrolled back above the threshold
-				isFilterBarSticky = scrollY >= filterBarInitialTop - threshold;
+				// Unstick if we've scrolled back above the threshold OR if we would overlap footnotes
+				isFilterBarSticky = scrollY >= filterBarInitialTop - threshold && !wouldOverlapFootnotes;
 				// When becoming unsticky, recapture dimensions
 				if (!isFilterBarSticky && filterBarRef) {
 					setTimeout(() => {
@@ -247,8 +323,8 @@
 					if (filterBarWidth === 0) filterBarWidth = rect.width;
 					if (filterBarLeft === 0) filterBarLeft = rect.left;
 				}
-				// If not sticky yet, make it sticky when we reach the initial position
-				isFilterBarSticky = scrollY >= filterBarInitialTop;
+				// If not sticky yet, make it sticky when we reach the initial position (but not if it would overlap footnotes)
+				isFilterBarSticky = scrollY >= filterBarInitialTop && !wouldOverlapFootnotes;
 			}
 
 			// Update filter bar height when it becomes sticky - measure immediately
@@ -264,7 +340,12 @@
 				filterBarInitialTop = rect.top + scrollY;
 				filterBarWidth = rect.width;
 				filterBarLeft = rect.left;
-				isFilterBarSticky = scrollY >= filterBarInitialTop;
+				
+				// Check if we would overlap footnotes before making sticky
+				const filterBarBottom = scrollY + rect.height;
+				const wouldOverlapFootnotes = creditsTop < Infinity && filterBarBottom >= creditsTop;
+				isFilterBarSticky = scrollY >= filterBarInitialTop && !wouldOverlapFootnotes;
+				
 				if (isFilterBarSticky) {
 					filterBarHeight = rect.height;
 				}
@@ -448,6 +529,7 @@
 				orgField="org"
 				searchQuery={activeSearchQuery}
 				stats={chartStats}
+				allMonths={filterOptions.month || []}
 			/>
 		</div>
 	{/if}
@@ -455,21 +537,16 @@
 	{#if hasActiveFilters}
 		{#if !combinedLoading && activeSearchQuery && activeSearchQuery.trim()}
 			<div class="search-query-cue">
-				{#if exactMatchActive && quotedPhraseDisplay}
-					<span class="cue-label">Matching exact phrase</span>
-					<span class="cue-term">"{quotedPhraseDisplay}"</span>
-				{:else if searchTokens.length > 1}
-					<span class="cue-label">Matching all:</span>
-					{#each searchTokens as word, i}
-						{#if i > 0}
-							<span class="cue-operator">AND</span>
-						{/if}
-						<span class="cue-term">"{word}"</span>
-					{/each}
-				{:else}
-					<span class="cue-label">Matching</span>
-					<span class="cue-term">"{activeSearchQuery.trim()}"</span>
-				{/if}
+				<span class="cue-label">Matching</span>
+				{#each queryDisplayParts as part, i}
+					{#if part.type === 'operator'}
+						<span class="cue-operator">{part.value}</span>
+					{:else if part.type === 'phrase'}
+						<span class="cue-term">"{part.value}"</span>
+					{:else if part.type === 'word'}
+						<span class="cue-term">"{part.value}"</span>
+					{/if}
+				{/each}
 				<span class="cue-count">— {resultCount} result{resultCount !== 1 ? 's' : ''}</span>
 			</div>
 		{/if}
@@ -526,34 +603,48 @@
 	{:else}
 		<!-- Simple list or table view -->
 		{#if displayMode === 'table'}
-			<!-- Table view -->
-			<table class="data-table">
-				<thead>
-					<tr>
-						<th class="table-header">Date</th>
-						<th class="table-header">School</th>
-						<th class="table-header">Content</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#if itemComponent}
-						{#each visibleItems as item, index}
-							{@const Component = itemComponent}
-							<Component 
-								{item}
-								{index}
-								searchQuery={activeSearchQuery}
-								{filterValues}
-								dateField={dateField}
-							/>
-						{/each}
-					{:else if children}
-						{#each visibleItems as item, index}
-							{@render children({ item, index, searchQuery: activeSearchQuery, filterValues })}
-						{/each}
-					{/if}
-				</tbody>
-			</table>
+			{#if isMobile}
+				<!-- Card view on mobile -->
+				<div class="data-cards-mobile">
+					{#each visibleItems as item, index}
+						<DataCard 
+							{item}
+							{index}
+							searchQuery={activeSearchQuery}
+							{filterValues}
+						/>
+					{/each}
+				</div>
+			{:else}
+				<!-- Table view on desktop -->
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th class="table-header">Date</th>
+							<th class="table-header">School</th>
+							<th class="table-header">Content</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#if itemComponent}
+							{#each visibleItems as item, index}
+								{@const Component = itemComponent}
+								<Component 
+									{item}
+									{index}
+									searchQuery={activeSearchQuery}
+									{filterValues}
+									dateField={dateField}
+								/>
+							{/each}
+						{:else if children}
+							{#each visibleItems as item, index}
+								{@render children({ item, index, searchQuery: activeSearchQuery, filterValues })}
+							{/each}
+						{/if}
+					</tbody>
+				</table>
+			{/if}
 		{:else}
 			<!-- List view -->
 			{#if itemComponent}
@@ -641,12 +732,13 @@
 		z-index: 9999;
 		width: 100%;
 		margin: 0 0 1.5rem 0;
+		padding: 0;
 	}
 
 	.search-charts-wrapper {
 		width: 100%;
 		padding: 0;
-		margin-bottom: 2rem;
+		margin: 0 0 2rem 0;
 	}
 
 	.sticky-spacer {
@@ -664,9 +756,58 @@
 		z-index: 9999;
 	}
 
-	@media screen and (max-width: 768px) {
+	@media screen and (max-width: 767px) {
 		.filter-bar-wrapper {
-			margin: 0 0 1rem 0;
+			margin: 0 1rem 1.5rem 1rem;
+			padding: 0;
+			width: calc(100% - 2rem);
+			max-width: calc(100% - 2rem);
+			box-sizing: border-box;
+			overflow: visible;
+		}
+
+		.data-wrapper {
+			width: 100%;
+			overflow-x: visible;
+		}
+		.search-charts-wrapper {
+			margin: 0 1rem 1.5rem 1rem;
+			width: calc(100% - 2rem);
+			max-width: calc(100% - 2rem);
+			box-sizing: border-box;
+		}
+		.search-query-cue {
+			margin: 0 1rem 0.5rem 1rem;
+		}
+		.no-data-message {
+			margin: 0 1rem;
+		}
+		.data-cards-mobile {
+			padding: 0 1rem;
+			margin: 0;
+		}
+		.recent-announcements-title {
+			padding: 0 1rem;
+			margin: 2rem 1rem 1.5rem 1rem;
+		}
+		.data-container {
+			margin: 0 1rem;
+		}
+	}
+	@media screen and (min-width: 768px) and (max-width: 1024px) {
+		.filter-bar-wrapper {
+			margin: 0 1.5rem 1.5rem 1.5rem;
+			width: calc(100% - 3rem);
+			max-width: calc(100% - 3rem);
+		}
+		.search-charts-wrapper {
+			margin: 0 1.5rem 2rem 1.5rem;
+			width: calc(100% - 3rem);
+			max-width: calc(100% - 3rem);
+			box-sizing: border-box;
+		}
+		.data-cards-mobile {
+			padding: 0 1.5rem;
 		}
 	}
 
@@ -714,7 +855,7 @@
 		background-color: #fafafa;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		.data-table {
 			display: block;
 			overflow-x: auto;
@@ -744,6 +885,15 @@
 		margin: 0 auto;
 		display: table;
 		align-self: center;
+	}
+
+	.data-cards-mobile {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		width: 100%;
+		margin: 0;
+		padding: 0;
 	}
 
 
@@ -832,16 +982,8 @@
 		height: 1px;
 	}
 
-	/* Responsive */
-	@media screen and (max-width: 768px) {
-		.filter-bar-wrapper {
-			margin: 0 0 1rem 0;
-		}
-
-		.data-container {
-			padding: 0 1rem 2rem;
-		}
-
+	/* Responsive styles consolidated in main mobile breakpoint above */
+	@media screen and (max-width: 767px) {
 		.data-container.data-grid {
 			grid-template-columns: 1fr;
 		}
@@ -888,6 +1030,26 @@
 
 		.timeline-content {
 			gap: 0.25rem;
+		}
+
+		.data-cards-mobile {
+			margin: 0;
+			padding: 0 1rem;
+		}
+
+		.search-charts-wrapper {
+			margin: 0 1rem 1.5rem 1rem;
+			width: calc(100% - 2rem);
+			max-width: calc(100% - 2rem);
+		}
+		.search-query-cue {
+			margin: 0 1rem 0.5rem 1rem;
+		}
+		.no-data-message {
+			margin: 0 1rem;
+		}
+		.recent-announcements-title {
+			margin: 2rem 1rem 1.5rem 1rem;
 		}
 	}
 </style>

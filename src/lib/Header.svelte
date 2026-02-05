@@ -108,7 +108,7 @@
         text-decoration: none;
         border: none;
         border-radius: 0;
-        font-family: 'Lyon Text Web', 'Georgia', serif;
+        font-family: 'Graphik Web', 'Helvetica', sans-serif;
         font-size: 0.95rem;
         font-weight: 500;
         white-space: nowrap;
@@ -205,7 +205,16 @@
         text-decoration: underline;
     }
 
-    @media screen and (max-width: 768px) {
+    .top-nav-1 {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    @media screen and (max-width: 767px) {
+        .top-nav-1 {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
         .cjr-header__logo-link img.cjr-header__logo {
             display: none;
         }
@@ -229,6 +238,12 @@
 
         .mobile-nav {
             display: block;
+        }
+    }
+    @media screen and (min-width: 768px) and (max-width: 1024px) {
+        .top-nav-1 {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
         }
     }
 </style>    

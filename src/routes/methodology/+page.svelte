@@ -19,7 +19,8 @@
 <Article>
 	<Headline
 		hed={config.headline}
-		subhed="Comprehensive tracking of institutional responses to campus protests and federal actions across major universities nationwide."
+		subhed=""
+		bodyText="This research database catalogs public communications from more than <b>120 colleges and universities</b> that have been named in federal investigations by the Department of Education under the Trump administration. The database is intended to help researchers and reporters better understand how universities have been responding to federal requests. It includes universities' public announcements, statements, and news releases from January 1, 2025. The dataset is updated weekly."
 		brand={config.brand}
 		date={lastUpdatedDate}
 		dateLabel={config.dateLabel}
