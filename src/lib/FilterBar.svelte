@@ -28,6 +28,7 @@
 	 * @property {() => void} [onDownloadCSV=() => {}] - CSV download handler
 	 * @property {boolean} [exporting=false] - Whether export is running
 	 * @property {number} [exportProgress=0] - Export progress ratio (0-1)
+	 * @property {() => void} [onSeeAllData=() => {}] - See all data handler
 	 */
 
 	/** @type {Props} */
@@ -43,7 +44,8 @@
 		onFilterChange = () => {},
 		onDownloadCSV = () => {},
 		exporting = false,
-		exportProgress = 0
+		exportProgress = 0,
+		onSeeAllData = () => {}
 	} = $props();
 
 	/**
@@ -148,6 +150,10 @@
 	 */
 	function handleSearchChange(query) {
 		onFilterChange('search', query);
+	}
+
+	function handleSeeAllData() {
+		onSeeAllData();
 	}
 
 	// Separate filters by type for layout
@@ -318,6 +324,7 @@
 				type="button"
 				aria-label="See all data for {filteredRowCount} items"
 				data-umami-event="search-button-click"
+				onclick={handleSeeAllData}
 			>
 				See all data
 			</button>
