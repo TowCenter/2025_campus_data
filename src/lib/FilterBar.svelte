@@ -307,11 +307,6 @@
 
 		<div class="filter-row-2">
 			{#if searchFilter}
-<<<<<<< HEAD
-				<div class="search-with-help">
-					<SearchBar
-						searchQuery={searchQuery}
-						onSearchChange={handleSearchChange}
 				<SearchBar
 					searchQuery={searchQuery}
 					onSearchChange={handleSearchChange}
