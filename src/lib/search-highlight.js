@@ -143,9 +143,16 @@ export const getAllSearchTerms = (raw) => {
 		if (node.type === 'word') {
 			terms.push({ type: 'word', value: node.value });
 		} else if (node.type === 'phrase') {
-			// Keep phrases as complete units - don't break them into individual words
-			// This prevents highlighting words like "of" when searching for "Office of Civil Rights"
-			terms.push({ type: 'phrase', value: node.value });
+			// If a phrase is a single token (e.g., "visa"), treat it as a word for highlighting/snippets.
+			const phraseTokens = getSearchTokens(node.value);
+			if (phraseTokens.length <= 1) {
+				const token = phraseTokens[0] || node.value;
+				if (token) terms.push({ type: 'word', value: token });
+			} else {
+				// Keep multi-word phrases as complete units - don't break them into individual words
+				// This prevents highlighting words like "of" when searching for "Office of Civil Rights"
+				terms.push({ type: 'phrase', value: node.value });
+			}
 		} else if (node.type === 'or' || node.type === 'and') {
 			node.terms?.forEach(collectTerms);
 		}
@@ -278,22 +285,30 @@ export const getSnippet = (content, term, maxLen = 240, context = 100) => {
 		return String(content).length > maxLen ? text + '...' : text;
 	};
 
-	const phraseRegex = buildPhraseRegex(term, 'i');
-	const tokenRegex = buildExactTokenRegex(term, 'i');
+	const terms = getAllSearchTerms(term);
+	const phraseTerms = terms.filter((t) => t.type === 'phrase').map((t) => t.value);
+	const wordTerms = terms.filter((t) => t.type === 'word').map((t) => t.value);
+	const phraseRegexes = phraseTerms
+		.map((phrase) => buildPhraseRegex(phrase, 'i'))
+		.filter(Boolean);
+	const tokenRegex = wordTerms.length > 0
+		? buildExactTokenRegex(wordTerms.join(' '), 'i')
+		: null;
 	const minContext = 30;
 
-	if (!phraseRegex && !tokenRegex) {
+	if (phraseRegexes.length === 0 && !tokenRegex) {
 		return leadingSnippet();
 	}
 
-	const collectMatches = (regex) => {
+	const collectMatches = (regex, tokenKey = null) => {
 		if (!regex) return [];
 		const flags = regex.flags.includes('g') ? regex.flags : `${regex.flags}g`;
 		const globalRegex = new RegExp(regex.source, flags);
 		const matches = [];
 		let match;
 		while ((match = globalRegex.exec(String(content))) !== null) {
-			matches.push({ index: match.index, length: match[0].length, text: match[0] });
+			const key = tokenKey || (match[0] ? match[0].toLowerCase() : '');
+			matches.push({ index: match.index, length: match[0].length, text: match[0], tokenKey: key });
 			if (match[0].length === 0) {
 				globalRegex.lastIndex += 1;
 			}
@@ -370,30 +385,32 @@ export const getSnippet = (content, term, maxLen = 240, context = 100) => {
 			return sum + len + leading + trailing + spacer;
 		}, 0);
 
-	const phraseMatches = collectMatches(phraseRegex);
-	if (phraseMatches.length > 0) {
-		const { index, length } = phraseMatches[0];
-		let segment = buildSegment(index - context, index + length + context);
-		if (segment.length > maxLen) {
-			segment = trimToLength(segment, maxLen);
-		}
-		return segment;
+	const desiredTokens = new Set();
+	phraseTerms.forEach((phrase) => desiredTokens.add(`phrase:${phrase}`));
+	wordTerms.forEach((word) => desiredTokens.add(word.toLowerCase()));
+
+	const matches = [];
+	phraseTerms.forEach((phrase) => {
+		const regex = buildPhraseRegex(phrase, 'i');
+		if (!regex) return;
+		matches.push(...collectMatches(regex, `phrase:${phrase}`));
+	});
+
+	if (tokenRegex) {
+		matches.push(...collectMatches(tokenRegex));
 	}
 
-	const tokenMatches = collectMatches(tokenRegex);
-	if (!tokenMatches.length) {
+	if (matches.length === 0) {
 		return leadingSnippet();
 	}
 
-	const searchTokens = new Set(getSearchTokens(term).map((t) => t.toLowerCase()));
-
 	let tokenContext = Math.min(
 		context,
-		Math.floor((maxLen / Math.max(tokenMatches.length, 1)) / 2)
+		Math.floor((maxLen / Math.max(matches.length, 1)) / 2)
 	);
 	tokenContext = Math.max(minContext, tokenContext);
 
-	let segments = mergeMatchesToSegments(tokenMatches, tokenContext);
+	let segments = mergeMatchesToSegments(matches, tokenContext);
 	while (segments.length > 1 && tokenContext > minContext) {
 		const estimated = estimateLength(segments);
 		if (estimated <= maxLen) break;
@@ -402,13 +419,13 @@ export const getSnippet = (content, term, maxLen = 240, context = 100) => {
 		if (nextContext === tokenContext) break;
 
 		tokenContext = nextContext;
-		segments = mergeMatchesToSegments(tokenMatches, tokenContext);
+	segments = mergeMatchesToSegments(matches, tokenContext);
 	}
 
 	const segmentTokens = segments.map(() => new Set());
-	tokenMatches.forEach((m) => {
-		const token = m.text ? m.text.toLowerCase() : '';
-		if (!searchTokens.has(token)) return;
+	matches.forEach((m) => {
+		const token = m.tokenKey || '';
+		if (!token || !desiredTokens.has(token)) return;
 		const segIdx = segments.findIndex((seg) => m.index >= seg.start && m.index <= seg.end);
 		if (segIdx !== -1) {
 			segmentTokens[segIdx].add(token);
