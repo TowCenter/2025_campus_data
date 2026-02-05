@@ -240,11 +240,6 @@
 </svelte:head>
 
 <style>
-    /* Col-full entry-content margin */
-    .col-full.entry-content {
-        margin: 2rem;
-    }
-    
     /* Tab Navigation - Folder Tab Style */
     .tab-navigation {
         background: white;

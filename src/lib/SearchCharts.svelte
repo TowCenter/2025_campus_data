@@ -898,6 +898,12 @@
 
 		.bar-chart-wrapper {
 			padding: 0;
+			height: 200px;
+		}
+
+		.bar-chart-svg {
+			width: 100%;
+			height: 200px;
 		}
 
 		.bar-org-label-svg {

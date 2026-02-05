@@ -9,6 +9,7 @@
   let hoveredSchool = null;
   let tooltipX = 0;
   let tooltipY = 0;
+  let tooltipTransform = 'translate(-50%, -100%)';
   let showTooltip = false;
   let statesGeoJSON = null;
   
@@ -30,7 +31,7 @@
   let lastTouchCenterX = 0;
   let lastTouchCenterY = 0;
   
-  const MIN_ZOOM = 0.5;
+  const MIN_ZOOM = 1;
   const MAX_ZOOM = 4;
   const ZOOM_STEP = 0.2;
   
@@ -227,8 +228,52 @@
   function updateTooltipPosition(event) {
     if (mapContainer) {
       const rect = mapContainer.getBoundingClientRect();
-      tooltipX = event.clientX - rect.left;
-      tooltipY = event.clientY - rect.top - 10;
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      
+      // Estimate tooltip dimensions (approximate)
+      const tooltipWidth = 150; // Approximate width
+      const tooltipHeight = 60; // Approximate height
+      const padding = 10; // Padding from edges
+      
+      // Calculate boundaries
+      const leftBound = padding;
+      const rightBound = rect.width - padding;
+      const topBound = padding;
+      const bottomBound = rect.height - padding;
+      
+      // Default: center horizontally, above cursor
+      let translateX = -50; // -50% centers horizontally
+      let translateY = -100; // -100% positions above
+      let offsetX = 0;
+      let offsetY = -10;
+      
+      // Check if tooltip would overflow on the right
+      if (x + (tooltipWidth / 2) > rightBound) {
+        translateX = -100; // Align to right edge
+        offsetX = -(rect.width - x - padding);
+      }
+      // Check if tooltip would overflow on the left
+      else if (x - (tooltipWidth / 2) < leftBound) {
+        translateX = 0; // Align to left edge
+        offsetX = padding - x;
+      }
+      
+      // Check if tooltip would overflow on the top
+      if (y - tooltipHeight - 10 < topBound) {
+        translateY = 0; // Position below cursor instead
+        offsetY = 10;
+      }
+      // Check if tooltip would overflow on the bottom
+      else if (y + tooltipHeight + 10 > bottomBound && y - tooltipHeight - 10 >= topBound) {
+        // Keep above, but adjust if needed
+        translateY = -100;
+        offsetY = -10;
+      }
+      
+      tooltipX = x + offsetX;
+      tooltipY = y + offsetY;
+      tooltipTransform = `translate(${translateX}%, ${translateY}%)`;
     }
   }
 
@@ -644,7 +689,7 @@
             </div>
 
             {#if showTooltip && hoveredSchool}
-              <div class="map-tooltip" style="left: {tooltipX}px; top: {tooltipY}px;">
+              <div class="map-tooltip" style="left: {tooltipX}px; top: {tooltipY}px; transform: {tooltipTransform};">
                 <div class="map-tooltip-content">
                   <div class="map-tooltip-title">{hoveredSchool.name}</div>
                   <div class="map-tooltip-state">{hoveredSchool.state}</div>
@@ -855,7 +900,7 @@
     padding-bottom: 62.5%; /* 600/960 = 0.625 = 62.5% */
     background: #FFFFFF;
     border: 0px solid #e0e0e0;
-    overflow: hidden;
+    overflow: visible;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
@@ -1073,8 +1118,7 @@
     position: absolute;
     z-index: 1000;
     pointer-events: none;
-    transform: translate(-50%, -100%);
-    margin-top: -10px;
+    /* transform is set inline to handle edge cases */
   }
 
   .map-tooltip-content {
