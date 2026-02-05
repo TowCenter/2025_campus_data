@@ -1125,7 +1125,7 @@
     background: white;
     border: 1px solid #ccc;
     border-radius: 4px;
-    padding: 0.5rem 0.75rem;
+    padding: 0.35rem 0.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     white-space: nowrap;
     text-align: center;
@@ -1135,13 +1135,13 @@
     font-weight: 600;
     color: #222;
     font-size: 0.85rem;
-    line-height: 1.3;
+    line-height: 1.2;
   }
 
   .map-tooltip-state {
     color: #666;
     font-size: 0.8rem;
-    line-height: 1.3;
+    line-height: 1.2;
   }
 
   /* Map Legend */

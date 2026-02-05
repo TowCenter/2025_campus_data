@@ -343,7 +343,6 @@
         }
         
         .tab-list {
-            overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             padding: 0 1rem;
             gap: 0.35rem;
