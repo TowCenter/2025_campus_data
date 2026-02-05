@@ -106,6 +106,9 @@ export const createDatabaseEngine = ({
 				const ids = state.monthIndex[month];
 				if (Array.isArray(ids)) baseIds.push(...ids);
 			}
+		} else {
+			await indexManager.ensureAllMonthIndexes();
+			baseIds = state.globalIds.slice();
 		}
 
 		if (state.selectedInstitutions.length === 0) return baseIds;

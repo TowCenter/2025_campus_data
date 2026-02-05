@@ -101,17 +101,6 @@
 			: searchQuery
 	);
 
-	const hasActiveFilters = $derived.by(() => {
-		const hasSearchQuery = activeSearchQuery && activeSearchQuery.trim().length > 0;
-		const hasFilterValues = Object.entries(filterValues).some(([key, val]) => {
-			if (key === 'search') return false;
-			if (Array.isArray(val)) return val.length > 0;
-			if (val && typeof val === 'object') return Object.values(val).some(v => v);
-			return !!val;
-		});
-		return hasSearchQuery || hasFilterValues;
-	});
-
 	/** @type {HTMLElement | undefined} */
 	let filterBarRef
 	let isFilterBarSticky = $state(false);
@@ -534,34 +523,33 @@
 		</div>
 	{/if}
 
-	{#if hasActiveFilters}
-		{#if !combinedLoading && activeSearchQuery && activeSearchQuery.trim()}
-			<div class="search-query-cue">
-				<span class="cue-label">Matching</span>
-				{#each queryDisplayParts as part, i}
-					{#if part.type === 'operator'}
-						<span class="cue-operator">{part.value}</span>
-					{:else if part.type === 'phrase'}
-						<span class="cue-term">"{part.value}"</span>
-					{:else if part.type === 'word'}
-						<span class="cue-term">"{part.value}"</span>
-					{/if}
-				{/each}
-				<span class="cue-count">— {resultCount} result{resultCount !== 1 ? 's' : ''}</span>
-			</div>
-		{/if}
-		{#if combinedLoading}
-			<SearchLoading
-				loading={combinedLoading}
-				progress={loadingProgress}
-				showProgress={Boolean(activeSearchQuery && activeSearchQuery.trim())}
-				note={searchExactMatch ? 'Exact phrase searches take longer. Thanks for your patience.' : ''}
-			/>
-		{:else if hasActiveFilters && resultCount === 0}
-			<div class="no-data-message">
-				<p>No results found.</p>
-			</div>
-		{:else}
+	{#if !combinedLoading && activeSearchQuery && activeSearchQuery.trim()}
+		<div class="search-query-cue">
+			<span class="cue-label">Matching</span>
+			{#each queryDisplayParts as part, i}
+				{#if part.type === 'operator'}
+					<span class="cue-operator">{part.value}</span>
+				{:else if part.type === 'phrase'}
+					<span class="cue-term">"{part.value}"</span>
+				{:else if part.type === 'word'}
+					<span class="cue-term">"{part.value}"</span>
+				{/if}
+			{/each}
+			<span class="cue-count">— {resultCount} result{resultCount !== 1 ? 's' : ''}</span>
+		</div>
+	{/if}
+	{#if combinedLoading}
+		<SearchLoading
+			loading={combinedLoading}
+			progress={loadingProgress}
+			showProgress={Boolean(activeSearchQuery && activeSearchQuery.trim())}
+			note={searchExactMatch ? 'Exact phrase searches take longer. Thanks for your patience.' : ''}
+		/>
+	{:else if resultCount === 0}
+		<div class="no-data-message">
+			<p>No results found.</p>
+		</div>
+	{:else}
 <div class="data-container data-{displayMode}" class:timeline={showTimeline}>
 	{#if showTimeline}
 		<!-- Timeline view with date grouping -->
@@ -671,11 +659,6 @@
 		<div class="infinite-sentinel" bind:this={loadSentinel} aria-hidden="true"></div>
 	{/if}
 </div>
-		{/if}
-	{:else}
-		<div class="no-data-message">
-			<p>Use the filters to search announcements</p>
-		</div>
 	{/if}
 </div>
 <style>
