@@ -1,4 +1,4 @@
-export const createStatsManager = ({ state, ensureMonthIndexesForStats, ensureInstitutionIndexesForStats, getActiveIds, getTotalCount }) => {
+export const createStatsManager = ({ state, ensureMonthIndexesForStats, ensureInstitutionIndexesForStats, getActiveIds, getTotalCount, getIsUnfiltered }) => {
 	const getActiveMonthlyCounts = async ({ includeEmpty = false } = {}) => {
 		const activeIds = getActiveIds();
 		if (!activeIds || activeIds.length === 0) return {};
@@ -103,8 +103,17 @@ export const createStatsManager = ({ state, ensureMonthIndexesForStats, ensureIn
 
 	const getActiveStats = async ({ topN = 5 } = {}) => {
 		const activeIds = getActiveIds();
-		// If no active IDs (no search, no filters), return stats for all data
+		// If no active IDs, return all stats only when truly unfiltered; otherwise return zeroed stats
 		if (!activeIds || activeIds.length === 0) {
+			if (typeof getIsUnfiltered === 'function' && !getIsUnfiltered()) {
+				return {
+					monthlyCounts: {},
+					institutionCounts: {},
+					topInstitutions: [],
+					totalRecords: 0,
+					totalSchools: 0
+				};
+			}
 			return getAllStats({ topN });
 		}
 

@@ -144,7 +144,11 @@ export const createDatabaseEngine = ({
 		ensureMonthIndexesForStats: indexManager.ensureMonthIndexesForStats,
 		ensureInstitutionIndexesForStats: indexManager.ensureInstitutionIndexesForStats,
 		getActiveIds: () => activeIds,
-		getTotalCount: () => expectedTotalCount || activeIds.length
+		getTotalCount: () => expectedTotalCount || activeIds.length,
+		getIsUnfiltered: () =>
+			state.selectedMonths.length === 0 &&
+			state.selectedInstitutions.length === 0 &&
+			!String(searchTerm || '').trim()
 	});
 
 	const init = async () => {
