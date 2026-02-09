@@ -16,18 +16,8 @@
 
     /** @type {{ navItems?: NavItem[] }} */
     let {
-        navItems = [
-            { href: 'https://towcenter.columbia.edu/news/platforms-and-publishers', label: 'Platforms and Publishers Project' },
-            { href: 'https://tow.cjr.org/platform-timeline/', label: 'P&P Timeline' },
-            { href: 'https://www.cjr.org/tow-center', label: 'Other Tow Center Reports' }
-        ]
+        navItems = []
     } = $props();
-
-    let mobileMenuOpen = $state(false);
-
-    function toggleMobileMenu() {
-        mobileMenuOpen = !mobileMenuOpen;
-    }
 </script>
 
 
@@ -46,31 +36,8 @@
                     class="cjr-logo-mobile"
                 />
             </a>
-            {#if navItems && navItems.length > 0}
-                <button 
-                    class="mobile-menu-toggle"
-                    onclick={toggleMobileMenu}
-                    aria-label="Toggle navigation menu"
-                    aria-expanded={mobileMenuOpen}
-                >
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                </button>
-            {/if}
             <a href="https://towcenter.columbia.edu/content/stay-updated-about-tow-centers-work-how-technology-changing-journalism-subscribe-our-weekly" class="subscribe-button" data-umami-event="header-stay-updated-click">Stay Updated</a>
         </header>
-        {#if navItems && navItems.length > 0}
-            <nav class="mobile-nav" class:open={mobileMenuOpen} aria-label="Mobile navigation" aria-hidden={!mobileMenuOpen}>
-                <ul>
-                    {#each navItems as item}
-                        <li>
-                            <a href={item.href} onclick={() => { mobileMenuOpen = false; }} data-umami-event="header-nav-click" data-umami-event-label={item.label}>{item.label}</a>
-                        </li>
-                    {/each}
-                </ul>
-            </nav>
-        {/if}
     </div>
 </div>
 <style>
@@ -122,88 +89,6 @@
         text-decoration: none;
     }
 
-    .mobile-menu-toggle {
-        display: none;
-        position: relative;
-        margin-left: 0;
-        margin-right: auto;
-        margin-bottom: 0;
-        margin-top: 0;
-        z-index: 1000;
-        background: transparent;
-        border: none;
-        border-radius: 4px;
-        padding: 0.5rem;
-        cursor: pointer;
-        flex-direction: column;
-        gap: 4px;
-        box-shadow: none;
-        align-items: center;
-        justify-content: center;
-        width: auto;
-    }
-
-    .hamburger-line {
-        width: 24px;
-        height: 2px;
-        background-color: #254c6f;
-        transition: all 0.3s ease;
-        position: relative;
-    }
-
-    .mobile-menu-toggle[aria-expanded="true"] .hamburger-line:nth-child(1) {
-        transform: rotate(45deg);
-        top: 6px;
-    }
-
-    .mobile-menu-toggle[aria-expanded="true"] .hamburger-line:nth-child(2) {
-        opacity: 0;
-    }
-
-    .mobile-menu-toggle[aria-expanded="true"] .hamburger-line:nth-child(3) {
-        transform: rotate(-45deg);
-        top: -6px;
-    }
-
-    .mobile-nav {
-        display: none;
-        position: relative;
-        background: #fff;
-        border-bottom: 1px solid #ccc;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        z-index: 999;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-        margin-bottom: 0;
-    }
-
-    .mobile-nav.open {
-        max-height: 300px;
-    }
-
-    .mobile-nav ul {
-        list-style: none;
-        padding: 1rem;
-        margin: 0;
-    }
-
-    .mobile-nav li {
-        margin-bottom: 0.75rem;
-    }
-
-    .mobile-nav a {
-        color: #254c6f;
-        text-decoration: none;
-        font-size: 1rem;
-        display: block;
-        padding: 0.5rem 0;
-    }
-
-    .mobile-nav a:hover {
-        color: #1a3454;
-        text-decoration: underline;
-    }
 
     .top-nav-1 {
         padding-left: 1rem;
@@ -225,19 +110,9 @@
             width: auto !important;
             max-width: 100%;
         }
-        
-        .mobile-menu-toggle {
-            display: flex;
-            margin-left: auto;
-            margin-right: 0;
-        }
 
         .subscribe-button {
             display: none;
-        }
-
-        .mobile-nav {
-            display: block;
         }
     }
     @media screen and (min-width: 768px) and (max-width: 1024px) {
