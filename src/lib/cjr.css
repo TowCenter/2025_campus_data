@@ -656,7 +656,7 @@ input[type="search"]:focus {
 h1.main-title {
 	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
-	font-weight: 500;
+	font-weight: 400;
 	font-size: 48px;
 	line-height: 100%; /* or 48px */
 	letter-spacing: -0.01em;

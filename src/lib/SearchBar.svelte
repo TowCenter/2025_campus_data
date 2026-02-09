@@ -14,11 +14,11 @@
 	const inputId = `search-input-${Math.random().toString(36).substr(2, 9)}`;
 
 	const exampleSearches = [
-		{ label: 'funding cut', query: '"funding cut"' },
+		{ label: 'antisemitism', query: 'antisemitism' },
 		{ label: 'ICE', query: '"Immigration and Customs Enforcement"' },
-		{ label: 'Office of Civil Rights', query: '"Office of Civil Rights"' },
 		{ label: 'visa', query: 'visa' },
-		{ label: 'antisemitism', query: 'antisemitism' }
+		{ label: 'funding cut', query: '"funding cut"' },
+		{ label: 'Office of Civil Rights', query: '"Office of Civil Rights"' }
 	];
 
 	function handleClear() {

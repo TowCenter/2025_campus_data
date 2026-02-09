@@ -582,11 +582,11 @@
       <!-- Methodology Content -->
       <section class="methodology-content">
         <p>
-          This database includes public announcements from higher education institutions that the U.S. Department of Education has publicly said are under federal investigation since President Donald Trump took office. If an investigation ends, the database will continue to collect and display public communications from that institution.
+          This database includes public announcements from higher education institutions that have been under federal investigation since President Donald Trump took office.
         </p>
 
         <p>
-          Institutions are identified by tracking public announcements from the Department of Education and verifying them against multiple independent sources. We also cross-check institutions using <a href="https://hechingerreport.org/which-schools-and-colleges-are-being-investigated-by-the-trump-administration/" target="_blank" rel="noopener noreferrer" data-umami-event="external-link-hechinger">The Hechinger Report's investigation tracker</a> as an additional verification step to help keep the list of universities current.
+          Institutions are identified by cross-referencing <a href="https://hechingerreport.org/which-schools-and-colleges-are-being-investigated-by-the-trump-administration/" target="_blank" rel="noopener noreferrer" data-umami-event="external-link-hechinger">The Hechinger Report's investigation tracker</a> with public announcements from the Department of Education and other independent sources to help keep the list of universities current.
         </p>
 
         <!-- Interactive Map embedded in text -->
@@ -714,11 +714,11 @@
         {/if}
 
         <p>
-          We collect official announcements and statements from each institution's primary announcements or news page, as well as from the websites of the president or chancellor, the provost, the board of trustees (or equivalent governing body), and offices related to student affairs or international students. When substantively identical statements are published across multiple pages, duplicates are removed before the data is published. Each institution has at least three official webpages monitored and included in the database.
+          We collect official announcements and statements from each institution's primary announcements or news page, as well as from the websites of the president or chancellor, the provost, the board of trustees (or equivalent governing body), and offices related to student affairs or international students. A complete list of webpages we pull data from can be found here.
         </p>
 
         <p>
-          Data is collected using the Tow Center's Scraper Factory infrastructure, an AI-assisted system used to identify and collect relevant public-facing university webpages. To learn more about this infrastructure or our data collection methods, please contact us.
+          Data is collected using the Tow Center's Scraper Factory, a system we built that allows us to use AI to analyze webpages and write Python code to extract information from them. To learn more about this infrastructure or our data collection methods, visit [link].
         </p>
 
         <p>
@@ -726,44 +726,19 @@
         </p>
 
         <p>
-          In the case of blank entries with titles, there will be a reasoning in the data as to why. These are most often due to the link being primarily a video or filled with non-text elements.
+          Occasionally, a press release will not have any text. These are most often due to the link being primarily a video or filled with non-text elements, however if you notice an error, please let us know.
         </p>
 
         <p>
-          Each entry includes the date the statement was published and the date it was collected. The database reflects information available as of the most recent weekly update and may not capture statements that were modified or removed prior to collection.
+          The database reflects information available as of the most recent weekly update and may not capture statements that were modified or removed prior to collection.
         </p>
 
         <p>
-          This dataset is open source and updated weekly as new university communications are published. Users are free to download and analyze the data. If you publish findings based on this dataset, you must credit the Tow Center.
+          This dataset is updated weekly as new university communications are published. Users are free to download and analyze the data. If you publish findings based on this dataset, please credit [project name / Tow Center].
         </p>
 
         <p>
-          The purpose of this database is to help journalists, researchers, and the public examine how universities communicate during periods of federal scrutiny and how those communications change over time. For technical questions about data collection methods or to report potential data quality issues, please <a href="mailto:tktk@columbia.edu">contact us</a>.
-        </p>
-      </section>
-
-      <!-- Ethical Considerations Section -->
-      <section class="methodology-content">
-        <h3>Ethical Considerations</h3>
-
-        <p>
-          This database is produced in line with established journalistic and research ethics standards and is compiled in the public interest to support transparency and accountability in higher education and government oversight.
-        </p>
-
-        <p>
-          Inclusion in this database does not imply wrongdoing by any institution, nor does it reflect a determination about the merits, status, or outcome of any federal investigation. The database documents publicly available institutional communications and does not make claims beyond the content of those materials.
-        </p>
-
-        <p>
-          To minimize harm, we collect only information that institutions have chosen to publish publicly on their official websites. We do not collect private or internal communications, and we intentionally exclude social media posts, individual faculty pages, and other content that could reasonably be interpreted as personal expression rather than official institutional communication.
-        </p>
-
-        <p>
-          We take steps to promote accuracy and fairness by verifying institutions' inclusion using multiple sources and routinely reviewing collected materials for errors or duplication. When inaccuracies or omissions are identified, we work to correct them in a timely manner and note corrections where appropriate.
-        </p>
-
-        <p>
-          The database is intended to support reporting and research, not to speculate about motives, assign blame, or characterize institutional conduct. We welcome feedback from institutions, journalists, and researchers and provide a clear mechanism for reporting potential inaccuracies or data quality concerns.
+          The purpose of this database is to help journalists, researchers, and the public examine how universities communicate during periods of federal scrutiny and how those communications change over time. For technical questions about data collection methods or to report potential data quality issues, please contact [contact info].
         </p>
       </section>
 
