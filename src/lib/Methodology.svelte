@@ -772,34 +772,22 @@
 
         <div class="faq-item">
           <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(2)}>
-            <span>Where can I find the source URLs?</span>
+            <span>Do you have data from before January 2025?</span>
             <span class="faq-icon">{openFaqIndex === 2 ? '−' : '+'}</span>
           </button>
           {#if openFaqIndex === 2}
             <div class="faq-answer">
-              <p>A complete list of source URLs is available as a downloadable CSV file (<a href={SOURCES_CSV_URL}>sources.csv</a>). The file includes the institution, topic, URL, and the last run timestamp for each source.</p>
+              <p>We have not published data before January 1, 2025. If you are interested in data prior to this date, please reach out..</p>
             </div>
           {/if}
         </div>
 
         <div class="faq-item">
           <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(3)}>
-            <span>Do you have data from before January 2025?</span>
+            <span>How often is the data updated?</span>
             <span class="faq-icon">{openFaqIndex === 3 ? '−' : '+'}</span>
           </button>
           {#if openFaqIndex === 3}
-            <div class="faq-answer">
-              <p>The project does not include data before January 1, 2025, yet. We plan on publishing this in the near future.</p>
-            </div>
-          {/if}
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(4)}>
-            <span>How often is the data updated?</span>
-            <span class="faq-icon">{openFaqIndex === 4 ? '−' : '+'}</span>
-          </button>
-          {#if openFaqIndex === 4}
             <div class="faq-answer">
               <p>We aim to update the database every Tuesday. In some cases, updates may occur more frequently to ensure timely coverage of significant developments. Please refer to the "last updated" date at the top of the page for the most recent update.</p>
             </div>
@@ -807,23 +795,23 @@
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(5)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(4)}>
             <span>Do you have an API?</span>
-            <span class="faq-icon">{openFaqIndex === 5 ? '−' : '+'}</span>
+            <span class="faq-icon">{openFaqIndex === 4 ? '−' : '+'}</span>
           </button>
-          {#if openFaqIndex === 5}
+          {#if openFaqIndex === 4}
             <div class="faq-answer">
-              <p>Not at this time.</p>
+              <p>Not at this time. However, you can click "Export" to get a CSV file of all the data.</p>
             </div>
           {/if}
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(6)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(5)}>
             <span>Are social media posts included?</span>
-            <span class="faq-icon">{openFaqIndex === 6 ? '−' : '+'}</span>
+            <span class="faq-icon">{openFaqIndex === 5 ? '−' : '+'}</span>
           </button>
-          {#if openFaqIndex === 6}
+          {#if openFaqIndex === 5}
             <div class="faq-answer">
               <p>No. Only public announcements and statements posted on official institutional websites are collected. Social media, individual faculty pages, or internal communications are excluded.</p>
             </div>
@@ -831,13 +819,13 @@
         </div>
 
         <div class="faq-item">
-          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(7)}>
+          <button class="faq-question" data-umami-event="faq-toggle" onclick={() => toggleFaq(6)}>
             <span>I noticed an issue with the data. What should I do?</span>
-            <span class="faq-icon">{openFaqIndex === 7 ? '−' : '+'}</span>
+            <span class="faq-icon">{openFaqIndex === 6 ? '−' : '+'}</span>
           </button>
-          {#if openFaqIndex === 7}
+          {#if openFaqIndex === 6}
             <div class="faq-answer">
-              <p>We welcome feedback and corrections. If you notice a potential error or omission, please contact us at <a href="mailto:tktk@columbia.edu">tktk@columbia.edu</a> with details about the issue.</p>
+              <p>We welcome feedback and corrections. If you notice a potential error or omission, please contact us at <a href="mailto:towcenter@columbia.edu">towcenter@columbia.edu</a> with details about the issue.</p>
             </div>
           {/if}
         </div>
