@@ -718,7 +718,7 @@
         </p>
 
         <p>
-          Data is collected using the Tow Center's Scraper Factory, a system we built that allows us to use AI to analyze webpages and write Python code to extract information from them. To learn more about this infrastructure or our data collection methods, visit [link].
+          Data is collected using the Tow Center's Scraper Factory, a system we built that allows us to use AI to analyze webpages and write Python code to extract information from them. Learn more about this infrastructure and our data collection methods, here.
         </p>
 
         <p>
@@ -734,11 +734,11 @@
         </p>
 
         <p>
-          This dataset is updated weekly as new university communications are published. Users are free to download and analyze the data. If you publish findings based on this dataset, please credit [project name / Tow Center].
+          This dataset is updated weekly as new university communications are published. Users are free to download and analyze the data. If you publish findings based on this dataset, please credit University Press Release Database / Tow Center.
         </p>
 
         <p>
-          The purpose of this database is to help journalists, researchers, and the public examine how universities communicate during periods of federal scrutiny and how those communications change over time. For technical questions about data collection methods or to report potential data quality issues, please contact [contact info].
+          The purpose of this database is to help journalists, researchers, and the public examine how universities communicate during periods of federal scrutiny and how those communications change over time. For technical questions about data collection methods or to report potential data quality issues, please contact <a href="mailto:towcenter@columbia.edu">towcenter@columbia.edu</a>.
         </p>
       </section>
 
