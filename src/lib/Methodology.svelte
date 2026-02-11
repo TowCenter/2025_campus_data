@@ -625,6 +625,7 @@
                   <text x="480" y="300" text-anchor="middle" fill="#ccc" font-size="14">Loading map...</text>
                 {/if}
 
+                <!-- School dots with inverse scale to maintain constant size -->
                 {#each schoolPositions as school, i}
                   <g
                     class="school-dot-group"
@@ -635,19 +636,20 @@
                     tabindex="0"
                     aria-label="View details for {school.name}"
                     style="cursor: pointer; pointer-events: all;"
+                    transform="translate({school.displayCoords.x}, {school.displayCoords.y}) scale({1 / zoomLevel})"
                   >
                     <!-- Invisible larger hit area -->
                     <circle
-                      cx={school.displayCoords.x}
-                      cy={school.displayCoords.y}
+                      cx="0"
+                      cy="0"
                       r="12"
                       fill="transparent"
                       stroke="none"
                     />
                     <!-- Visible dot -->
                     <circle
-                      cx={school.displayCoords.x}
-                      cy={school.displayCoords.y}
+                      cx="0"
+                      cy="0"
                       r="5"
                       fill="#254c6f"
                       stroke="white"
