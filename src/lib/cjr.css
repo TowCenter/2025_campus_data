@@ -547,7 +547,7 @@ input[type="search"]:focus {
     -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     font-style: normal;
     font-weight: 700;
     font-size: 24px;
@@ -601,7 +601,7 @@ input[type="search"]:focus {
 }
 
 #footer div.logo p {
-	font-family: "Lyon Text Web", "Georgia", serif;
+	font-family: "Lyon Display Web", "Georgia", serif;
 	font-style: italic;
 	font-size: 16px;
 	line-height: 32px;
@@ -628,7 +628,7 @@ input[type="search"]:focus {
 /* header styles */
 
 #small-category a {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 14px;
@@ -641,7 +641,7 @@ input[type="search"]:focus {
 }
 
 .brand-title {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 16px;
@@ -656,7 +656,7 @@ input[type="search"]:focus {
 h1.main-title {
 	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
-	font-weight: 400;
+	font-weight: 500;
 	font-size: 48px;
 	line-height: 100%; /* or 48px */
 	letter-spacing: -0.01em;
@@ -744,7 +744,7 @@ header.col-sm-10 {
 }
 
 .meta, .meta a {
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 14px;
@@ -773,7 +773,7 @@ header.col-sm-10 {
 }
 
 .post-excerpt {
-	font-family: "Lyon Text Web", 'Georgia', serif;
+	font-family: "Lyon Display Web", 'Georgia', serif;
 	font-style: normal;
 	font-weight: normal;
 	font-size: 20px;
@@ -810,7 +810,7 @@ header.col-sm-10 {
 	font-family: "Lyon Text Web", 'Georgia', serif;
 	font-size: 20px;
 	line-height: 28px;
-	font-weight: normal;
+	font-weight: 400;
 	color: #222222;
 	width: 100%;
     margin: 0px 0px 0px 0px;
@@ -834,7 +834,7 @@ header.col-sm-10 {
 	border-radius: 3px;
 	font-family: 'Lyon Text Web', 'Georgia', serif;
 	font-size: 0.65rem;
-	font-weight: 500;
+	font-weight: 400;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
 	white-space: nowrap;
@@ -858,7 +858,7 @@ header.col-sm-10 {
 
 .entry-content > p:first-of-type strong:first-of-type {
     font-family: 'Lyon Text Web', 'Georgia', serif;
-    font-weight: 700;
+    font-weight: 400;
 	font-size: 20px;
 	color: #de5a35;
 }
@@ -880,6 +880,7 @@ header.col-sm-10 {
     font-family: "Lyon Text Web", 'Georgia', serif;
     font-size: 20px;
     line-height: 28px;
+    font-weight: 400;
     font-weight: normal;
     color: #222222;
     width: 100%;
@@ -900,7 +901,7 @@ header.col-sm-10 {
 
 .has-drop-cap:not(:focus):first-letter {
 	font-family: "Lyon Text Web", 'Georgia', serif;
-    font-weight: 700;
+    font-weight: 400;
     float: left;
     font-size: 5em; /* was 5.4em */
     line-height: .68;
@@ -910,7 +911,7 @@ header.col-sm-10 {
 }
 
 .entry-content > h2 {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
     font-weight: 700;
 	font-size: 20px;
 	color: #de5a35;
@@ -951,7 +952,7 @@ header.col-sm-10 {
 .entry-content ol li {
     font-family: 'Lyon Text Web', 'Georgia', serif;
     font-style: normal;
-    font-weight: 700;
+    font-weight: 400;
 }  
 
 
@@ -1015,7 +1016,7 @@ header.col-sm-10 {
 	font-family: "Lyon Text Web", 'Georgia', serif;
 	font-size: 20px;
 	line-height: 28px;
-	font-weight: normal;
+	font-weight: 400;
 	font-style: italic;
 	color: #222222;
 	width: 100%;
@@ -1037,7 +1038,7 @@ header.col-sm-10 {
 }
 
 .wp-caption-text {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
     font-style: normal;
     font-weight: 400;
     font-size: 14px;
@@ -1123,7 +1124,7 @@ small.bio-overline {
 }
 
 small.bio-overline strong {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-size: 16px !important;
 	font-weight: normal;
 	color: #6E6E6E;
@@ -1167,7 +1168,7 @@ small.bio-overline strong a:hover {
 }
 
 .quote-cjr p, .wp-block-quote p {
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     font-style: normal !important;
     text-align: center !important;
     font-size: 40px !important;
@@ -1536,7 +1537,7 @@ figure.wp-block-image.vertical {
 
 figcaption.blocks-gallery-caption, 
 figcaption {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 400;
 	font-size: 14px;
@@ -1548,7 +1549,7 @@ figcaption {
 }
 
 figcaption.image-hero-caption {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 400;
 	font-size: 14px;
@@ -1715,7 +1716,7 @@ div.vert-caption-mobile {
 }
 
 figcaption.image-hero-caption-vert {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 400;
 	font-size: 14px;
@@ -1822,7 +1823,7 @@ figcaption.image-hero-caption-vert {
 }
 .form-title-embed {
 	display: block;
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-weight: 200;
 	font-size: 32px;
 	line-height: 32px;
@@ -1848,7 +1849,7 @@ figcaption.image-hero-caption-vert {
 	padding: 1px 0px 0px 0px;
 	margin: 0px 10px 20px 10px;
 	background-color: #b4b2b4 !important;
-	font-family:'Lyon Text Web', 'Georgia', serif;
+	font-family:'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 500;
 	letter-spacing: 1px;
@@ -1895,7 +1896,7 @@ figcaption.image-hero-caption-vert {
 }
 
 .other-cjr-story-title h3 {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 16px;
@@ -1938,7 +1939,7 @@ h1.tout-main-title {
 }
 
 .tout-meta, .tout-meta a {
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 10px;
@@ -1954,7 +1955,7 @@ h1.tout-main-title {
 }
 
 .tout-meta span.date em {
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     text-transform: none;
     letter-spacing: 0;
 	font-weight: normal;
@@ -1962,7 +1963,7 @@ h1.tout-main-title {
 }
 
 .tout-excerpt {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 400;
 	font-size: 14px;
@@ -2225,7 +2226,7 @@ h1.tout-main-title {
 
 /* .track-title {
     color: #000000 !important;
-	font-family: 'Lyon Text Web', 'Georgia', serif !important;
+	font-family: 'Lyon Display Web', 'Georgia', serif !important;
     font-size: 18px !important;
     font-weight: bold !important;
 	line-height: 28px !important;
@@ -2234,7 +2235,7 @@ h1.tout-main-title {
 } */
 
 .track-title {
-	font-family: 'Lyon Text Web', 'Georgia', serif !important;
+	font-family: 'Lyon Display Web', 'Georgia', serif !important;
     font-style: normal !important;
     font-weight: 700 !important;
     font-size: 16px !important;
@@ -2247,7 +2248,7 @@ h1.tout-main-title {
 
 
 .iron-audioplayer .srp_subtitle {
-    font-family: 'Lyon Text Web', 'Georgia', serif !important;
+    font-family: 'Lyon Display Web', 'Georgia', serif !important;
     font-style: normal !important;
     font-weight: 400 !important;
     font-size: 14px !important;
@@ -2329,7 +2330,7 @@ h1.tout-main-title {
 	font-weight: bold !important;
 	font-size: 14px !important;
 	color: #ffffff !important;
-	font-family: 'Lyon Text Web', 'Georgia', serif !important;
+	font-family: 'Lyon Display Web', 'Georgia', serif !important;
 }
 
 
@@ -2346,7 +2347,7 @@ h1.tout-main-title {
 }
 
 .grey-box-1 p {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	line-height: 23px !important;
     font-weight: 400 !important;
     font-size: 18px !important;
@@ -2358,7 +2359,7 @@ h1.tout-main-title {
 }
 
 .grey-box-left-text {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	line-height: 18px !important;
     font-weight: normal !important;
     font-size: 14px !important;
@@ -2370,7 +2371,7 @@ h1.tout-main-title {
 }
 
 .grey-box-byline strong {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-weight: bold !important;
     font-size: 14px !important;
 	margin: 0px 0px 0px 0px !important;
@@ -2391,14 +2392,14 @@ p.grey-box-photo-credit {
 
 /* sidebar box 1 */
 .sidebar-group-mini-1 h2 {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
     color: rgba(42, 42, 42, 1);
     font-size: 11px;
 	font-weight: bold !important;
 }
 
 .sidebar-group-mini-1 p {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	line-height: 14px !important;
     font-weight: 400 !important;
     font-size: 11px !important;
@@ -2409,7 +2410,7 @@ p.grey-box-photo-credit {
 }
 
 .sidebar-group-mini-1 p a {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	line-height: 14px !important;
     font-weight: bold !important;
 	text-decoration: underline;
@@ -2419,7 +2420,7 @@ p.grey-box-photo-credit {
 }
 
 .sidebar-group-mini-1 p a strong {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	line-height: 14px !important;
     font-weight: bold !important;
 
@@ -2491,7 +2492,7 @@ p.grey-box-photo-credit {
 }
 
 #footer div.logo p {
-	font-family: "Lyon Text Web", "Georgia", serif;
+	font-family: "Lyon Display Web", "Georgia", serif;
 	font-style: italic;
 	font-size: 16px;
 	line-height: 32px;
@@ -2550,7 +2551,7 @@ p.grey-box-photo-credit {
 }
 
 #footer .list h3 {
-	font-family: "Lyon Text Web", "Georgia", serif;
+	font-family: "Lyon Display Web", "Georgia", serif;
 	font-size: 16px;
 	line-height: 20px;
 	font-weight: 700;
@@ -2572,7 +2573,7 @@ p.grey-box-photo-credit {
 }
 
 #footer .list ul {
-	font-family: "Lyon Text Web", 'Georgia', serif;
+	font-family: "Lyon Display Web", 'Georgia', serif;
 	font-size: 15px;
 	line-height: 20px;
 	list-style: none;
@@ -2595,7 +2596,7 @@ p.grey-box-photo-credit {
 #footer div.statement {
 	float: right;
 	width: 31%;
-	font-family: "Lyon Text Web", 'Georgia', serif;
+	font-family: "Lyon Display Web", 'Georgia', serif;
 	color: #999;
 	font-size: 15px;
 	margin-top: 30px;
@@ -2608,7 +2609,7 @@ p.grey-box-photo-credit {
 }
 
 #footer div.copyright {
-	font-family: "Lyon Text Web", 'Georgia', serif;
+	font-family: "Lyon Display Web", 'Georgia', serif;
 	font-size: 16px;
 	font-style: italic;
 	color: #ffffff;
@@ -2874,7 +2875,7 @@ h1.main-title {color: #254c6f;}
 }
 
 .tow-ccn-title h3 {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 16px;
@@ -2900,7 +2901,7 @@ img.tow-ccn-tout-image-1 {
 }
 
 h1.tow-ccn-tout-main-title {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 18px;
@@ -2919,7 +2920,7 @@ h1.tow-ccn-tout-main-title {
 }
 
 .tow-ccn-tout-meta, .tow-ccn-tout-meta a {
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 10px;
@@ -2935,7 +2936,7 @@ h1.tow-ccn-tout-main-title {
 }
 
 .tow-ccn-tout-meta span.date em {
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     text-transform: none;
     letter-spacing: 0;
 	font-weight: normal;
@@ -2943,7 +2944,7 @@ h1.tow-ccn-tout-main-title {
 }
 
 .tow-ccn-tout-excerpt {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 400;
 	font-size: 14px;
@@ -2954,7 +2955,7 @@ h1.tow-ccn-tout-main-title {
 }
 
 .tow-ccn-tout-excerpt a {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
 	font-style: normal;
 	font-weight: 700;
 	font-size: 14px;
@@ -3023,7 +3024,7 @@ h1.tow-ccn-tout-main-title {
     text-align: center;
     line-height: 0;
     color: #000;
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     font-size: 12px
 }
 
@@ -3283,7 +3284,7 @@ h1.tow-ccn-tout-main-title {
 }
 
 #slb_viewer_wrap .slb_theme_slb_default .slb_data_title,#slb_viewer_wrap .slb_theme_slb_default .slb_group_status {
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     font-size: 23px;
     margin-right: .2em;
     display: inline-block
@@ -3331,7 +3332,7 @@ html {
 }
 
 @font-face {
-  font-family: 'Lyon Text Web';
+  font-family: 'Lyon Display Web';
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Thin-Web.eot');
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Thin-Web.eot#iefix') format('embedded-opentype'),
      url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Thin-Web.woff') format('woff'),
@@ -3343,7 +3344,7 @@ html {
 }
 
 .Stag-Thin-Web {
-  font-family: 'Lyon Text Web', 'Georgia', serif;
+  font-family: 'Lyon Display Web', 'Georgia', serif;
   font-weight:  100;
   font-style:   normal;
   font-stretch: normal;
@@ -3351,7 +3352,7 @@ html {
 
 
 @font-face {
-  font-family: 'Lyon Text Web';
+  font-family: 'Lyon Display Web';
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Light-Web.eot');
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Light-Web.eot#iefix') format('embedded-opentype'),
      url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Light-Web.woff') format('woff'),
@@ -3363,14 +3364,14 @@ html {
 }
 
 .Stag-Light-Web {
-  font-family: 'Lyon Text Web', 'Georgia', serif;
+  font-family: 'Lyon Display Web', 'Georgia', serif;
   font-weight:  300;
   font-style:   normal;
   font-stretch: normal;
 }
 
 @font-face {
-  font-family: 'Lyon Text Web';
+  font-family: 'Lyon Display Web';
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Book-Web.eot');
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Book-Web.eot#iefix') format('embedded-opentype'),
      url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Book-Web.woff') format('woff'),
@@ -3382,14 +3383,14 @@ html {
 }
 
 .Stag-Book-Web {
-  font-family: 'Lyon Text Web', 'Georgia', serif;
+  font-family: 'Lyon Display Web', 'Georgia', serif;
   font-weight:  400;
   font-style:   normal;
   font-stretch: normal;
 }
 
 @font-face {
-  font-family: 'Lyon Text Web';
+  font-family: 'Lyon Display Web';
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Semibold-Web.eot');
   src: url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Semibold-Web.eot#iefix') format('embedded-opentype'),
      url('https://www.cjr.org/wp-content/themes/cjr2017/_resources2015/fonts/commercial-type-1502-AFHEEU-web/Stag-Semibold-Web.woff') format('woff'),
@@ -3401,7 +3402,7 @@ html {
 }
 
 .Stag-Semibold-Web {
-  font-family: 'Lyon Text Web', 'Georgia', serif;
+  font-family: 'Lyon Display Web', 'Georgia', serif;
   font-weight:  600;
   font-style:   normal;
   font-stretch: normal;
@@ -3411,7 +3412,7 @@ html {
 
 .form-title-embed {
     display: block;
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     font-weight: 200;
     font-size: 32px;
     line-height: 32px;
@@ -3426,14 +3427,14 @@ html {
 }
 
 input#mce-EMAIL {
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     font-weight: 400;
     font-size: 18px;
 }
 
 /* bio update */
 small.bio-overline strong {
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     font-size: 16px !important;
     font-weight: normal;
     color: #6E6E6E;
@@ -3456,7 +3457,7 @@ small.bio-overline strong {
 
 
 a > p {
-    font-family: "Lyon Text Web", 'Georgia', serif;
+    font-family: "Lyon Display Web", 'Georgia', serif;
     font-size: 20px;
     line-height: 28px;
     font-weight: normal;
@@ -3659,7 +3660,7 @@ p.ez-toc-title {
 }
 
 #ez-toc-container ul li {
-      font-family: 'Lyon Text Web', 'Georgia', serif;
+      font-family: 'Lyon Display Web', 'Georgia', serif;
     font-style: normal;
     font-weight: 400;
     font-size: 13px;
@@ -3697,7 +3698,7 @@ p.ez-toc-title {
 }
 
 .entry-content > h6 {
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     font-weight: 700;
 	font-size: 20px;
     border-left: none;
@@ -3757,7 +3758,7 @@ h5.capsule {
     }
 
     p.ez-toc-title {
-        font-family: 'Lyon Text Web', 'Georgia', serif;
+        font-family: 'Lyon Display Web', 'Georgia', serif;
         font-weight: 700;
 	    font-size: 14px;
         /* display: inline; */
@@ -3775,7 +3776,7 @@ h5.capsule {
     }
 
     #ez-toc-container ul li {
-        font-family: 'Lyon Text Web', 'Georgia', serif;
+        font-family: 'Lyon Display Web', 'Georgia', serif;
         font-style: normal;
         font-weight: 400;
         font-size: 14px;
@@ -3815,7 +3816,7 @@ div#post-capsule-block {
 }
 
 span.capsule-crashline {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
     font-weight: 700;
 	font-size: 46px;
 	line-height: 50px;
@@ -3827,7 +3828,7 @@ span.capsule-crashline {
 }
 
 h6.capsule-headline {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
     font-weight: 700;
 	font-size: 31px;
 	line-height: 34px;
@@ -3846,7 +3847,7 @@ h6.cap-head-black {
 }
 
 span.capsule-subhead {
-	font-family: 'Lyon Text Web', 'Georgia', serif;
+	font-family: 'Lyon Display Web', 'Georgia', serif;
     font-weight: 700;
 	font-size: 16px;
 	line-height: 18px;
@@ -3873,7 +3874,7 @@ span.capsule-body p {
 }
 
 span.cap-bod-orange-sans p {
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     font-weight: 400;
 	color: #de5a35;
     font-size: 24px;
@@ -3881,7 +3882,7 @@ span.cap-bod-orange-sans p {
 }
 
 span.cap-bod-orange-serif p {
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     font-weight: normal;
 	color: #de5a35;
     font-size: 28px;
@@ -3896,7 +3897,7 @@ span.cap-bod-orange-serif p:last-child {
 
 
 span.cap-bod-black-serif p {
-    font-family: "Lyon Text Web", 'Georgia', serif;
+    font-family: "Lyon Display Web", 'Georgia', serif;
     font-weight: 400;
 	color: #222;
     font-size: 20px;
@@ -3919,7 +3920,7 @@ span.cap-bod-black-serif p a:hover {
 }
 
 span.capsule-image-credit {
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     font-weight: 400;
 	color: #989898;
     font-size: 18px;
@@ -3931,7 +3932,7 @@ span.capsule-image-credit {
 @media screen and (max-width:576px) {
 
     span.capsule-crashline {
-        font-family: 'Lyon Text Web', 'Georgia', serif;
+        font-family: 'Lyon Display Web', 'Georgia', serif;
         font-weight: 700;
         font-size: 35px; /* was 36 */
         line-height: 40px;
@@ -3949,7 +3950,7 @@ span.capsule-image-credit {
 
 /* archival pullquote */
 p.pullquote_full, p.pullquote-2015, p.pullquote_left {
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     font-style: normal !important;
     text-align: center !important;
     font-size: 40px !important;

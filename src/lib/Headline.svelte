@@ -116,13 +116,13 @@
     }
 
     .body-text-description {
-        font-family: 'Georgia', serif;
+        font-family: 'Lyon Text Web', 'Georgia', serif;
         font-size: 20px;
         line-height: 28px;
         color: #222222;
         margin: 1.5rem 0;
         font-style: normal;
-        font-weight: normal;
+        font-weight: 400;
     }
 
     .body-text-description b {

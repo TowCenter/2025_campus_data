@@ -736,7 +736,7 @@
   .simple-database {
     background: #fff;
     min-height: 100vh;
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
   }
 
   .container {
@@ -794,7 +794,7 @@
     color: #254c6f;
     font-size: 0.85rem;
     cursor: pointer;
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     border-radius: 3px;
     transition: all 0.15s;
   }
@@ -927,7 +927,7 @@
   .query-preview .placeholder {
     color: #999;
     font-style: italic;
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
   }
 
   /* Phrase Inputs */
@@ -948,7 +948,7 @@
     padding: 0.6rem 0.75rem;
     border: 1px solid #ccc;
     font-size: 0.95rem;
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
   }
 
   .phrase-input:focus {
@@ -998,7 +998,7 @@
     font-size: 0.9rem;
     cursor: pointer;
     padding: 0.5rem 0;
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
   }
 
   .add-btn:hover {
@@ -1059,7 +1059,7 @@
     font-size: 0.85rem;
     cursor: pointer;
     text-decoration: underline;
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
   }
 
   .institution-list {
@@ -1118,7 +1118,7 @@
     padding: 0.6rem 0.75rem;
     border: 1px solid #ccc;
     font-size: 0.95rem;
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
   }
 
   .date-shortcuts {
@@ -1133,7 +1133,7 @@
     color: #254c6f;
     font-size: 0.85rem;
     cursor: pointer;
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     transition: all 0.15s;
   }
 
@@ -1157,7 +1157,7 @@
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     transition: all 0.15s;
   }
 
@@ -1257,7 +1257,7 @@
   .axis-label {
     font-size: 11px;
     fill: #666;
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
   }
 
   .chart-point {
@@ -1413,7 +1413,7 @@
     padding: 0.6rem 1.5rem;
     font-size: 0.95rem;
     cursor: pointer;
-    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     transition: all 0.15s;
   }
 

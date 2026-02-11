@@ -415,7 +415,7 @@
         font-family: 'Lyon Text Web', 'Georgia', serif;
         font-size: 20px;
         line-height: 28px;
-        font-weight: normal;
+        font-weight: 400;
         color: #222222;
         text-transform: none;
         display: block;

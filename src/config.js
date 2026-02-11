@@ -42,7 +42,7 @@ export const config = createTemplateConfig({
 	],
 
 	// HEADLINE CONFIGURATION
-	headline: 'University Press Release Database',
+	headline: 'University Public Communication Tracker',
 	subheadline: '',
 	brand: '',
 	dateLabel: 'Last Updated On',

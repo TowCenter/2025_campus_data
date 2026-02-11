@@ -432,8 +432,9 @@
 										stroke-width="1"
 									/>
 									<!-- X-axis labels (show fewer to avoid crowding) -->
-									{#if i % Math.ceil(chartData.monthLabels.length / 5) === 0 || i === chartData.monthLabels.length - 1}
-										<text x={x} y={lineChartHeight - padding + 18} class="axis-label" text-anchor="middle">
+									{@const labelInterval = Math.max(1, Math.ceil(chartData.monthLabels.length / 6))}
+									{#if i % labelInterval === 0}
+										<text x={x} y={lineChartHeight - padding + 22} class="axis-label x-axis-label" text-anchor="middle">
 											{m.label}
 										</text>
 									{/if}
@@ -771,6 +772,12 @@
 	.axis-label {
 		font-size: 11px;
 		fill: #888;
+	}
+
+	.x-axis-label {
+		font-size: 10px;
+		fill: #666;
+		letter-spacing: 0.5px;
 	}
 
 	.total-line {

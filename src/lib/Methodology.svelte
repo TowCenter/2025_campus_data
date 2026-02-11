@@ -734,7 +734,7 @@
         </p>
 
         <p>
-          This dataset is updated weekly as new university communications are published. Users are free to download and analyze the data. If you publish findings based on this dataset, please credit University Press Release Database / Tow Center.
+          This dataset is updated weekly as new university communications are published. Users are free to download and analyze the data. If you publish findings based on this dataset, please credit University Public Communication Tracker / Tow Center.
         </p>
 
         <p>
@@ -1189,7 +1189,7 @@
     margin-bottom: 1.5rem;
     margin-top: 0;
     font-weight: 700;
-    font-family: 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
   }
 
   .methodology-content h4 {
@@ -1198,7 +1198,7 @@
     margin-top: 2rem;
     margin-bottom: 0.75rem;
     font-weight: 700;
-    font-family: 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
   }
 
   .methodology-content h5 {
@@ -1207,30 +1207,33 @@
     margin-top: 1.5rem;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    font-family: 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
   }
 
   .methodology-content p {
-    font-family: 'Georgia', serif;
+    font-family: 'Lyon Text Web', 'Georgia', serif;
     font-size: 20px;
     line-height: 28px;
     color: #222222;
     margin-bottom: 1.5rem;
     margin-top: 0;
+    font-weight: 400;
   }
 
   .methodology-content ul {
     margin: 0.75rem 0 1.5rem 1.5rem;
     line-height: 1.7;
-    font-family: 'Georgia', serif;
+    font-family: 'Lyon Text Web', 'Georgia', serif;
+    font-weight: 400;
   }
 
   .methodology-content li {
-    font-family: 'Georgia', serif;
+    font-family: 'Lyon Text Web', 'Georgia', serif;
     font-size: 20px;
     line-height: 28px;
     color: #222222;
     margin-bottom: 0.75rem;
+    font-weight: 400;
   }
 
   .methodology-content a {
@@ -1403,7 +1406,7 @@
     margin-bottom: 1.5rem;
     margin-top: 0;
     font-weight: 700;
-    font-family: 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
   }
 
   .faq-item {
@@ -1426,7 +1429,7 @@
     border: none;
     cursor: pointer;
     text-align: left;
-    font-family: 'Georgia', serif;
+    font-family: 'Lyon Display Web', 'Georgia', serif;
     font-size: 1.1rem;
     font-weight: 600;
     color: #444;
@@ -1451,11 +1454,12 @@
   }
 
   .faq-answer p {
-    font-family: 'Georgia', serif;
+    font-family: 'Lyon Text Web', 'Georgia', serif;
     font-size: 20px;
     line-height: 28px;
     color: #222222;
     margin: 0 0 1rem 0;
+    font-weight: 400;
   }
 
   @keyframes slideDown {
