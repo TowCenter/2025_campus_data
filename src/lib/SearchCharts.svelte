@@ -337,7 +337,9 @@
 		if (chartContainer) {
 			const rect = chartContainer.getBoundingClientRect();
 			lineTooltipX = event.clientX - rect.left;
-			lineTooltipY = event.clientY - rect.top - 40;
+			// Position tooltip above the dot to avoid covering it
+			// Increased offset to ensure tooltip doesn't overlap with the dot (radius 5 + stroke 2 = ~7px, plus padding)
+			lineTooltipY = event.clientY - rect.top - 70;
 		}
 	}
 
