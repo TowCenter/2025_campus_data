@@ -340,7 +340,7 @@
 				{#if exporting}
 					<ExportProgress exporting={exporting} progress={exportProgress} />
 				{:else}
-					Export
+					Export Selection
 				{/if}
 			</button>
 		</div>
@@ -437,6 +437,7 @@
 		font-family: inherit;
 		font-weight: 500;
 		box-sizing: border-box;
+		white-space: nowrap;
 		line-height: 1.5;
 		height: 44px;
 		white-space: nowrap;

@@ -12,7 +12,7 @@ const config = {
 			fallback: '404.html'
 		}),
 		paths: {
-			base: '/2025_campus_data'
+			base: '/university-communications'
 		}
 	}
 };

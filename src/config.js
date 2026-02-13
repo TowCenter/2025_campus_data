@@ -42,7 +42,7 @@ export const config = createTemplateConfig({
 	],
 
 	// HEADLINE CONFIGURATION
-	headline: 'University Public Communication Tracker',
+	headline: 'University Public Communications Tracker',
 	subheadline: '',
 	brand: '',
 	dateLabel: 'Last Updated On',
