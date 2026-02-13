@@ -37,7 +37,7 @@ export const config = createTemplateConfig({
 
 	// LEFT NAVIGATION - Customize these links
 	navItems: [
-		{ href: `${base}/announcements`, label: 'Dataset' },
+		{ href: `${base}/`, label: 'Dataset' },
 		{ href: `${base}/methodology`, label: 'Methodology' }
 	],
 
